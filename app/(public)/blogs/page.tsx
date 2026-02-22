@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { BlogList } from "@/components/blog/blog-list";
 import { RecommendedBlogs } from "@/components/blog/recommended-blogs";
+import { SidebarCategories } from "@/components/blog/sidebar-categories";
 import { getCategories, getPublishedBlogs, getTags } from "@/lib/server-data";
 
 export default async function BlogIndexPage() {
@@ -82,27 +83,9 @@ export default async function BlogIndexPage() {
           <aside className="hidden md:block md:w-[30%] md:pl-10 lg:w-[25%] lg:pl-0">
             <div className="sticky top-24 space-y-10">
               {/* Recommended Categories */}
-              {categories.length > 0 && (
-                <>
-                  <div>
-                    <h3 className="mb-4 text-sm font-bold text-gray-900">
-                      Recommended Categories
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {categories.map((cat) => (
-                        <Link
-                          key={cat.id}
-                          href={`/categories/${cat.slug}`}
-                          className="rounded-full bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
-                        >
-                          {cat.name}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                  <hr className="border-gray-100" />
-                </>
-              )}
+              <SidebarCategories categories={categories} />
+
+              <hr className="border-gray-100" />
 
               {/* Recommended Blogs */}
               <RecommendedBlogs blogs={recommendedBlogs} />
