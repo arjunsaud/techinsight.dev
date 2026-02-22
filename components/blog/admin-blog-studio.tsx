@@ -119,7 +119,7 @@ export function AdminBlogStudio({
     initialData: {
       data: initialBlogs,
       page: 1,
-      pageSize: 100,
+      pageSize: 200,
       total: initialBlogs.length,
     },
     enabled: Boolean(accessToken),
@@ -197,7 +197,6 @@ export function AdminBlogStudio({
       setFeaturedImageUrl(result.secure_url);
       toast.success("Thumbnail uploaded successfully");
     } catch (error) {
-      console.error("Upload error:", error);
       toast.error("Failed to upload thumbnail");
     } finally {
       setIsUploading(false);
@@ -281,7 +280,7 @@ export function AdminBlogStudio({
       {/* Main content area (Left, 80%) */}
       <div className="flex-1 lg:w-[80%]">
         <div className="mb-8 flex items-center gap-2 rounded-lg border bg-muted/30 px-4 py-2 text-sm">
-          <div className="flex items-center gap-1 text-muted-foreground/60 select-none">
+          <div className="flex items-center gap-1 text-muted-foreground/90 select-none">
             <span className="font-medium">vitafy.local</span>
             <span>/</span>
             <span>blogs</span>
@@ -311,8 +310,8 @@ export function AdminBlogStudio({
 
         {/* Thumbnail Image Bar */}
         <div className="mb-8 flex items-center gap-2 rounded-lg border bg-muted/10 px-4 py-3 text-sm">
-          <div className="flex shrink-0 items-center gap-1.5 text-muted-foreground/60 select-none">
-            <span className="font-semibold uppercase tracking-tighter text-[10px]">
+          <div className="flex shrink-0 items-center gap-1.5 text-muted-foreground/90 select-none">
+            <span className="font-bold uppercase tracking-tighter text-[10px]">
               Thumbnail
             </span>
             <span className="h-4 w-[1px] bg-border" />
@@ -322,7 +321,7 @@ export function AdminBlogStudio({
             value={featuredImageUrl}
             onChange={(e) => setFeaturedImageUrl(e.target.value)}
             placeholder="Thumbnail URL or upload"
-            className="flex-1 bg-transparent font-medium text-foreground outline-none placeholder:text-muted-foreground/30"
+            className="flex-1 bg-transparent font-medium text-foreground outline-none placeholder:text-muted-foreground/90"
           />
           <input
             type="file"
@@ -360,8 +359,8 @@ export function AdminBlogStudio({
         <BlogEditor value={content} onChange={setContent} />
       </div>
 
-      {/* Sidebar area (Right, 20%) */}
-      <aside className="lg:w-[20%] space-y-6">
+      {/* Sidebar area (Right, 25%) */}
+      <aside className="lg:w-[25%] space-y-6">
         <Card className="shadow-sm border-muted">
           <CardHeader className="py-4">
             <CardTitle className="text-sm font-bold uppercase tracking-widest">

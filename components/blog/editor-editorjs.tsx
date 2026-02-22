@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import type EditorJS from "@editorjs/editorjs";
 
 interface EditorJsEditorProps {
@@ -244,6 +244,101 @@ export function EditorJsEditor({ value, onChange }: EditorJsEditorProps) {
     syncingRef.current = false;
   }, []);
 
+  // useEffect(() => {
+  //   let isMounted = true;
+
+  //   const init = async () => {
+  //     const [
+  //       { default: EditorJSClass },
+  //       { default: Header },
+  //       { default: List },
+  //       { default: Quote },
+  //       { default: Code },
+  //       { default: Delimiter },
+  //       { default: ImageTool },
+  //     ] = await Promise.all([
+  //       import("@editorjs/editorjs"),
+  //       import("@editorjs/header"),
+  //       import("@editorjs/list"),
+  //       import("@editorjs/quote"),
+  //       import("@editorjs/code"),
+  //       import("@editorjs/delimiter"),
+  //       import("@editorjs/image"),
+  //     ]);
+
+  //     if (!isMounted) {
+  //       return;
+  //     }
+
+  //     const initialBlocks = htmlToBlocks(value);
+  //     const initialHtml = blocksToHtml(initialBlocks);
+  //     lastHtmlRef.current = initialHtml;
+
+  //     const instance = new EditorJSClass({
+  //       holder: holderId,
+  //       data: { blocks: initialBlocks },
+  //       autofocus: false,
+  //       inlineToolbar: true,
+  //       placeholder: "Start Writing...",
+  //       tools: {
+  //         header: {
+  //           class: Header,
+  //           inlineToolbar: true,
+  //           config: {
+  //             levels: [1, 2, 3, 4],
+  //             defaultLevel: 1,
+  //           },
+  //         },
+  //         list: {
+  //           class: List,
+  //           inlineToolbar: true,
+  //           config: {
+  //             defaultStyle: "unordered",
+  //           },
+  //         },
+  //         quote: {
+  //           class: Quote,
+  //           inlineToolbar: true,
+  //         },
+  //         code: Code,
+  //         delimiter: Delimiter,
+  //         image: {
+  //           class: ImageTool,
+  //           inlineToolbar: true,
+  //         },
+  //       },
+  //       onReady: () => {
+  //         isReadyRef.current = true;
+  //       },
+  //       onChange: async () => {
+  //         if (syncingRef.current || !editorRef.current) {
+  //           return;
+  //         }
+
+  //         const saved = (await editorRef.current.save()) as {
+  //           blocks: EditorJsBlock[];
+  //         };
+  //         const html = blocksToHtml(saved.blocks ?? []);
+  //         lastHtmlRef.current = html;
+  //         onChangeRef.current(html);
+  //       },
+  //     } as any);
+
+  //     editorRef.current = instance as unknown as EditorJS;
+  //   };
+
+  //   void init();
+
+  //   return () => {
+  //     isMounted = false;
+  //     isReadyRef.current = false;
+  //     if (editorRef.current) {
+  //       void editorRef.current.destroy();
+  //       editorRef.current = null;
+  //     }
+  //   };
+  // }, [holderId]);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -254,21 +349,21 @@ export function EditorJsEditor({ value, onChange }: EditorJsEditorProps) {
         { default: List },
         { default: Quote },
         { default: Code },
+        { default: Table },
         { default: Delimiter },
-        { default: SimpleImage },
+        { default: ImageTool },
       ] = await Promise.all([
         import("@editorjs/editorjs"),
         import("@editorjs/header"),
         import("@editorjs/list"),
         import("@editorjs/quote"),
         import("@editorjs/code"),
+        import("@editorjs/table"),
         import("@editorjs/delimiter"),
-        import("@editorjs/simple-image"),
+        import("@editorjs/image"),
       ]);
 
-      if (!isMounted) {
-        return;
-      }
+      if (!isMounted) return;
 
       const initialBlocks = htmlToBlocks(value);
       const initialHtml = blocksToHtml(initialBlocks);
@@ -279,41 +374,35 @@ export function EditorJsEditor({ value, onChange }: EditorJsEditorProps) {
         data: { blocks: initialBlocks },
         autofocus: false,
         inlineToolbar: true,
-        placeholder: "Write your blog post...",
+        placeholder: "Start Writing...",
         tools: {
           header: {
             class: Header,
             inlineToolbar: true,
-            config: {
-              levels: [1, 2, 3, 4],
-              defaultLevel: 2,
-            },
+            config: { levels: [1, 2, 3, 4], defaultLevel: 1 },
           },
           list: {
             class: List,
             inlineToolbar: true,
-            config: {
-              defaultStyle: "unordered",
-            },
+            config: { defaultStyle: "unordered" },
           },
-          quote: {
-            class: Quote,
-            inlineToolbar: true,
-          },
-          code: Code,
-          delimiter: Delimiter,
+          quote: { class: Quote, inlineToolbar: true },
+          code: { class: Code, inlineToolbar: true },
+          table: { class: Table, inlineToolbar: true },
+          delimiter: { class: Delimiter },
           image: {
-            class: SimpleImage,
+            class: ImageTool,
             inlineToolbar: true,
+            config: {
+              endpoints: { byFile: "/api/upload", byUrl: "/api/fetch-url" },
+            },
           },
         },
         onReady: () => {
           isReadyRef.current = true;
         },
         onChange: async () => {
-          if (syncingRef.current || !editorRef.current) {
-            return;
-          }
+          if (syncingRef.current || !editorRef.current) return;
 
           const saved = (await editorRef.current.save()) as {
             blocks: EditorJsBlock[];
@@ -344,16 +433,16 @@ export function EditorJsEditor({ value, onChange }: EditorJsEditorProps) {
   }, [syncFromHtml, value]);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-input bg-card">
-      <div className="border-b bg-muted/30 px-4 py-2 text-xs text-muted-foreground">
-        <span>Editor</span>
+    <div className=" overflow-hidden rounded-xl border border-input bg-card">
+      <div className="border-b bg-muted/30 px-4 py-2 text-xm">
+        <span>Write your blog post</span>
       </div>
       <div className="min-h-[460px] bg-background p-4">
         <style jsx global>{`
           .editorjs-holder .ce-block__content,
           .editorjs-holder .ce-toolbar__content {
             max-width: none;
-            width: 100%;
+            width: 95%;
             padding-left: 2rem;
             padding-right: 2rem;
           }
