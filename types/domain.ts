@@ -27,7 +27,9 @@ export interface Blog {
   id: string;
   title: string;
   slug: string;
-  seo_title: string | null;
+  seoTitle?: string | null;
+  metaDescription?: string | null;
+  keywords?: string | null;
   content: string;
   excerpt: string | null;
   category_id: string | null;

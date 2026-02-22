@@ -23,7 +23,7 @@ function escapeHtml(input: string) {
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
-    .replaceAll("\"", "&quot;")
+    .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 }
 
@@ -108,7 +108,9 @@ function htmlToBlocks(html: string): EditorJsBlock[] {
     })
     .filter(Boolean) as EditorJsBlock[];
 
-  return blocks.length > 0 ? blocks : [{ type: "paragraph", data: { text: "" } }];
+  return blocks.length > 0
+    ? blocks
+    : [{ type: "paragraph", data: { text: "" } }];
 }
 
 function renderListItems(items: unknown[]): string {
@@ -122,16 +124,18 @@ function renderListItems(items: unknown[]): string {
         return "";
       }
 
-      const content = typeof (item as { content?: unknown }).content === "string"
-        ? ((item as { content: string }).content)
-        : "";
+      const content =
+        typeof (item as { content?: unknown }).content === "string"
+          ? (item as { content: string }).content
+          : "";
       const nestedItems = Array.isArray((item as { items?: unknown[] }).items)
-        ? ((item as { items: unknown[] }).items)
+        ? (item as { items: unknown[] }).items
         : [];
 
-      const nestedHtml = nestedItems.length > 0
-        ? `<ul>${renderListItems(nestedItems)}</ul>`
-        : "";
+      const nestedHtml =
+        nestedItems.length > 0
+          ? `<ul>${renderListItems(nestedItems)}</ul>`
+          : "";
 
       return `<li>${content}${nestedHtml}</li>`;
     })
@@ -148,14 +152,16 @@ function blocksToHtml(blocks: EditorJsBlock[]) {
 
       if (block.type === "header") {
         const text = typeof block.data.text === "string" ? block.data.text : "";
-        const rawLevel = typeof block.data.level === "number" ? block.data.level : 2;
+        const rawLevel =
+          typeof block.data.level === "number" ? block.data.level : 2;
         const level = Math.max(1, Math.min(6, Math.floor(rawLevel)));
         return `<h${level}>${text}</h${level}>`;
       }
 
       if (block.type === "quote") {
         const text = typeof block.data.text === "string" ? block.data.text : "";
-        const caption = typeof block.data.caption === "string" ? block.data.caption : "";
+        const caption =
+          typeof block.data.caption === "string" ? block.data.caption : "";
         return caption
           ? `<blockquote><p>${text}</p><cite>${caption}</cite></blockquote>`
           : `<blockquote><p>${text}</p></blockquote>`;
@@ -181,12 +187,15 @@ function blocksToHtml(blocks: EditorJsBlock[]) {
       }
 
       if (block.type === "image") {
-        const url = typeof block.data.url === "string"
-          ? block.data.url
-          : typeof (block.data.file as { url?: unknown } | undefined)?.url === "string"
-          ? ((block.data.file as { url: string }).url)
-          : "";
-        const caption = typeof block.data.caption === "string" ? block.data.caption : "";
+        const url =
+          typeof block.data.url === "string"
+            ? block.data.url
+            : typeof (block.data.file as { url?: unknown } | undefined)?.url ===
+                "string"
+              ? (block.data.file as { url: string }).url
+              : "";
+        const caption =
+          typeof block.data.caption === "string" ? block.data.caption : "";
         if (!url) {
           return "";
         }
@@ -203,17 +212,10 @@ function blocksToHtml(blocks: EditorJsBlock[]) {
   return html || "<p></p>";
 }
 
-function computeStatsFromHtml(html: string) {
-  const text = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-  const words = text.length > 0 ? text.split(" ").length : 0;
-  const minutes = words > 0 ? Math.max(1, Math.ceil(words / 200)) : 0;
-  return { words, minutes };
-}
-
 export function EditorJsEditor({ value, onChange }: EditorJsEditorProps) {
   const holderId = useMemo(
     () => `editorjs-holder-${Math.random().toString(36).slice(2, 10)}`,
-    []
+    [],
   );
 
   const editorRef = useRef<EditorJS | null>(null);
@@ -221,7 +223,6 @@ export function EditorJsEditor({ value, onChange }: EditorJsEditorProps) {
   const syncingRef = useRef(false);
   const onChangeRef = useRef(onChange);
   const lastHtmlRef = useRef(normalizeHtml(value));
-  const [stats, setStats] = useState(() => computeStatsFromHtml(lastHtmlRef.current));
 
   onChangeRef.current = onChange;
 
@@ -240,7 +241,6 @@ export function EditorJsEditor({ value, onChange }: EditorJsEditorProps) {
     await editorRef.current.render({ blocks: nextBlocks });
     const syncedHtml = blocksToHtml(nextBlocks);
     lastHtmlRef.current = syncedHtml;
-    setStats(computeStatsFromHtml(syncedHtml));
     syncingRef.current = false;
   }, []);
 
@@ -273,7 +273,6 @@ export function EditorJsEditor({ value, onChange }: EditorJsEditorProps) {
       const initialBlocks = htmlToBlocks(value);
       const initialHtml = blocksToHtml(initialBlocks);
       lastHtmlRef.current = initialHtml;
-      setStats(computeStatsFromHtml(initialHtml));
 
       const instance = new EditorJSClass({
         holder: holderId,
@@ -316,10 +315,11 @@ export function EditorJsEditor({ value, onChange }: EditorJsEditorProps) {
             return;
           }
 
-          const saved = (await editorRef.current.save()) as { blocks: EditorJsBlock[] };
+          const saved = (await editorRef.current.save()) as {
+            blocks: EditorJsBlock[];
+          };
           const html = blocksToHtml(saved.blocks ?? []);
           lastHtmlRef.current = html;
-          setStats(computeStatsFromHtml(html));
           onChangeRef.current(html);
         },
       } as any);
@@ -337,7 +337,7 @@ export function EditorJsEditor({ value, onChange }: EditorJsEditorProps) {
         editorRef.current = null;
       }
     };
-  }, [holderId, value]);
+  }, [holderId]);
 
   useEffect(() => {
     void syncFromHtml(value);
@@ -346,13 +346,25 @@ export function EditorJsEditor({ value, onChange }: EditorJsEditorProps) {
   return (
     <div className="overflow-hidden rounded-xl border border-input bg-card">
       <div className="border-b bg-muted/30 px-4 py-2 text-xs text-muted-foreground">
-        <span>Editor.js</span>
-        <span className="ml-2">
-          {stats.words} words
-          {stats.minutes > 0 ? ` • ${stats.minutes} min read` : ""}
-        </span>
+        <span>Editor</span>
       </div>
       <div className="min-h-[460px] bg-background p-4">
+        <style jsx global>{`
+          .editorjs-holder .ce-block__content,
+          .editorjs-holder .ce-toolbar__content {
+            max-width: none;
+            width: 100%;
+            padding-left: 2rem;
+            padding-right: 2rem;
+          }
+          .editorjs-holder .ce-toolbar__actions {
+            left: -32px;
+            right: auto;
+          }
+          .editorjs-holder .ce-toolbar__plus {
+            left: 0;
+          }
+        `}</style>
         <div id={holderId} className="editorjs-holder min-h-[420px]" />
       </div>
     </div>

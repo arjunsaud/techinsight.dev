@@ -1,4 +1,11 @@
-import type { AdminComment, Blog, Category, Comment, DashboardStats, Tag } from "@/types/domain";
+import type {
+  AdminComment,
+  Blog,
+  Category,
+  Comment,
+  DashboardStats,
+  Tag,
+} from "@/types/domain";
 
 export interface PaginatedResponse<T> {
   data: T[];
@@ -25,6 +32,9 @@ export interface CreateBlogInput {
   tagIds: string[];
   featuredImageUrl?: string;
   status: "draft" | "published";
+  seoTitle?: string;
+  metaDescription?: string;
+  keywords?: string;
 }
 
 export interface UpdateBlogInput extends Partial<CreateBlogInput> {

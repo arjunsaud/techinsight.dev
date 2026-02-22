@@ -1,5 +1,10 @@
 import type { Blog } from "@/types/domain";
-import type { BlogFilterInput, CreateBlogInput, PaginatedResponse, UpdateBlogInput } from "@/types/api";
+import type {
+  BlogFilterInput,
+  CreateBlogInput,
+  PaginatedResponse,
+  UpdateBlogInput,
+} from "@/types/api";
 
 import { apiFetch } from "@/services/http";
 
@@ -15,7 +20,7 @@ export const blogService = {
     };
 
     return apiFetch<PaginatedResponse<Blog>>("blog", {
-      query
+      query,
     });
   },
 
@@ -31,7 +36,7 @@ export const blogService = {
 
     return apiFetch<PaginatedResponse<Blog>>("blog", {
       query,
-      accessToken
+      accessToken,
     });
   },
 
@@ -43,7 +48,7 @@ export const blogService = {
     return apiFetch<Blog>("blog", {
       method: "POST",
       body: input,
-      accessToken
+      accessToken,
     });
   },
 
@@ -51,14 +56,30 @@ export const blogService = {
     return apiFetch<Blog>(`blog/${input.id}`, {
       method: "PATCH",
       body: input,
-      accessToken
+      accessToken,
     });
   },
 
   remove(blogId: string, accessToken: string) {
     return apiFetch<void>(`blog/${blogId}`, {
       method: "DELETE",
-      accessToken
+      accessToken,
     });
-  }
+  },
+
+  getUploadDraft(filename: string, accessToken: string) {
+    return apiFetch<{
+      signature: string;
+      timestamp: number;
+      apiKey: string;
+      cloudName: string;
+      folder: string;
+      uploadPreset?: string;
+      uploadUrl: string;
+    }>("blog/upload-url", {
+      method: "POST",
+      body: { filename },
+      accessToken,
+    });
+  },
 };

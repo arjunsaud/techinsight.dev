@@ -1,7 +1,10 @@
 import type { Context } from "jsr:@hono/hono";
 
 import { getOptionalAuth, requireAdmin } from "../../../shared/auth.ts";
-import { createAuthClient, createPublicClient } from "../../../shared/client.ts";
+import {
+  createAuthClient,
+  createPublicClient,
+} from "../../../shared/client.ts";
 import type { BlogPayload } from "../types.ts";
 import {
   createBlogModel,
@@ -11,12 +14,12 @@ import {
   deleteBlogModel,
   deleteTagModel,
   getBlogByIdOrSlugModel,
-  getR2SettingsModel,
+  getCloudinarySettingsModel,
   listBlogsModel,
   listCategoriesModel,
   listTagsModel,
-  updateCategoryModel,
   updateBlogModel,
+  updateCategoryModel,
   updateTagModel,
 } from "../models/blog.model.ts";
 
@@ -38,7 +41,8 @@ function toPositiveInt(
 
 export async function listBlogs(c: Context) {
   const maybeUser = await getOptionalAuth(c.req.raw);
-  const isAdmin = maybeUser?.role === "admin" || maybeUser?.role === "superadmin";
+  const isAdmin =
+    maybeUser?.role === "admin" || maybeUser?.role === "superadmin";
   const supabase = maybeUser
     ? createAuthClient(maybeUser.accessToken)
     : createPublicClient();
@@ -203,19 +207,45 @@ export async function deleteTag(c: Context) {
 export async function createUploadDraft(c: Context) {
   const admin = await requireAdmin(c.req.raw);
   const supabase = createAuthClient(admin.accessToken);
-  const payload = (await c.req.json()) as { filename?: string };
+  const payload = (await c.req.json()) as {
+    filename?: string;
+    contentType?: string;
+  };
 
-  const r2Settings = await getR2SettingsModel(supabase);
-  const timestamp = Date.now();
-  const sanitizedName = (payload.filename ?? "image.jpg").replace(
-    /[^a-zA-Z0-9._-]/g,
-    "-",
-  );
-  const objectKey = `blogs/${timestamp}-${sanitizedName}`;
+  const settings = await getCloudinarySettingsModel(supabase);
+  const timestamp = Math.round(new Date().getTime() / 1000);
+  const folder = "blogs";
+
+  // Parameters to sign
+  const params: Record<string, string | number> = {
+    folder,
+    timestamp,
+  };
+
+  if (settings.CLOUDINARY_UPLOAD_PRESET) {
+    params.upload_preset = settings.CLOUDINARY_UPLOAD_PRESET;
+  }
+
+  // Generate signature: sort keys, join with &, append secret, then sha1
+  const sortedKeys = Object.keys(params).sort();
+  const signatureString =
+    sortedKeys.map((key) => `${key}=${params[key]}`).join("&") +
+    settings.CLOUDINARY_API_SECRET;
+
+  const msgUint8 = new TextEncoder().encode(signatureString);
+  const hashBuffer = await crypto.subtle.digest("SHA-1", msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const signature = hashArray
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 
   return c.json({
-    objectKey,
-    publicUrl: `${r2Settings.R2_PUBLIC_URL.replace(/\/$/, "")}/${objectKey}`,
-    note: "Use objectKey with your R2 presigned upload implementation.",
+    signature,
+    timestamp,
+    apiKey: settings.CLOUDINARY_API_KEY,
+    cloudName: settings.CLOUDINARY_CLOUD_NAME,
+    folder,
+    uploadPreset: settings.CLOUDINARY_UPLOAD_PRESET,
+    uploadUrl: `https://api.cloudinary.com/v1_1/${settings.CLOUDINARY_CLOUD_NAME}/image/upload`,
   });
 }

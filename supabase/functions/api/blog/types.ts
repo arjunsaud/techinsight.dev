@@ -7,6 +7,9 @@ export interface BlogPayload {
   tagIds?: string[];
   featuredImageUrl?: string;
   status: "draft" | "published";
+  seoTitle?: string;
+  metaDescription?: string;
+  keywords?: string;
 }
 
 export interface BlogListFilters {
@@ -17,10 +20,9 @@ export interface BlogListFilters {
   isAdmin: boolean;
 }
 
-export interface R2Settings {
-  R2_ACCOUNT_ID: string;
-  R2_ACCESS_KEY_ID: string;
-  R2_SECRET_ACCESS_KEY: string;
-  R2_BUCKET: string;
-  R2_PUBLIC_URL: string;
+export interface CloudinarySettings {
+  CLOUDINARY_CLOUD_NAME: string;
+  CLOUDINARY_API_KEY: string;
+  CLOUDINARY_API_SECRET: string;
+  CLOUDINARY_UPLOAD_PRESET?: string;
 }
