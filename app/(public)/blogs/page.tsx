@@ -102,7 +102,7 @@ export default async function BlogIndexPage() {
                   inbox.
                 </p>
                 <button className="mt-4 w-full rounded-full bg-gray-900 py-2 text-sm font-bold text-white transition-colors hover:bg-gray-800">
-                  Join TechInsight
+                  Subscribe
                 </button>
               </div>
 

@@ -19,7 +19,10 @@ interface AdminBlogStudioProps {
 
 function htmlToPlainText(html: string) {
   if (typeof window === "undefined") {
-    return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    return html
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
   }
 
   const doc = new DOMParser().parseFromString(html, "text/html");
@@ -35,7 +38,8 @@ function extractTitleFromContent(html: string) {
   const doc = new DOMParser().parseFromString(html, "text/html");
   const heading = doc.body.querySelector("h1, h2, h3, h4");
   const paragraph = doc.body.querySelector("p");
-  const candidate = heading?.textContent?.trim() || paragraph?.textContent?.trim() || "";
+  const candidate =
+    heading?.textContent?.trim() || paragraph?.textContent?.trim() || "";
   return candidate.slice(0, 120).trim();
 }
 
@@ -56,12 +60,14 @@ function makeExcerpt(html: string) {
   return text.length > 220 ? `${text.slice(0, 220).trim()}...` : text;
 }
 
-function makeUniqueSlug(baseSlug: string, blogs: Blog[], editingBlogId: string | null) {
+function makeUniqueSlug(
+  baseSlug: string,
+  blogs: Blog[],
+  editingBlogId: string | null,
+) {
   const fallback = baseSlug || `post-${Date.now()}`;
   const inUse = new Set(
-    blogs
-      .filter((blog) => blog.id !== editingBlogId)
-      .map((blog) => blog.slug),
+    blogs.filter((blog) => blog.id !== editingBlogId).map((blog) => blog.slug),
   );
 
   if (!inUse.has(fallback)) {
@@ -84,7 +90,11 @@ export function AdminBlogStudio({
 }: AdminBlogStudioProps) {
   const queryClient = useQueryClient();
   const [content, setContent] = useState("<p></p>");
-  const [editingBlogId, setEditingBlogId] = useState<string | null>(initialEditBlogId);
+  const [editingBlogId, setEditingBlogId] = useState<string | null>(
+    initialEditBlogId,
+  );
+  const [slug, setSlug] = useState("");
+  const [isSlugManual, setIsSlugManual] = useState(false);
 
   const blogsQuery = useQuery({
     queryKey: ["admin-blogs"],
@@ -122,12 +132,24 @@ export function AdminBlogStudio({
     }
     setEditingBlogId(blog.id);
     setContent(blog.content || "<p></p>");
+    setSlug(blog.slug || "");
+    setIsSlugManual(true);
   }, [blogs, initialEditBlogId]);
 
   const inferredTitle = useMemo(() => {
     const parsed = extractTitleFromContent(content);
     return parsed || "Untitled Post";
   }, [content]);
+
+  useEffect(() => {
+    if (!isSlugManual) {
+      setSlug(makeSlug(inferredTitle));
+    }
+  }, [inferredTitle, isSlugManual]);
+
+  const inferredSlug = useMemo(() => {
+    return makeSlug(inferredTitle);
+  }, [inferredTitle]);
 
   const saveBlogMutation = useMutation({
     mutationFn: async (status: "draft" | "published") => {
@@ -142,7 +164,11 @@ export function AdminBlogStudio({
 
       const rawTitle = extractTitleFromContent(content);
       const title = rawTitle.length >= 2 ? rawTitle : "Untitled Post";
-      const slug = makeUniqueSlug(makeSlug(title), blogs, editingBlogId);
+      const finalSlug = makeUniqueSlug(
+        makeSlug(slug || title),
+        blogs,
+        editingBlogId,
+      );
       const excerpt = makeExcerpt(content);
 
       if (editingBlog) {
@@ -150,7 +176,7 @@ export function AdminBlogStudio({
           {
             id: editingBlog.id,
             title,
-            slug,
+            slug: finalSlug,
             content,
             excerpt,
             status,
@@ -165,7 +191,7 @@ export function AdminBlogStudio({
       return blogService.create(
         {
           title,
-          slug,
+          slug: finalSlug,
           content,
           excerpt,
           status,
@@ -181,37 +207,88 @@ export function AdminBlogStudio({
       setContent(savedBlog.content || content);
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Failed to save blog");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save blog",
+      );
     },
   });
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl">Editor</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Single-editor mode. Title is inferred from the first heading/paragraph.
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="rounded-md border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
-            {editingBlog
-              ? `Editing: ${editingBlog.title} (${editingBlog.status})`
-              : "Creating new blog"}
-            <span className="ml-2">Inferred title: {inferredTitle}</span>
+    <div className="flex flex-col gap-8 lg:flex-row">
+      {/* Main content area (Left, 80%) */}
+      <div className="flex-1 lg:w-[80%]">
+        <div className="mb-8 flex items-center gap-2 rounded-lg border bg-muted/30 px-4 py-2 text-sm">
+          <div className="flex items-center gap-1 text-muted-foreground/60 select-none">
+            <span className="font-medium">vitafy.local</span>
+            <span>/</span>
+            <span>blogs</span>
+            <span>/</span>
+          </div>
+          <input
+            type="text"
+            value={slug}
+            onChange={(e) => {
+              setSlug(makeSlug(e.target.value));
+              setIsSlugManual(true);
+            }}
+            placeholder="url-slug"
+            className="flex-1 bg-transparent font-medium text-foreground outline-none placeholder:text-muted-foreground/40"
+          />
+          {isSlugManual && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-[10px] uppercase tracking-wider"
+              onClick={() => setIsSlugManual(false)}
+            >
+              Auto
+            </Button>
+          )}
+        </div>
+        <BlogEditor value={content} onChange={setContent} />
+      </div>
+
+      {/* Sidebar area (Right, 20%) */}
+      <aside className="lg:w-[20%] space-y-6">
+        <div className="rounded-xl border bg-card p-6 shadow-sm space-y-6 sticky top-24">
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground/70">
+              Status
+            </h3>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <div className="flex justify-between">
+                <span>Mode:</span>
+                <span className="font-medium text-foreground">
+                  {editingBlog ? "Editing" : "Creation"}
+                </span>
+              </div>
+              <div className="flex justify-between gap-2">
+                <span>Title:</span>
+                <span className="truncate font-medium text-foreground text-right">
+                  {editingBlog ? editingBlog.title : "New Post"}
+                </span>
+              </div>
+              <div className="pt-2 border-t">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground/50">
+                  Inferred:
+                </span>
+                <p className="mt-1 break-words font-medium text-foreground leading-relaxed">
+                  {inferredTitle}
+                </p>
+              </div>
+            </div>
           </div>
 
-          <BlogEditor value={content} onChange={setContent} />
-
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-2">
             <Button
+              className="w-full"
               onClick={() => saveBlogMutation.mutate("draft")}
               disabled={saveBlogMutation.isPending}
             >
               {saveBlogMutation.isPending ? "Saving..." : "Save Draft"}
             </Button>
             <Button
+              className="w-full"
               variant="secondary"
               onClick={() => saveBlogMutation.mutate("published")}
               disabled={saveBlogMutation.isPending}
@@ -220,6 +297,7 @@ export function AdminBlogStudio({
             </Button>
             {editingBlog ? (
               <Button
+                className="w-full"
                 variant="outline"
                 onClick={() => {
                   setEditingBlogId(null);
@@ -230,8 +308,8 @@ export function AdminBlogStudio({
               </Button>
             ) : null}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </aside>
     </div>
   );
 }

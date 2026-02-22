@@ -10,7 +10,8 @@ export function SiteHeader() {
           className="shrink-0 text-xl font-bold tracking-tight text-gray-900 sm:text-2xl"
           style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
         >
-          TechInsight
+          <span className="text-gray-900">Tech</span>
+          <span className="text-blue-500">Insight</span>
         </Link>
 
         {/* Center nav — hidden on mobile */}
