@@ -16,7 +16,7 @@ export function RecommendedBlogs({
 
   return (
     <div className="space-y-6">
-      <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">
+      <h3 className="text-sm font-bold tracking-widest text-gray-900">
         {title}
       </h3>
       <div className="flex flex-col gap-6">
