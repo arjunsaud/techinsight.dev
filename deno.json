@@ -1,0 +1,6 @@
+{
+  "nodeModulesDir": "auto",
+  "tasks": {
+    "check:functions": "deno check supabase/functions/api/index.ts"
+  }
+}
