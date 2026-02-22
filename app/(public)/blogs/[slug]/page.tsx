@@ -188,26 +188,6 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
                 </div>
               )}
 
-              {/* Recommend Tags */}
-              {tags.length > 0 && (
-                <div>
-                  <h3 className="mb-4 text-sm font-bold text-gray-900">
-                    Recommend Tags
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {tags.map((tag) => (
-                      <Link
-                        key={tag.id}
-                        href={`/tags/${tag.slug}`}
-                        className="rounded-full bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
-                      >
-                        #{tag.name}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Newsletter / CTA */}
               <div className="rounded-2xl bg-gray-50 p-6">
                 <h4 className="font-serif text-lg font-bold text-gray-900">
