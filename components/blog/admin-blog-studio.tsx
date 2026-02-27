@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Eye, EyeOff, Loader2, Save, Send } from "lucide-react";
 
 import type { Blog } from "@/types/domain";
 import { blogService } from "@/services/blog-service";
@@ -12,38 +12,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Upload } from "lucide-react";
+import { CoverImageUploader } from "./cover-image-uploader";
 
-interface AdminBlogStudioProps {
+interface HashnodeStudioProps {
   accessToken: string;
   initialBlogs: Blog[];
   initialEditBlogId?: string | null;
 }
 
 function htmlToPlainText(html: string) {
-  if (typeof window === "undefined") {
+  if (typeof window === "undefined")
     return html
       .replace(/<[^>]*>/g, " ")
       .replace(/\s+/g, " ")
       .trim();
-  }
-
   const doc = new DOMParser().parseFromString(html, "text/html");
   return doc.body.textContent?.replace(/\s+/g, " ").trim() ?? "";
-}
-
-function extractTitleFromContent(html: string) {
-  if (typeof window === "undefined") {
-    const plain = htmlToPlainText(html);
-    return plain.slice(0, 80).trim();
-  }
-
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  const heading = doc.body.querySelector("h1, h2, h3, h4");
-  const paragraph = doc.body.querySelector("p");
-  const candidate =
-    heading?.textContent?.trim() || paragraph?.textContent?.trim() || "";
-  return candidate.slice(0, 120).trim();
 }
 
 function makeSlug(input: string) {
@@ -55,14 +39,6 @@ function makeSlug(input: string) {
     .slice(0, 120);
 }
 
-function makeExcerpt(html: string) {
-  const text = htmlToPlainText(html);
-  if (!text) {
-    return "";
-  }
-  return text.length > 220 ? `${text.slice(0, 220).trim()}...` : text;
-}
-
 function makeUniqueSlug(
   baseSlug: string,
   blogs: Blog[],
@@ -72,11 +48,7 @@ function makeUniqueSlug(
   const inUse = new Set(
     blogs.filter((blog) => blog.id !== editingBlogId).map((blog) => blog.slug),
   );
-
-  if (!inUse.has(fallback)) {
-    return fallback;
-  }
-
+  if (!inUse.has(fallback)) return fallback;
   let counter = 2;
   let next = `${fallback}-${counter}`;
   while (inUse.has(next)) {
@@ -90,9 +62,11 @@ export function AdminBlogStudio({
   accessToken,
   initialBlogs,
   initialEditBlogId = null,
-}: AdminBlogStudioProps) {
+}: HashnodeStudioProps) {
   const queryClient = useQueryClient();
   const [content, setContent] = useState("<p></p>");
+  const [title, setTitle] = useState("");
+  const [excerpt, setExcerpt] = useState("");
   const [editingBlogId, setEditingBlogId] = useState<string | null>(
     initialEditBlogId,
   );
@@ -102,20 +76,12 @@ export function AdminBlogStudio({
   const [seoTitle, setSeoTitle] = useState("");
   const [metaDescription, setMetaDescription] = useState("");
   const [keywords, setKeywords] = useState("");
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   const blogsQuery = useQuery({
     queryKey: ["admin-blogs"],
     queryFn: () =>
-      blogService.listAdmin(
-        {
-          page: 1,
-          pageSize: 100,
-        },
-        accessToken,
-      ),
+      blogService.listAdmin({ page: 1, pageSize: 100 }, accessToken),
     initialData: {
       data: initialBlogs,
       page: 1,
@@ -126,21 +92,18 @@ export function AdminBlogStudio({
   });
 
   const blogs = blogsQuery.data?.data ?? [];
-
   const editingBlog = useMemo(
     () => blogs.find((blog) => blog.id === editingBlogId) ?? null,
     [blogs, editingBlogId],
   );
 
   useEffect(() => {
-    if (!initialEditBlogId) {
-      return;
-    }
+    if (!initialEditBlogId) return;
     const blog = blogs.find((item) => item.id === initialEditBlogId);
-    if (!blog) {
-      return;
-    }
+    if (!blog) return;
     setEditingBlogId(blog.id);
+    setTitle(blog.title || "");
+    setExcerpt(blog.excerpt || "");
     setContent(blog.content || "<p></p>");
     setSlug(blog.slug || "");
     setIsSlugManual(true);
@@ -150,293 +113,248 @@ export function AdminBlogStudio({
     setKeywords(blog.keywords || "");
   }, [blogs, initialEditBlogId]);
 
-  const inferredTitle = useMemo(() => {
-    const parsed = extractTitleFromContent(content);
-    return parsed || "Untitled Post";
-  }, [content]);
-
   useEffect(() => {
-    if (!isSlugManual) {
-      setSlug(makeSlug(inferredTitle));
-    }
-  }, [inferredTitle, isSlugManual]);
+    if (!isSlugManual && title) setSlug(makeSlug(title));
+  }, [title, isSlugManual]);
 
-  const inferredSlug = useMemo(() => {
-    return makeSlug(inferredTitle);
-  }, [inferredTitle]);
+  const analysis = useMemo(() => {
+    const plainText = htmlToPlainText(content);
+    const words = plainText.split(/\s+/).filter(Boolean).length;
+    const readingTime = Math.ceil(words / 200);
+    const activeKeywords = keywords
+      .split(",")
+      .map((k) => k.trim().toLowerCase())
+      .filter(Boolean);
+    const foundKeywords = activeKeywords.filter((k) =>
+      plainText.toLowerCase().includes(k),
+    ).length;
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setIsUploading(true);
-      const draft = await blogService.getUploadDraft(file.name, accessToken);
-
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("api_key", draft.apiKey);
-      formData.append("timestamp", draft.timestamp.toString());
-      formData.append("signature", draft.signature);
-      formData.append("folder", draft.folder);
-      if (draft.uploadPreset) {
-        formData.append("upload_preset", draft.uploadPreset);
-      }
-
-      const response = await fetch(draft.uploadUrl, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || "Cloudinary upload failed");
-      }
-
-      const result = await response.json();
-      setFeaturedImageUrl(result.secure_url);
-      toast.success("Thumbnail uploaded successfully");
-    } catch (error) {
-      toast.error("Failed to upload thumbnail");
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
+    return {
+      words,
+      readingTime,
+      keywordsFound: foundKeywords,
+      totalKeywords: activeKeywords.length,
+      seoTitleLength: seoTitle.length,
+      metaDescriptionLength: metaDescription.length,
+      isTitleGood: seoTitle.length >= 30 && seoTitle.length <= 60,
+      isDescriptionGood:
+        metaDescription.length >= 120 && metaDescription.length <= 160,
+    };
+  }, [content, seoTitle, metaDescription, keywords]);
 
   const saveBlogMutation = useMutation({
     mutationFn: async (status: "draft" | "published") => {
-      if (!accessToken) {
-        throw new Error("Missing admin session token.");
-      }
-
-      const plainText = htmlToPlainText(content);
-      if (plainText.length < 5) {
-        throw new Error("Write some content before saving.");
-      }
-
-      const rawTitle = extractTitleFromContent(content);
-      const title = rawTitle.length >= 2 ? rawTitle : "Untitled Post";
       const finalSlug = makeUniqueSlug(
         makeSlug(slug || title),
         blogs,
         editingBlogId,
       );
-      const excerpt = metaDescription || makeExcerpt(content);
+      const payload = {
+        title: title || "Untitled Post",
+        slug: finalSlug,
+        content,
+        excerpt: excerpt || undefined,
+        status,
+        featuredImageUrl: featuredImageUrl || undefined,
+        seoTitle: seoTitle || undefined,
+        metaDescription: metaDescription || undefined,
+        keywords: keywords || undefined,
+        tagIds: editingBlog?.tags?.map((t) => t.id) ?? [],
+        categoryId: editingBlog?.category_id ?? undefined,
+      };
 
-      if (editingBlog) {
+      if (editingBlog)
         return blogService.update(
-          {
-            id: editingBlog.id,
-            title,
-            slug: finalSlug,
-            content,
-            excerpt,
-            status,
-            categoryId: editingBlog.category_id ?? undefined,
-            featuredImageUrl: featuredImageUrl || undefined,
-            tagIds: editingBlog.tags?.map((tag) => tag.id) ?? [],
-            seoTitle: seoTitle || undefined,
-            metaDescription: metaDescription || undefined,
-            keywords: keywords || undefined,
-          },
+          { ...payload, id: editingBlog.id },
           accessToken,
         );
-      }
-
-      return blogService.create(
-        {
-          title,
-          slug: finalSlug,
-          content,
-          excerpt,
-          status,
-          featuredImageUrl: featuredImageUrl || undefined,
-          seoTitle: seoTitle || undefined,
-          metaDescription: metaDescription || undefined,
-          keywords: keywords || undefined,
-          tagIds: [],
-        },
-        accessToken,
-      );
+      return blogService.create(payload, accessToken);
     },
     onSuccess: (savedBlog, status) => {
       queryClient.invalidateQueries({ queryKey: ["admin-blogs"] });
       toast.success(status === "published" ? "Blog published" : "Draft saved");
       setEditingBlogId(savedBlog.id);
-      setContent(savedBlog.content || content);
     },
-    onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to save blog",
-      );
-    },
+    onError: (error) =>
+      toast.error(error instanceof Error ? error.message : "Failed to save"),
   });
 
   return (
-    <div className="flex flex-col gap-8 lg:flex-row">
-      {/* Main content area (Left, 80%) */}
-      <div className="flex-1 lg:w-[80%]">
-        <div className="mb-8 flex items-center gap-2 rounded-lg border bg-muted/30 px-4 py-2 text-sm">
-          <div className="flex items-center gap-1 text-muted-foreground/90 select-none">
-            <span className="font-medium">vitafy.local</span>
-            <span>/</span>
-            <span>blogs</span>
-            <span>/</span>
-          </div>
-          <input
-            type="text"
-            value={slug}
-            onChange={(e) => {
-              setSlug(makeSlug(e.target.value));
-              setIsSlugManual(true);
-            }}
-            placeholder="url-slug"
-            className="flex-1 bg-transparent font-medium text-foreground outline-none placeholder:text-muted-foreground/40"
-          />
-          {isSlugManual && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2 text-[10px] uppercase tracking-wider"
-              onClick={() => setIsSlugManual(false)}
-            >
-              Auto
-            </Button>
-          )}
-        </div>
-
-        {/* Thumbnail Image Bar */}
-        <div className="mb-8 flex items-center gap-2 rounded-lg border bg-muted/10 px-4 py-3 text-sm">
-          <div className="flex shrink-0 items-center gap-1.5 text-muted-foreground/90 select-none">
-            <span className="font-bold uppercase tracking-tighter text-[10px]">
-              Thumbnail
-            </span>
-            <span className="h-4 w-[1px] bg-border" />
-          </div>
-          <input
-            type="text"
-            value={featuredImageUrl}
-            onChange={(e) => setFeaturedImageUrl(e.target.value)}
-            placeholder="Thumbnail URL or upload"
-            className="flex-1 bg-transparent font-medium text-foreground outline-none placeholder:text-muted-foreground/90"
-          />
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileUpload}
-            className="hidden"
-            accept="image/*"
-          />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 gap-2 px-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:bg-muted/50"
-            disabled={isUploading}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {isUploading ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Upload className="h-3.5 w-3.5" />
-            )}
-            {isUploading ? "Uploading..." : "Upload"}
-          </Button>
-
-          {featuredImageUrl && (
-            <div className="h-8 w-12 shrink-0 rounded border bg-muted p-0.5 overflow-hidden">
-              <img
-                src={featuredImageUrl}
-                alt="Thumbnail Preview"
-                className="h-full w-full object-cover rounded-[1px]"
+    <Card>
+      <CardContent className="flex flex-col mt-8 gap-12 lg:flex-row">
+        {/* Editor Area */}
+        <div className="flex-1 lg:w-[70%]">
+          {isPreviewMode ? (
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+              {featuredImageUrl && (
+                <div className="aspect-[21/9] w-full overflow-hidden rounded-xl">
+                  <img
+                    src={featuredImageUrl}
+                    alt="Cover"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              )}
+              <div className="space-y-4">
+                <h1
+                  className="text-5xl font-bold tracking-tight"
+                  style={{ fontFamily: "serif" }}
+                >
+                  {title || "Untitled Post"}
+                </h1>
+                {excerpt && (
+                  <p className="text-xl text-muted-foreground leading-relaxed italic">
+                    {excerpt}
+                  </p>
+                )}
+              </div>
+              <div
+                className="prose prose-lg dark:prose-invert max-w-none pt-8 border-t"
+                dangerouslySetInnerHTML={{ __html: content }}
               />
             </div>
+          ) : (
+            <>
+              <CoverImageUploader
+                url={featuredImageUrl}
+                onChange={setFeaturedImageUrl}
+                accessToken={accessToken}
+              />
+
+              <div className="space-y-6">
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Article Title"
+                  className="w-full border-none bg-transparent p-0 text-5xl font-bold tracking-tight outline-none placeholder:text-muted-foreground/30 focus:ring-0"
+                  style={{ fontFamily: "serif" }}
+                />
+
+                <textarea
+                  value={excerpt}
+                  onChange={(e) => setExcerpt(e.target.value)}
+                  placeholder="Short description..."
+                  className="w-full resize-none border-none bg-transparent p-0 text-xl text-muted-foreground/60 outline-none placeholder:text-muted-foreground/20 focus:ring-0"
+                  rows={2}
+                />
+
+                <div className="pt-8">
+                  <BlogEditor value={content} onChange={setContent} />
+                </div>
+              </div>
+            </>
           )}
         </div>
+        {/* Sidebar */}
+        <aside className="lg:w-[30%] space-y-6">
+          <Card className="border-none shadow-none bg-muted/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Button
+                className="w-full gap-2 bg-foreground text-background hover:bg-foreground/90"
+                onClick={() => saveBlogMutation.mutate("draft")}
+                disabled={saveBlogMutation.isPending}
+              >
+                {saveBlogMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                {saveBlogMutation.isPending ? "Saving..." : "Save Draft"}
+              </Button>
+              <Button
+                className="w-full gap-2"
+                onClick={() => setIsPreviewMode(!isPreviewMode)}
+                variant="secondary"
+              >
+                {isPreviewMode ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+                {isPreviewMode ? "Back to Edit" : "Preview"}
+              </Button>
+              {!isPreviewMode && (
+                <Button
+                  className="w-full gap-2"
+                  variant="outline"
+                  onClick={() => saveBlogMutation.mutate("published")}
+                  disabled={saveBlogMutation.isPending}
+                >
+                  <Send className="h-4 w-4" />
+                  Publish
+                </Button>
+              )}
+            </CardContent>
+          </Card>
 
-        <BlogEditor value={content} onChange={setContent} />
-      </div>
+          <Card className="border-none shadow-none bg-muted/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-xs">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Words</span>
+                <span className="font-bold">{analysis.words}</span>
+              </div>
+              <div className="flex justify-between border-t border-border/50 pt-3">
+                <span className="text-muted-foreground">Read Time</span>
+                <span className="font-bold">{analysis.readingTime} min</span>
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* Sidebar area (Right, 25%) */}
-      <aside className="lg:w-[25%] space-y-6">
-        <Card className="shadow-sm border-muted">
-          <CardHeader className="py-4">
-            <CardTitle className="text-sm font-bold uppercase tracking-widest">
-              SEO & Sidebar
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6 pt-0">
-            <div className="space-y-4">
+          <Card className="border-none shadow-none bg-muted/30">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                SEO Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-wider px-1">
+                <label className="text-[10px] font-bold uppercase text-muted-foreground/70">
+                  Slug
+                </label>
+                <Input
+                  value={slug}
+                  onChange={(e) => {
+                    setSlug(makeSlug(e.target.value));
+                    setIsSlugManual(true);
+                  }}
+                  className="h-8 bg-background/50 text-xs"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold uppercase text-muted-foreground/70">
                   SEO Title
                 </label>
                 <Input
                   value={seoTitle}
                   onChange={(e) => setSeoTitle(e.target.value)}
-                  placeholder="Custom browser title..."
-                  className="h-9 text-xs"
+                  className="h-8 bg-background/50 text-xs"
                 />
               </div>
-
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-wider px-1">
-                  SEO Description
+                <label className="text-[10px] font-bold uppercase text-muted-foreground/70">
+                  Meta Desc
                 </label>
                 <Textarea
                   value={metaDescription}
                   onChange={(e) => setMetaDescription(e.target.value)}
-                  placeholder="Compelling search snippet..."
-                  className="min-h-[80px] text-xs resize-none"
+                  className="h-20 bg-background/50 text-xs"
                 />
               </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase tracking-wider px-1">
-                  SEO Keywords
-                </label>
-                <Textarea
-                  value={keywords}
-                  onChange={(e) => setKeywords(e.target.value)}
-                  placeholder="tech, blog, nextjs..."
-                  className="min-h-[60px] text-xs resize-none"
-                />
-              </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <Button
-                className="w-full"
-                onClick={() => saveBlogMutation.mutate("draft")}
-                disabled={saveBlogMutation.isPending}
-              >
-                {saveBlogMutation.isPending ? "Saving..." : "Save Draft"}
-              </Button>
-              <Button
-                className="w-full"
-                variant="secondary"
-                onClick={() => saveBlogMutation.mutate("published")}
-                disabled={saveBlogMutation.isPending}
-              >
-                {saveBlogMutation.isPending ? "Publishing..." : "Publish"}
-              </Button>
-              {editingBlog ? (
-                <Button
-                  className="w-full"
-                  variant="outline"
-                  onClick={() => {
-                    setEditingBlogId(null);
-                    setContent("<p></p>");
-                  }}
-                >
-                  New Blog
-                </Button>
-              ) : null}
-            </div>
-          </CardContent>
-        </Card>
-      </aside>
-    </div>
+            </CardContent>
+          </Card>
+        </aside>
+      </CardContent>
+    </Card>
   );
 }

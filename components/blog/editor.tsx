@@ -10,7 +10,7 @@ interface BlogEditorProps {
 const BlockNoteEditor = dynamic(() => import("./blocknote-editor"), {
   ssr: false,
   loading: () => (
-    <div className="min-h-[420px] animate-pulse rounded-xl border bg-muted/20 p-6 text-sm text-muted-foreground">
+    <div className="min-h-[420px] animate-pulse rounded-xl border p-6 text-sm">
       Loading block editor...
     </div>
   ),

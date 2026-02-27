@@ -18,7 +18,7 @@
 - Route parameter usage: `GET/PATCH/DELETE /api/blog/:idOrSlug`
 - Admin UI: `app/admin/(protected)/blogs/page.tsx`,
   `app/admin/(protected)/blogs/all/page.tsx`,
-  `components/blog/admin-blog-studio.tsx`,
+  `components/blog/studio/hashnode-studio.tsx`,
   `components/blog/admin-blogs-list.tsx`
 - Rich content (Editor.js): `components/blog/editor.tsx`
 

@@ -11,7 +11,7 @@ import {
 
 const adminLinks = [
   { href: "/admin/dashboard", label: "Dashboard", Icon: LayoutDashboard },
-  { href: "/admin/blogs", label: "Blog Editor", Icon: FileEdit },
+  { href: "/admin/blogs", label: "Write Blogs", Icon: FileEdit },
   { href: "/admin/blogs/all", label: "All Blogs", Icon: Files },
   { href: "/admin/categories", label: "Categories", Icon: FolderTree },
   { href: "/admin/tags", label: "Tags", Icon: Tags },

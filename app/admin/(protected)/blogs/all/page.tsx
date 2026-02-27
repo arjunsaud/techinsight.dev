@@ -15,12 +15,12 @@ export default async function AdminAllBlogsPage() {
 
   const blogsResponse = accessToken
     ? await blogService.listAdmin(
-      {
-        page: 1,
-        pageSize: 100,
-      },
-      accessToken,
-    )
+        {
+          page: 1,
+          pageSize: 100,
+        },
+        accessToken,
+      )
     : { data: [], page: 1, pageSize: 100, total: 0 };
 
   return (
@@ -31,7 +31,10 @@ export default async function AdminAllBlogsPage() {
           Manage and delete blogs here. Use Edit to open the editor page.
         </p>
       </header>
-      <AdminBlogsList accessToken={accessToken} initialBlogs={blogsResponse.data} />
+      <AdminBlogsList
+        accessToken={accessToken}
+        initialBlogs={blogsResponse.data}
+      />
     </section>
   );
 }

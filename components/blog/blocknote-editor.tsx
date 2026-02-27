@@ -39,13 +39,8 @@ export default function BlockNoteEditor({
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-input bg-card">
-      <div className="border-b bg-muted/30 px-4 py-2 text-sm">
-        <span>Write your blog post</span>
-      </div>
-      <div className="min-h-[460px] bg-background p-4">
-        <BlockNoteView editor={editor} onChange={handleChange} theme="light" />
-      </div>
+    <div className="min-h-[460px] bg-background">
+      <BlockNoteView editor={editor} onChange={handleChange} theme="light" />
     </div>
   );
 }

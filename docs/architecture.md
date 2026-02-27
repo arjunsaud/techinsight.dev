@@ -7,7 +7,7 @@
   - `app/(auth)` for login/register pages
   - `app/admin` for protected admin management views
 - Reusable compound components:
-  - Blog: `BlogCard`, `BlogList`, `AdminBlogStudio`, `AdminBlogsList`,
+  - Blog: `BlogCard`, `BlogList`, `HashnodeStudio`, `AdminBlogsList`,
     `AdminCategoriesManager`, `AdminTagsManager`
   - Comment: `CommentList`, `CommentForm`
 - Data layer:
