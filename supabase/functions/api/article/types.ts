@@ -1,4 +1,4 @@
-export interface BlogPayload {
+export interface ArticlePayload {
   title: string;
   slug: string;
   content: string;
@@ -12,7 +12,7 @@ export interface BlogPayload {
   keywords?: string;
 }
 
-export interface BlogListFilters {
+export interface ArticleListFilters {
   page: number;
   pageSize: number;
   status: string | null;

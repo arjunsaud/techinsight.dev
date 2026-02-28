@@ -5,25 +5,25 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { CreateCommentInput } from "@/types/api";
 import { commentService } from "@/services/comment-service";
 
-export function useComments(blogId: string) {
+export function useComments(articleId: string) {
   return useQuery({
-    queryKey: ["comments", blogId],
-    queryFn: () => commentService.listByBlog(blogId),
-    enabled: Boolean(blogId)
+    queryKey: ["comments", articleId],
+    queryFn: () => commentService.listByArticle(articleId),
+    enabled: Boolean(articleId)
   });
 }
 
-export function useCreateComment(blogId: string, accessToken: string) {
+export function useCreateComment(articleId: string, accessToken: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: Omit<CreateCommentInput, "blogId">) =>
+    mutationFn: (input: Omit<CreateCommentInput, "articleId">) =>
       commentService.create({
-        blogId,
+        articleId,
         ...input
       }, accessToken),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments", blogId] });
+      queryClient.invalidateQueries({ queryKey: ["comments", articleId] });
     }
   });
 }

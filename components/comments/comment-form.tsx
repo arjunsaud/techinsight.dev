@@ -19,10 +19,10 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 interface CommentFormProps {
-  blogId: string;
+  articleId: string;
 }
 
-export function CommentForm({ blogId }: CommentFormProps) {
+export function CommentForm({ articleId }: CommentFormProps) {
   const [accessToken, setAccessToken] = useState<string>("");
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
@@ -33,7 +33,7 @@ export function CommentForm({ blogId }: CommentFormProps) {
     }
   });
 
-  const mutation = useCreateComment(blogId, accessToken);
+  const mutation = useCreateComment(articleId, accessToken);
 
   useEffect(() => {
     try {

@@ -1,4 +1,4 @@
--- Initial schema for admin-only blog platform.
+-- Initial schema for admin-only article platform.
 create extension if not exists pgcrypto;
 
 create table if not exists public.users (
@@ -24,7 +24,7 @@ create table if not exists public.tags (
   created_at timestamptz not null default now()
 );
 
-create table if not exists public.blogs (
+create table if not exists public.articles (
   id uuid primary key default gen_random_uuid(),
   title text not null,
   slug text not null unique,
@@ -39,25 +39,25 @@ create table if not exists public.blogs (
   updated_at timestamptz not null default now()
 );
 
-create table if not exists public.blog_tags (
-  blog_id uuid not null references public.blogs(id) on delete cascade,
+create table if not exists public.article_tags (
+  article_id uuid not null references public.articles(id) on delete cascade,
   tag_id uuid not null references public.tags(id) on delete cascade,
   created_at timestamptz not null default now(),
-  primary key (blog_id, tag_id)
+  primary key (article_id, tag_id)
 );
 
 create table if not exists public.comments (
   id uuid primary key default gen_random_uuid(),
-  blog_id uuid not null references public.blogs(id) on delete cascade,
+  article_id uuid not null references public.articles(id) on delete cascade,
   user_id uuid not null references public.users(id) on delete cascade,
   parent_id uuid references public.comments(id) on delete cascade,
   content text not null,
   created_at timestamptz not null default now()
 );
 
-create index if not exists idx_blogs_status_published_at on public.blogs(status, published_at desc);
-create index if not exists idx_blogs_category on public.blogs(category_id);
-create index if not exists idx_comments_blog on public.comments(blog_id, created_at asc);
+create index if not exists idx_articles_status_published_at on public.articles(status, published_at desc);
+create index if not exists idx_articles_category on public.articles(category_id);
+create index if not exists idx_comments_article on public.comments(article_id, created_at asc);
 create index if not exists idx_comments_parent on public.comments(parent_id);
 
 create or replace function public.set_updated_at()
@@ -70,9 +70,9 @@ begin
 end;
 $$;
 
-drop trigger if exists trg_blogs_updated_at on public.blogs;
-create trigger trg_blogs_updated_at
-before update on public.blogs
+drop trigger if exists trg_articles_updated_at on public.articles;
+create trigger trg_articles_updated_at
+before update on public.articles
 for each row
 execute function public.set_updated_at();
 
@@ -122,8 +122,8 @@ $$;
 alter table public.users enable row level security;
 alter table public.categories enable row level security;
 alter table public.tags enable row level security;
-alter table public.blogs enable row level security;
-alter table public.blog_tags enable row level security;
+alter table public.articles enable row level security;
+alter table public.article_tags enable row level security;
 alter table public.comments enable row level security;
 
 drop policy if exists "Users can view users" on public.users;
@@ -132,10 +132,10 @@ drop policy if exists "Categories public read" on public.categories;
 drop policy if exists "Admins manage categories" on public.categories;
 drop policy if exists "Tags public read" on public.tags;
 drop policy if exists "Admins manage tags" on public.tags;
-drop policy if exists "Published blogs public read" on public.blogs;
-drop policy if exists "Admins manage blogs" on public.blogs;
-drop policy if exists "Blog tags public read" on public.blog_tags;
-drop policy if exists "Admins manage blog tags" on public.blog_tags;
+drop policy if exists "Published articles public read" on public.articles;
+drop policy if exists "Admins manage articles" on public.articles;
+drop policy if exists "Article tags public read" on public.article_tags;
+drop policy if exists "Admins manage article tags" on public.article_tags;
 drop policy if exists "Comments public read" on public.comments;
 drop policy if exists "Authenticated users can create comments" on public.comments;
 drop policy if exists "Admins delete comments" on public.comments;
@@ -175,28 +175,28 @@ for all
 using (public.is_admin())
 with check (public.is_admin());
 
--- Blogs
-create policy "Published blogs public read"
-on public.blogs
+-- Articles
+create policy "Published articles public read"
+on public.articles
 for select
 using (
   status = 'published' or public.is_admin()
 );
 
-create policy "Admins manage blogs"
-on public.blogs
+create policy "Admins manage articles"
+on public.articles
 for all
 using (public.is_admin())
 with check (public.is_admin());
 
--- Blog tags
-create policy "Blog tags public read"
-on public.blog_tags
+-- Article tags
+create policy "Article tags public read"
+on public.article_tags
 for select
 using (true);
 
-create policy "Admins manage blog tags"
-on public.blog_tags
+create policy "Admins manage article tags"
+on public.article_tags
 for all
 using (public.is_admin())
 with check (public.is_admin());
@@ -213,8 +213,8 @@ for insert
 with check (
   auth.uid() = user_id and exists (
     select 1
-    from public.blogs b
-    where b.id = blog_id and b.status = 'published'
+    from public.articles b
+    where b.id = article_id and b.status = 'published'
   )
 );
 

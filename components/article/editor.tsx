@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 
-interface BlogEditorProps {
+interface ArticleEditorProps {
   value: string;
   onChange: (value: string) => void;
 }
@@ -16,6 +16,6 @@ const BlockNoteEditor = dynamic(() => import("./blocknote-editor"), {
   ),
 });
 
-export function BlogEditor(props: BlogEditorProps) {
+export function ArticleEditor(props: ArticleEditorProps) {
   return <BlockNoteEditor {...props} />;
 }

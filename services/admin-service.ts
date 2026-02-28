@@ -29,13 +29,13 @@ export const adminService = {
   },
 
   listCategories(accessToken?: string) {
-    return apiFetch<Category[]>("blog/categories", {
+    return apiFetch<Category[]>("article/categories", {
       accessToken
     });
   },
 
   createCategory(name: string, accessToken: string) {
-    return apiFetch<Category>("blog/categories", {
+    return apiFetch<Category>("article/categories", {
       method: "POST",
       accessToken,
       body: { name }
@@ -43,7 +43,7 @@ export const adminService = {
   },
 
   updateCategory(categoryId: string, input: { name?: string; slug?: string }, accessToken: string) {
-    return apiFetch<Category>(`blog/categories/${categoryId}`, {
+    return apiFetch<Category>(`article/categories/${categoryId}`, {
       method: "PATCH",
       accessToken,
       body: input
@@ -51,20 +51,20 @@ export const adminService = {
   },
 
   removeCategory(categoryId: string, accessToken: string) {
-    return apiFetch<void>(`blog/categories/${categoryId}`, {
+    return apiFetch<void>(`article/categories/${categoryId}`, {
       method: "DELETE",
       accessToken
     });
   },
 
   listTags(accessToken?: string) {
-    return apiFetch<Tag[]>("blog/tags", {
+    return apiFetch<Tag[]>("article/tags", {
       accessToken
     });
   },
 
   createTag(name: string, accessToken: string) {
-    return apiFetch<Tag>("blog/tags", {
+    return apiFetch<Tag>("article/tags", {
       method: "POST",
       accessToken,
       body: { name }
@@ -72,7 +72,7 @@ export const adminService = {
   },
 
   updateTag(tagId: string, input: { name?: string; slug?: string }, accessToken: string) {
-    return apiFetch<Tag>(`blog/tags/${tagId}`, {
+    return apiFetch<Tag>(`article/tags/${tagId}`, {
       method: "PATCH",
       accessToken,
       body: input
@@ -80,7 +80,7 @@ export const adminService = {
   },
 
   removeTag(tagId: string, accessToken: string) {
-    return apiFetch<void>(`blog/tags/${tagId}`, {
+    return apiFetch<void>(`article/tags/${tagId}`, {
       method: "DELETE",
       accessToken
     });

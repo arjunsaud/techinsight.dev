@@ -4,9 +4,9 @@ import type { CreateCommentInput } from "@/types/api";
 import { apiFetch } from "@/services/http";
 
 export const commentService = {
-  listByBlog(blogId: string) {
+  listByArticle(articleId: string) {
     return apiFetch<Comment[]>("comment", {
-      query: { blogId }
+      query: { articleId }
     });
   },
 

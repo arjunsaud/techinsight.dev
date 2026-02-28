@@ -5,18 +5,18 @@ import { createAuthClient, createPublicClient } from "../../../shared/client.ts"
 import {
   createCommentModel,
   deleteCommentModel,
-  listCommentsByBlogModel,
+  listCommentsByArticleModel,
 } from "../models/comment.model.ts";
 
-export async function listByBlog(c: Context) {
-  const blogId = c.req.query("blogId");
+export async function listByArticle(c: Context) {
+  const articleId = c.req.query("articleId");
 
-  if (!blogId) {
-    return c.json({ error: "blogId is required" }, 422);
+  if (!articleId) {
+    return c.json({ error: "articleId is required" }, 422);
   }
 
   const supabase = createPublicClient();
-  const data = await listCommentsByBlogModel(supabase, blogId);
+  const data = await listCommentsByArticleModel(supabase, articleId);
 
   return c.json(data);
 }
@@ -25,17 +25,17 @@ export async function createComment(c: Context) {
   const user = await requireAuth(c.req.raw);
   const supabase = createAuthClient(user.accessToken);
   const payload = (await c.req.json()) as {
-    blogId?: string;
+    articleId?: string;
     content?: string;
     parentId?: string;
   };
 
-  if (!payload.blogId || !payload.content) {
-    return c.json({ error: "blogId and content are required" }, 422);
+  if (!payload.articleId || !payload.content) {
+    return c.json({ error: "articleId and content are required" }, 422);
   }
 
   const data = await createCommentModel(supabase, {
-    blogId: payload.blogId,
+    articleId: payload.articleId,
     userId: user.id,
     content: payload.content,
     parentId: payload.parentId,

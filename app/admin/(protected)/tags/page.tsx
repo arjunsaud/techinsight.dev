@@ -1,4 +1,4 @@
-import { AdminTagsManager } from "@/components/blog/admin-tags-manager";
+import { AdminTagsManager } from "@/components/article/admin-tags-manager";
 import { requireAdmin } from "@/lib/supabase/guards";
 import { createClient } from "@/lib/supabase/server";
 import { adminService } from "@/services/admin-service";

@@ -27,7 +27,7 @@ export default async function AdminCommentsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>User</TableHead>
-                <TableHead>Blog</TableHead>
+                <TableHead>Article</TableHead>
                 <TableHead>Content</TableHead>
                 <TableHead>Created</TableHead>
               </TableRow>
@@ -36,7 +36,7 @@ export default async function AdminCommentsPage() {
               {comments.map((comment) => (
                 <TableRow key={comment.id}>
                   <TableCell>{(comment.user as { username?: string } | null)?.username ?? "User"}</TableCell>
-                  <TableCell>{(comment.blog as { title?: string } | null)?.title ?? "Blog"}</TableCell>
+                  <TableCell>{(comment.article as { title?: string } | null)?.title ?? "Article"}</TableCell>
                   <TableCell className="line-clamp-2 max-w-sm">{comment.content}</TableCell>
                   <TableCell>{formatDate(comment.created_at)}</TableCell>
                 </TableRow>

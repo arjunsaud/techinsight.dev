@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 
-import type { Blog } from "@/types/domain";
+import type { Article } from "@/types/domain";
 import { apiFetch } from "@/services/http";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,7 @@ import { Sheet, SheetBody, SheetFooter, SheetHeader, SheetTitle } from "@/compon
 
 interface Props {
   accessToken?: string;
-  blogId?: string | null;
+  articleId?: string | null;
 }
 
 const schema = z.object({
@@ -36,7 +36,7 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-export function BlogSeoSettings({ accessToken, blogId }: Props) {
+export function ArticleSeoSettings({ accessToken, articleId }: Props) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
 
@@ -50,16 +50,16 @@ export function BlogSeoSettings({ accessToken, blogId }: Props) {
     },
   });
 
-  const blogQuery = useQuery({
-    queryKey: ["admin-blog", blogId],
-    queryFn: () => apiFetch<Blog>(`blog/${blogId}`, { accessToken }),
-    enabled: Boolean(open && accessToken && blogId),
+  const articleQuery = useQuery({
+    queryKey: ["admin-article", articleId],
+    queryFn: () => apiFetch<Article>(`article/${articleId}`, { accessToken }),
+    enabled: Boolean(open && accessToken && articleId),
   });
 
   const mutation = useMutation({
     mutationFn: async (values: FormValues) => {
-      if (blogId && accessToken) {
-        return apiFetch<Blog>(`blog/${blogId}`, {
+      if (articleId && accessToken) {
+        return apiFetch<Article>(`article/${articleId}`, {
           method: "PATCH",
           accessToken,
           body: {
@@ -73,8 +73,8 @@ export function BlogSeoSettings({ accessToken, blogId }: Props) {
       return null;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-blogs"] });
-      if (blogId) queryClient.invalidateQueries({ queryKey: ["admin-blog", blogId] });
+      queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
+      if (articleId) queryClient.invalidateQueries({ queryKey: ["admin-article", articleId] });
       toast.success("SEO settings saved");
       setOpen(false);
     },
@@ -83,12 +83,12 @@ export function BlogSeoSettings({ accessToken, blogId }: Props) {
 
   const onOpen = () => {
     setOpen(true);
-    if (blogQuery.data) {
+    if (articleQuery.data) {
       form.reset({
-        slug: blogQuery.data.slug ?? "",
-        seoTitle: blogQuery.data.seoTitle ?? "",
-        metaDescription: blogQuery.data.metaDescription ?? "",
-        keywords: blogQuery.data.keywords ?? "",
+        slug: articleQuery.data.slug ?? "",
+        seoTitle: articleQuery.data.seoTitle ?? "",
+        metaDescription: articleQuery.data.metaDescription ?? "",
+        keywords: articleQuery.data.keywords ?? "",
       });
     }
   };
@@ -109,7 +109,7 @@ export function BlogSeoSettings({ accessToken, blogId }: Props) {
   }, [form.watch()]);
 
   const onSubmit = form.handleSubmit((values) => {
-    if (!blogId || !accessToken) {
+    if (!articleId || !accessToken) {
       toast.success("SEO settings updated");
       setOpen(false);
       return;
@@ -136,7 +136,7 @@ export function BlogSeoSettings({ accessToken, blogId }: Props) {
         </SheetHeader>
         <form onSubmit={onSubmit}>
           <SheetBody>
-            {blogQuery.isLoading ? (
+            {articleQuery.isLoading ? (
               <p className="text-sm text-muted-foreground">Loading…</p>
             ) : (
               <>

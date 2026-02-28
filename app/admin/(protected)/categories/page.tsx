@@ -1,4 +1,4 @@
-import { AdminCategoriesManager } from "@/components/blog/admin-categories-manager";
+import { AdminCategoriesManager } from "@/components/article/admin-categories-manager";
 import { requireAdmin } from "@/lib/supabase/guards";
 import { createClient } from "@/lib/supabase/server";
 import { adminService } from "@/services/admin-service";

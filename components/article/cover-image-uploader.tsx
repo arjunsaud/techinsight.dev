@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
-import { blogService } from "@/services/blog-service";
+import { articleService } from "@/services/article-service";
 
 interface CoverImageUploaderProps {
   url: string;
@@ -26,7 +26,7 @@ export function CoverImageUploader({
 
     try {
       setIsUploading(true);
-      const draft = await blogService.getUploadDraft(file.name, accessToken);
+      const draft = await articleService.getUploadDraft(file.name, accessToken);
 
       const formData = new FormData();
       formData.append("file", file);

@@ -9,23 +9,23 @@
 - Role guards: `lib/supabase/guards.ts`, SQL functions `public.is_admin()` and
   `public.is_superadmin()`
 
-## Blog Management
+## Article Management
 
 - Admin CRUD API (Hono + MVC): `supabase/functions/api/app.ts`,
-  `supabase/functions/api/blog/routes/blog.routes.ts`,
-  `supabase/functions/api/blog/controllers/blog.controller.ts`,
-  `supabase/functions/api/blog/models/blog.model.ts`
-- Route parameter usage: `GET/PATCH/DELETE /api/blog/:idOrSlug`
-- Admin UI: `app/admin/(protected)/blogs/page.tsx`,
-  `app/admin/(protected)/blogs/all/page.tsx`,
-  `components/blog/studio/hashnode-studio.tsx`,
-  `components/blog/admin-blogs-list.tsx`
-- Rich content (Editor.js): `components/blog/editor.tsx`
+  `supabase/functions/api/article/routes/article.routes.ts`,
+  `supabase/functions/api/article/controllers/article.controller.ts`,
+  `supabase/functions/api/article/models/article.model.ts`
+- Route parameter usage: `GET/PATCH/DELETE /api/article/:idOrSlug`
+- Admin UI: `app/admin/(protected)/articles/page.tsx`,
+  `app/admin/(protected)/articles/all/page.tsx`,
+  `components/article/studio/hashnode-studio.tsx`,
+  `components/article/admin-articles-list.tsx`
+- Rich content (Editor.js): `components/article/editor.tsx`
 
 ## Category & Tag Management
 
-- API: `blog` routes `/api/blog/categories`, `/api/blog/categories/:categoryId`,
-  `/api/blog/tags`, `/api/blog/tags/:tagId`
+- API: `article` routes `/api/article/categories`, `/api/article/categories/:categoryId`,
+  `/api/article/tags`, `/api/article/tags/:tagId`
 - Admin pages: `app/admin/(protected)/categories/page.tsx`,
   `app/admin/(protected)/tags/page.tsx`
 
@@ -44,12 +44,12 @@
 
 ## SEO + SSR
 
-- Blog list and detail routes are server rendered: `app/(public)/blogs/*`
-- Detail metadata generation: `app/(public)/blogs/[slug]/page.tsx`
+- Article list and detail routes are server rendered: `app/(public)/articles/*`
+- Detail metadata generation: `app/(public)/articles/[slug]/page.tsx`
 
 ## Storage (R2)
 
-- Upload draft endpoint: `blog` route `/api/blog/upload-url`
+- Upload draft endpoint: `article` route `/api/article/upload-url`
 - DB-backed R2 configuration table: `public.app_settings`
   (`supabase/migrations/202602201510_r2_settings_table.sql`)
 - Next API proxy: `app/api/upload/route.ts`

@@ -1,19 +1,19 @@
 import Link from "next/link";
 
-import { BlogList } from "@/components/blog/blog-list";
-import { RecommendedBlogs } from "@/components/blog/recommended-blogs";
-import { SidebarCategories } from "@/components/blog/sidebar-categories";
-import { getCategories, getPublishedBlogs, getTags } from "@/lib/server-data";
+import { ArticleList } from "@/components/article/article-list";
+import { RecommendedArticles } from "@/components/article/recommended-articles";
+import { SidebarCategories } from "@/components/article/sidebar-categories";
+import { getCategories, getPublishedArticles, getTags } from "@/lib/server-data";
 
-export default async function BlogIndexPage() {
-  const [blogs, categories, tags] = await Promise.all([
-    getPublishedBlogs(),
+export default async function ArticleIndexPage() {
+  const [articles, categories, tags] = await Promise.all([
+    getPublishedArticles(),
     getCategories(),
     getTags(),
   ]);
 
-  // For demonstration, use a slice of blogs for recommendations
-  const recommendedBlogs = blogs.slice(0, 4);
+  // For demonstration, use a slice of articles for recommendations
+  const recommendedArticles = articles.slice(0, 4);
 
   return (
     <div className="bg-white">
@@ -22,7 +22,7 @@ export default async function BlogIndexPage() {
         <div className="border-b border-gray-100 lg:hidden">
           <div className="mx-auto flex max-w-[1440px] gap-1 overflow-x-auto px-4 py-3 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <Link
-              href="/blogs"
+              href="/articles"
               className="whitespace-nowrap rounded-full bg-gray-900 px-4 py-1.5 text-xs font-medium text-white"
             >
               For you
@@ -51,7 +51,7 @@ export default async function BlogIndexPage() {
               </h3>
               <nav className="flex flex-col gap-2">
                 <Link
-                  href="/blogs"
+                  href="/articles"
                   className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition-all"
                 >
                   All Stories
@@ -76,7 +76,7 @@ export default async function BlogIndexPage() {
                 Latest Stories
               </h2>
             </div>
-            <BlogList blogs={blogs} />
+            <ArticleList articles={articles} />
           </main>
 
           {/* RIGHT COLUMN: Tags & Meta */}
@@ -87,8 +87,8 @@ export default async function BlogIndexPage() {
 
               <hr className="border-gray-100" />
 
-              {/* Recommended Blogs */}
-              <RecommendedBlogs blogs={recommendedBlogs} />
+              {/* Recommended Articles */}
+              <RecommendedArticles articles={recommendedArticles} />
 
               <hr className="border-gray-100" />
 

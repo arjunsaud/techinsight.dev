@@ -14,21 +14,21 @@ export default async function AdminDashboardPage() {
     ? await adminService.getDashboard(session.access_token)
     : {
       stats: {
-        totalBlogs: 0,
+        totalArticles: 0,
         totalUsers: 0,
         totalComments: 0,
-        publishedBlogs: 0,
-        draftBlogs: 0,
+        publishedArticles: 0,
+        draftArticles: 0,
       },
-      recentBlogs: [],
+      recentArticles: [],
       recentComments: [],
     };
 
   const cards = [
-    { label: "Total Blogs", value: dashboard.stats.totalBlogs },
+    { label: "Total Articles", value: dashboard.stats.totalArticles },
     { label: "Total Users", value: dashboard.stats.totalUsers },
     { label: "Total Comments", value: dashboard.stats.totalComments },
-    { label: "Draft Blogs", value: dashboard.stats.draftBlogs },
+    { label: "Draft Articles", value: dashboard.stats.draftArticles },
   ];
 
   return (

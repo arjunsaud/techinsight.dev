@@ -5,19 +5,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {} from "lucide-react";
 
-import type { Blog } from "@/types/domain";
-import { blogService } from "@/services/blog-service";
-import { BlogEditor } from "@/components/blog/editor";
+import type { Article } from "@/types/domain";
+import { articleService } from "@/services/article-service";
+import { ArticleEditor } from "@/components/article/editor";
 import { CoverImageUploader } from "./cover-image-uploader";
 import {
   registerAdminStudioControls,
   setAdminStudioState,
-} from "@/components/blog/admin-studio-context";
+} from "@/components/article/admin-studio-context";
 
 interface HashnodeStudioProps {
   accessToken: string;
-  initialBlogs: Blog[];
-  initialEditBlogId?: string | null;
+  initialArticles: Article[];
+  initialEditArticleId?: string | null;
 }
 
 function htmlToPlainText(html: string) {
@@ -41,12 +41,12 @@ function makeSlug(input: string) {
 
 function makeUniqueSlug(
   baseSlug: string,
-  blogs: Blog[],
-  editingBlogId: string | null,
+  articles: Article[],
+  editingArticleId: string | null,
 ) {
   const fallback = baseSlug || `post-${Date.now()}`;
   const inUse = new Set(
-    blogs.filter((blog) => blog.id !== editingBlogId).map((blog) => blog.slug),
+    articles.filter((article) => article.id !== editingArticleId).map((article) => article.slug),
   );
   if (!inUse.has(fallback)) return fallback;
   let counter = 2;
@@ -58,17 +58,17 @@ function makeUniqueSlug(
   return next;
 }
 
-export function AdminBlogStudio({
+export function AdminArticleStudio({
   accessToken,
-  initialBlogs,
-  initialEditBlogId = null,
+  initialArticles,
+  initialEditArticleId = null,
 }: HashnodeStudioProps) {
   const queryClient = useQueryClient();
   const [content, setContent] = useState("<p></p>");
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
-  const [editingBlogId, setEditingBlogId] = useState<string | null>(
-    initialEditBlogId,
+  const [editingArticleId, setEditingArticleId] = useState<string | null>(
+    initialEditArticleId,
   );
   const [slug, setSlug] = useState("");
   const [isSlugManual, setIsSlugManual] = useState(false);
@@ -78,40 +78,40 @@ export function AdminBlogStudio({
   const [keywords, setKeywords] = useState("");
   const [isPreviewMode, setIsPreviewMode] = useState(false);
 
-  const blogsQuery = useQuery({
-    queryKey: ["admin-blogs"],
+  const articlesQuery = useQuery({
+    queryKey: ["admin-articles"],
     queryFn: () =>
-      blogService.listAdmin({ page: 1, pageSize: 100 }, accessToken),
+      articleService.listAdmin({ page: 1, pageSize: 100 }, accessToken),
     initialData: {
-      data: initialBlogs,
+      data: initialArticles,
       page: 1,
       pageSize: 200,
-      total: initialBlogs.length,
+      total: initialArticles.length,
     },
     enabled: Boolean(accessToken),
   });
 
-  const blogs = blogsQuery.data?.data ?? [];
-  const editingBlog = useMemo(
-    () => blogs.find((blog) => blog.id === editingBlogId) ?? null,
-    [blogs, editingBlogId],
+  const articles = articlesQuery.data?.data ?? [];
+  const editingArticle = useMemo(
+    () => articles.find((article) => article.id === editingArticleId) ?? null,
+    [articles, editingArticleId],
   );
 
   useEffect(() => {
-    if (!initialEditBlogId) return;
-    const blog = blogs.find((item) => item.id === initialEditBlogId);
-    if (!blog) return;
-    setEditingBlogId(blog.id);
-    setTitle(blog.title || "");
-    setExcerpt(blog.excerpt || "");
-    setContent(blog.content || "<p></p>");
-    setSlug(blog.slug || "");
+    if (!initialEditArticleId) return;
+    const article = articles.find((item) => item.id === initialEditArticleId);
+    if (!article) return;
+    setEditingArticleId(article.id);
+    setTitle(article.title || "");
+    setExcerpt(article.excerpt || "");
+    setContent(article.content || "<p></p>");
+    setSlug(article.slug || "");
     setIsSlugManual(true);
-    setFeaturedImageUrl(blog.featured_image_url || "");
-    setSeoTitle(blog.seoTitle || "");
-    setMetaDescription(blog.metaDescription || blog.excerpt || "");
-    setKeywords(blog.keywords || "");
-  }, [blogs, initialEditBlogId]);
+    setFeaturedImageUrl(article.featured_image_url || "");
+    setSeoTitle(article.seoTitle || "");
+    setMetaDescription(article.metaDescription || article.excerpt || "");
+    setKeywords(article.keywords || "");
+  }, [articles, initialEditArticleId]);
 
   useEffect(() => {
     if (!isSlugManual && title) setSlug(makeSlug(title));
@@ -142,12 +142,12 @@ export function AdminBlogStudio({
     };
   }, [content, seoTitle, metaDescription, keywords]);
 
-  const saveBlogMutation = useMutation({
+  const saveArticleMutation = useMutation({
     mutationFn: async (status: "draft" | "published") => {
       const finalSlug = makeUniqueSlug(
         makeSlug(slug || title),
-        blogs,
-        editingBlogId,
+        articles,
+        editingArticleId,
       );
       const payload = {
         title: title || "Untitled Post",
@@ -159,21 +159,21 @@ export function AdminBlogStudio({
         seoTitle: seoTitle || undefined,
         metaDescription: metaDescription || undefined,
         keywords: keywords || undefined,
-        tagIds: editingBlog?.tags?.map((t) => t.id) ?? [],
-        categoryId: editingBlog?.category_id ?? undefined,
+        tagIds: editingArticle?.tags?.map((t) => t.id) ?? [],
+        categoryId: editingArticle?.category_id ?? undefined,
       };
 
-      if (editingBlog)
-        return blogService.update(
-          { ...payload, id: editingBlog.id },
+      if (editingArticle)
+        return articleService.update(
+          { ...payload, id: editingArticle.id },
           accessToken,
         );
-      return blogService.create(payload, accessToken);
+      return articleService.create(payload, accessToken);
     },
-    onSuccess: (savedBlog, status) => {
-      queryClient.invalidateQueries({ queryKey: ["admin-blogs"] });
-      toast.success(status === "published" ? "Blog published" : "Draft saved");
-      setEditingBlogId(savedBlog.id);
+    onSuccess: (savedArticle, status) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
+      toast.success(status === "published" ? "Article published" : "Draft saved");
+      setEditingArticleId(savedArticle.id);
     },
     onError: (error) =>
       toast.error(error instanceof Error ? error.message : "Failed to save"),
@@ -181,18 +181,18 @@ export function AdminBlogStudio({
 
   useEffect(() => {
     registerAdminStudioControls({
-      saveDraft: () => saveBlogMutation.mutate("draft"),
-      savePublished: () => saveBlogMutation.mutate("published"),
+      saveDraft: () => saveArticleMutation.mutate("draft"),
+      savePublished: () => saveArticleMutation.mutate("published"),
       togglePreview: () => setIsPreviewMode((p) => !p),
     });
-  }, [saveBlogMutation]);
+  }, [saveArticleMutation]);
 
   useEffect(() => {
     setAdminStudioState({
-      isSaving: saveBlogMutation.isPending,
+      isSaving: saveArticleMutation.isPending,
       isPreviewMode,
     });
-  }, [saveBlogMutation.isPending, isPreviewMode]);
+  }, [saveArticleMutation.isPending, isPreviewMode]);
 
   return (
         <div className="mt-8 flex w-full justify-center">
@@ -253,7 +253,7 @@ export function AdminBlogStudio({
                 />
 
                 <div className="pt-8">
-                  <BlogEditor value={content} onChange={setContent} />
+                  <ArticleEditor value={content} onChange={setContent} />
                 </div>
               </div>
             </div>

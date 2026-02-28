@@ -2,7 +2,7 @@ import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
 
 type CommentRow = {
   id: string;
-  blog_id: string;
+  article_id: string;
   user_id: string;
   parent_id: string | null;
   content: string;
@@ -29,16 +29,16 @@ function nest(rows: CommentRow[]) {
   return roots;
 }
 
-export async function listCommentsByBlogModel(
+export async function listCommentsByArticleModel(
   supabase: SupabaseClient,
-  blogId: string,
+  articleId: string,
 ) {
   const { data, error } = await supabase
     .from("comments")
     .select(
-      "id,blog_id,user_id,parent_id,content,created_at,user:superadmins(id,username)",
+      "id,article_id,user_id,parent_id,content,created_at,user:superadmins(id,username)",
     )
-    .eq("blog_id", blogId)
+    .eq("article_id", articleId)
     .order("created_at", { ascending: true });
 
   if (error) {
@@ -51,7 +51,7 @@ export async function listCommentsByBlogModel(
 export async function createCommentModel(
   supabase: SupabaseClient,
   payload: {
-    blogId: string;
+    articleId: string;
     userId: string;
     content: string;
     parentId?: string;
@@ -60,13 +60,13 @@ export async function createCommentModel(
   const { data, error } = await supabase
     .from("comments")
     .insert({
-      blog_id: payload.blogId,
+      article_id: payload.articleId,
       user_id: payload.userId,
       parent_id: payload.parentId ?? null,
       content: payload.content,
     })
     .select(
-      "id,blog_id,user_id,parent_id,content,created_at,user:superadmins(id,username)",
+      "id,article_id,user_id,parent_id,content,created_at,user:superadmins(id,username)",
     )
     .single();
 

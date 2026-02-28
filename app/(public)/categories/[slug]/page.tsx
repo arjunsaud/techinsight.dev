@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
-import { BlogList } from "@/components/blog/blog-list";
-import { getCategories, getPublishedBlogs } from "@/lib/server-data";
+import { ArticleList } from "@/components/article/article-list";
+import { getCategories, getPublishedArticles } from "@/lib/server-data";
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
@@ -9,9 +9,9 @@ interface CategoryPageProps {
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params;
-  const [categories, blogs] = await Promise.all([
+  const [categories, articles] = await Promise.all([
     getCategories(),
-    getPublishedBlogs(),
+    getPublishedArticles(),
   ]);
 
   const category = categories.find((item) => item.slug === slug);
@@ -20,8 +20,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
 
-  const filteredBlogs = blogs.filter(
-    (blog) => blog.category?.slug === category.slug,
+  const filteredArticles = articles.filter(
+    (article) => article.category?.slug === category.slug,
   );
 
   return (
@@ -35,7 +35,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             Category: {category.name}
           </h1>
         </header>
-        <BlogList blogs={filteredBlogs} />
+        <ArticleList articles={filteredArticles} />
       </section>
     </div>
   );

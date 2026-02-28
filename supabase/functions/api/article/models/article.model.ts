@@ -1,8 +1,8 @@
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
 
 import type {
-  BlogListFilters,
-  BlogPayload,
+  ArticleListFilters,
+  ArticlePayload,
   CloudinarySettings,
 } from "../types.ts";
 
@@ -13,8 +13,8 @@ const CLOUDINARY_SETTING_KEYS = [
   "CLOUDINARY_UPLOAD_PRESET",
 ] as const;
 
-const BLOG_SELECT =
-  "id,title,slug,content,excerpt,category_id,featured_image_url,status,author_id,published_at,created_at,updated_at,seo_title,meta_description,keywords,category:categories(id,name,slug,created_at),tags:blog_tags(tag:tags(id,name,slug,created_at))";
+const ARTICLE_SELECT =
+  "id,title,slug,content,excerpt,category_id,featured_image_url,status,author_id,published_at,created_at,updated_at,seo_title,meta_description,keywords,category:categories(id,name,slug,created_at),tags:article_tags(tag:tags(id,name,slug,created_at))";
 
 export function slugify(input: string) {
   return input
@@ -64,16 +64,16 @@ export async function getCloudinarySettingsModel(
   return settings as CloudinarySettings;
 }
 
-export async function listBlogsModel(
+export async function listArticlesModel(
   supabase: SupabaseClient,
-  filters: BlogListFilters,
+  filters: ArticleListFilters,
 ) {
   const from = (filters.page - 1) * filters.pageSize;
   const to = from + filters.pageSize - 1;
 
   let query = supabase
-    .from("blogs")
-    .select(BLOG_SELECT, { count: "exact" })
+    .from("articles")
+    .select(ARTICLE_SELECT, { count: "exact" })
     .order("published_at", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
     .range(from, to);
@@ -109,11 +109,11 @@ export async function listBlogsModel(
   };
 }
 
-export async function getBlogByIdOrSlugModel(
+export async function getArticleByIdOrSlugModel(
   supabase: SupabaseClient,
   idOrSlug: string,
 ) {
-  let query = supabase.from("blogs").select(BLOG_SELECT).maybeSingle();
+  let query = supabase.from("articles").select(ARTICLE_SELECT).maybeSingle();
 
   if (isUuid(idOrSlug)) {
     query = query.eq("id", idOrSlug);
@@ -140,15 +140,15 @@ export async function getBlogByIdOrSlugModel(
   };
 }
 
-export async function createBlogModel(
+export async function createArticleModel(
   supabase: SupabaseClient,
   adminId: string,
-  payload: BlogPayload,
+  payload: ArticlePayload,
 ) {
   const slug = payload.slug ? slugify(payload.slug) : slugify(payload.title);
 
   const { data, error } = await supabase
-    .from("blogs")
+    .from("articles")
     .insert({
       title: payload.title,
       slug,
@@ -174,9 +174,9 @@ export async function createBlogModel(
   }
 
   if (payload.tagIds && payload.tagIds.length > 0) {
-    const { error: tagError } = await supabase.from("blog_tags").insert(
+    const { error: tagError } = await supabase.from("article_tags").insert(
       payload.tagIds.map((tagId) => ({
-        blog_id: data.id,
+        article_id: data.id,
         tag_id: tagId,
       })),
     );
@@ -194,10 +194,10 @@ export async function createBlogModel(
   };
 }
 
-export async function updateBlogModel(
+export async function updateArticleModel(
   supabase: SupabaseClient,
-  blogId: string,
-  payload: Partial<BlogPayload>,
+  articleId: string,
+  payload: Partial<ArticlePayload>,
 ) {
   const updates: Record<string, unknown> = {};
 
@@ -223,9 +223,9 @@ export async function updateBlogModel(
   if (payload.keywords !== undefined) updates.keywords = payload.keywords;
 
   const { data, error } = await supabase
-    .from("blogs")
+    .from("articles")
     .update(updates)
-    .eq("id", blogId)
+    .eq("id", articleId)
     .select(
       "id,title,slug,content,excerpt,category_id,featured_image_url,status,author_id,published_at,created_at,updated_at,seo_title,meta_description,keywords",
     )
@@ -241,19 +241,19 @@ export async function updateBlogModel(
 
   if (payload.tagIds) {
     const { error: deleteTagsError } = await supabase
-      .from("blog_tags")
+      .from("article_tags")
       .delete()
-      .eq("blog_id", blogId);
+      .eq("article_id", articleId);
     if (deleteTagsError) {
       throw new Error(deleteTagsError.message);
     }
 
     if (payload.tagIds.length > 0) {
       const { error: insertTagsError } = await supabase
-        .from("blog_tags")
+        .from("article_tags")
         .insert(
           payload.tagIds.map((tagId) => ({
-            blog_id: blogId,
+            article_id: articleId,
             tag_id: tagId,
           })),
         );
@@ -272,11 +272,14 @@ export async function updateBlogModel(
   };
 }
 
-export async function deleteBlogModel(
+export async function deleteArticleModel(
   supabase: SupabaseClient,
-  blogId: string,
+  articleId: string,
 ) {
-  const { error } = await supabase.from("blogs").delete().eq("id", blogId);
+  const { error } = await supabase
+    .from("articles")
+    .delete()
+    .eq("id", articleId);
   if (error) {
     throw new Error(error.message);
   }

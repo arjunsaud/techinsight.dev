@@ -30,10 +30,10 @@ export async function requireAdmin(nextPath: Route = "/admin/login") {
   try {
     const me = await adminService.getMe(session.access_token);
     if (me.role !== "admin" && me.role !== "superadmin") {
-      redirect("/blogs");
+      redirect("/articles");
     }
   } catch {
-    redirect("/blogs");
+    redirect("/articles");
   }
 
   return session.user;
@@ -52,10 +52,10 @@ export async function requireSuperAdmin(nextPath: Route = "/admin/login") {
   try {
     const me = await adminService.getMe(session.access_token);
     if (me.role !== "superadmin") {
-      redirect("/blogs");
+      redirect("/articles");
     }
   } catch {
-    redirect("/blogs");
+    redirect("/articles");
   }
 
   return session.user;

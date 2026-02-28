@@ -6,7 +6,7 @@ export function SiteHeader() {
       <div className="mx-auto flex h-14 max-w-[1440px] items-center justify-between px-4 sm:px-6">
         {/* Wordmark */}
         <Link
-          href="/blogs"
+          href="/articles"
           className="shrink-0 text-xl font-bold tracking-tight text-gray-900 sm:text-2xl"
           style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
         >
@@ -16,10 +16,10 @@ export function SiteHeader() {
 
         {/* Center nav — hidden on mobile */}
         <nav className="hidden items-center gap-6 text-sm text-gray-500 md:flex">
-          <Link href="/blogs" className="transition-colors hover:text-gray-900">
+          <Link href="/articles" className="transition-colors hover:text-gray-900">
             Home
           </Link>
-          <Link href="/blogs" className="transition-colors hover:text-gray-900">
+          <Link href="/articles" className="transition-colors hover:text-gray-900">
             Stories
           </Link>
         </nav>

@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   const payload = await request.json();
   const env = getPublicEnv();
 
-  const response = await fetch(`${env.supabaseUrl}/functions/v1/api/blog/upload-url`, {
+  const response = await fetch(`${env.supabaseUrl}/functions/v1/api/article/upload-url`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

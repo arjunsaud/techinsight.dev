@@ -16,7 +16,7 @@ const mono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "TechInsight",
-  description: "Admin-managed blog platform built with Next.js and Supabase",
+  description: "Admin-managed article platform built with Next.js and Supabase",
 };
 
 export default function RootLayout({

@@ -18,46 +18,46 @@ export async function getUserRoleModel(
 
 export async function getDashboardModel(supabase: SupabaseClient) {
   const [
-    blogs,
+    articles,
     users,
     comments,
     published,
     drafts,
-    recentBlogs,
+    recentArticles,
     recentComments,
   ] = await Promise.all([
-    supabase.from("blogs").select("id", { count: "exact", head: true }),
+    supabase.from("articles").select("id", { count: "exact", head: true }),
     supabase.from("superadmins").select("id", { count: "exact", head: true }),
     supabase.from("comments").select("id", { count: "exact", head: true }),
-    supabase.from("blogs").select("id", { count: "exact", head: true }).eq(
+    supabase.from("articles").select("id", { count: "exact", head: true }).eq(
       "status",
       "published",
     ),
-    supabase.from("blogs").select("id", { count: "exact", head: true }).eq(
+    supabase.from("articles").select("id", { count: "exact", head: true }).eq(
       "status",
       "draft",
     ),
     supabase
-      .from("blogs")
+      .from("articles")
       .select("id,title,slug,status,created_at,published_at")
       .order("created_at", { ascending: false })
       .limit(5),
     supabase
       .from("comments")
-      .select("id,content,created_at,blog:blogs(title),user:superadmins(username)")
+      .select("id,content,created_at,article:articles(title),user:superadmins(username)")
       .order("created_at", { ascending: false })
       .limit(5),
   ]);
 
   return {
     stats: {
-      totalBlogs: blogs.count ?? 0,
+      totalArticles: articles.count ?? 0,
       totalUsers: users.count ?? 0,
       totalComments: comments.count ?? 0,
-      publishedBlogs: published.count ?? 0,
-      draftBlogs: drafts.count ?? 0,
+      publishedArticles: published.count ?? 0,
+      draftArticles: drafts.count ?? 0,
     },
-    recentBlogs: recentBlogs.data ?? [],
+    recentArticles: recentArticles.data ?? [],
     recentComments: recentComments.data ?? [],
   };
 }
@@ -79,7 +79,7 @@ export async function listUsersModel(supabase: SupabaseClient) {
 export async function listCommentsModel(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("comments")
-    .select("id,content,created_at,user:superadmins(username),blog:blogs(title)")
+    .select("id,content,created_at,user:superadmins(username),article:articles(title)")
     .order("created_at", { ascending: false })
     .limit(200);
 

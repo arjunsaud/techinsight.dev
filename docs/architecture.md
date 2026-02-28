@@ -7,7 +7,7 @@
   - `app/(auth)` for login/register pages
   - `app/admin` for protected admin management views
 - Reusable compound components:
-  - Blog: `BlogCard`, `BlogList`, `HashnodeStudio`, `AdminBlogsList`,
+  - Article: `ArticleCard`, `ArticleList`, `HashnodeStudio`, `AdminArticlesList`,
     `AdminCategoriesManager`, `AdminTagsManager`
   - Comment: `CommentList`, `CommentForm`
 - Data layer:
@@ -19,13 +19,13 @@
 
 - Supabase Edge Functions:
   - `api`: single deployed function containing modular MVC handlers for:
-    blog CRUD/taxonomy/upload, comments, and admin auth/dashboard/users
+    article CRUD/taxonomy/upload, comments, and admin auth/dashboard/users
 - Routing and HTTP layer:
   - One Hono app (`supabase/functions/api/app.ts`) with central CORS and
     error handling
   - Route modules (`api/*/routes/*.routes.ts`) map endpoints to controllers
   - Routes are prefixed with function name (`api`) per Supabase routing docs
-    (for example `/api/blog/:idOrSlug`)
+    (for example `/api/article/:idOrSlug`)
 - MVC module layout inside `supabase/functions/api`:
   - `routes` -> request routing
   - `controllers` -> request validation + auth orchestration
@@ -38,8 +38,8 @@
 ## Data Model
 
 - `superadmins`: profile + role mapping for auth users (`superadmin`, `admin`, `user`)
-- `blogs`: article content with status and category
-- `categories`, `tags`, `blog_tags`
+- `articles`: article content with status and category
+- `categories`, `tags`, `article_tags`
 - `comments`: nested comments with `parent_id`
 - `app_settings`: key/value runtime configuration (includes R2 keys/URLs)
 

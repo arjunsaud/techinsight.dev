@@ -1,9 +1,9 @@
-import { AdminBlogsList } from "@/components/blog/admin-blogs-list";
+import { AdminArticlesList } from "@/components/article/admin-articles-list";
 import { requireAdmin } from "@/lib/supabase/guards";
 import { createClient } from "@/lib/supabase/server";
-import { blogService } from "@/services/blog-service";
+import { articleService } from "@/services/article-service";
 
-export default async function AdminAllBlogsPage() {
+export default async function AdminAllArticlesPage() {
   await requireAdmin();
 
   const supabase = await createClient();
@@ -13,8 +13,8 @@ export default async function AdminAllBlogsPage() {
 
   const accessToken = session?.access_token ?? "";
 
-  const blogsResponse = accessToken
-    ? await blogService.listAdmin(
+  const articlesResponse = accessToken
+    ? await articleService.listAdmin(
         {
           page: 1,
           pageSize: 100,
@@ -26,14 +26,14 @@ export default async function AdminAllBlogsPage() {
   return (
     <section className="space-y-6">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight">All Blogs</h1>
+        <h1 className="text-3xl font-bold tracking-tight">All Articles</h1>
         <p className="text-sm text-muted-foreground">
-          Manage and delete blogs here. Use Edit to open the editor page.
+          Manage and delete articles here. Use Edit to open the editor page.
         </p>
       </header>
-      <AdminBlogsList
+      <AdminArticlesList
         accessToken={accessToken}
-        initialBlogs={blogsResponse.data}
+        initialArticles={articlesResponse.data}
       />
     </section>
   );

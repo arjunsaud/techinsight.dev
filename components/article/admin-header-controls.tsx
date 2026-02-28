@@ -2,10 +2,10 @@
 
 import { Eye, EyeOff, Loader2, Save, Send } from "lucide-react";
 
-import { useAdminStudioControls } from "@/components/blog/admin-studio-context";
+import { useAdminStudioControls } from "@/components/article/admin-studio-context";
 import { Button } from "@/components/ui/button";
 
-export function BlogHeaderControls() {
+export function ArticleHeaderControls() {
   const { isSaving, isPreviewMode, saveDraft, savePublished, togglePreview } =
     useAdminStudioControls();
 

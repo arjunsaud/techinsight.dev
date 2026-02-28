@@ -56,7 +56,7 @@ export function AdminLoginForm() {
       }
 
       toast.success("Admin login successful");
-      router.push("/admin/blogs");
+      router.push("/admin/articles");
       router.refresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to login");

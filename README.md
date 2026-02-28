@@ -1,4 +1,4 @@
-# Vitafy Admin Blog Platform
+# Vitafy Admin Article Platform
 
 A Next.js + Supabase starter implementation based on the provided SRS (v1.1,
 20-Feb-2026).
@@ -11,8 +11,8 @@ A Next.js + Supabase starter implementation based on the provided SRS (v1.1,
 - Hono (routing layer inside Supabase Edge Functions)
 - React Query for API state
 - React Hook Form + Zod for forms
-- Editor.js for block-based blog editor
-- R2 integration entrypoint for blog image uploads
+- Editor.js for block-based article editor
+- R2 integration entrypoint for article image uploads
 
 ## Quick Start
 
@@ -68,7 +68,7 @@ pnpm dev
 - `supabase/migrations/`: SQL migrations
 - `supabase/functions/`: Edge Function handlers
   - Single function entrypoint: `api/index.ts`
-  - Modular MVC under `api/`: `blog/`, `comment/`, `admin/`
+  - Modular MVC under `api/`: `article/`, `comment/`, `admin/`
 - `docs/`: architecture + requirement mapping
 
 ## Default Bootstrap Account
@@ -88,7 +88,7 @@ Change these values before any non-local environment.
 - R2 settings are loaded from `public.app_settings` (`R2_ACCOUNT_ID`,
   `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_PUBLIC_URL`).
 - Hono routes follow Supabase function-prefix routing (e.g.
-  `/api/blog/:idOrSlug`, `/api/comment/:commentId`).
-- `api/blog/upload-url` currently returns an upload draft (`objectKey`,
+  `/api/article/:idOrSlug`, `/api/comment/:commentId`).
+- `api/article/upload-url` currently returns an upload draft (`objectKey`,
   `publicUrl`) and is designed to be extended with presigned PUT support for R2.
 - Role checks are enforced in both RLS and Edge Function handlers.

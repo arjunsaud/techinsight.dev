@@ -5,23 +5,23 @@ import {
   createAuthClient,
   createPublicClient,
 } from "../../../shared/client.ts";
-import type { BlogPayload } from "../types.ts";
+import type { ArticlePayload } from "../types.ts";
 import {
-  createBlogModel,
+  createArticleModel,
   createCategoryModel,
   createTagModel,
   deleteCategoryModel,
-  deleteBlogModel,
+  deleteArticleModel,
   deleteTagModel,
-  getBlogByIdOrSlugModel,
+  getArticleByIdOrSlugModel,
   getCloudinarySettingsModel,
-  listBlogsModel,
+  listArticlesModel,
   listCategoriesModel,
   listTagsModel,
-  updateBlogModel,
+  updateArticleModel,
   updateCategoryModel,
   updateTagModel,
-} from "../models/blog.model.ts";
+} from "../models/article.model.ts";
 
 function toPositiveInt(
   value: string | undefined,
@@ -39,7 +39,7 @@ function toPositiveInt(
   return integer;
 }
 
-export async function listBlogs(c: Context) {
+export async function listArticles(c: Context) {
   const maybeUser = await getOptionalAuth(c.req.raw);
   const isAdmin =
     maybeUser?.role === "admin" || maybeUser?.role === "superadmin";
@@ -47,7 +47,7 @@ export async function listBlogs(c: Context) {
     ? createAuthClient(maybeUser.accessToken)
     : createPublicClient();
 
-  const result = await listBlogsModel(supabase, {
+  const result = await listArticlesModel(supabase, {
     page: toPositiveInt(c.req.query("page"), 1),
     pageSize: toPositiveInt(c.req.query("pageSize"), 10, 50),
     status: c.req.query("status") ?? null,
@@ -58,57 +58,57 @@ export async function listBlogs(c: Context) {
   return c.json(result);
 }
 
-export async function getBlog(c: Context) {
+export async function getArticle(c: Context) {
   const idOrSlug = c.req.param("idOrSlug");
   const maybeUser = await getOptionalAuth(c.req.raw);
   const supabase = maybeUser
     ? createAuthClient(maybeUser.accessToken)
     : createPublicClient();
 
-  const data = await getBlogByIdOrSlugModel(supabase, idOrSlug);
+  const data = await getArticleByIdOrSlugModel(supabase, idOrSlug);
 
   if (!data) {
-    return c.json({ error: "Blog not found" }, 404);
+    return c.json({ error: "Article not found" }, 404);
   }
 
   return c.json(data);
 }
 
-export async function createBlog(c: Context) {
+export async function createArticle(c: Context) {
   const admin = await requireAdmin(c.req.raw);
   const supabase = createAuthClient(admin.accessToken);
-  const payload = (await c.req.json()) as BlogPayload;
+  const payload = (await c.req.json()) as ArticlePayload;
 
   if (!payload.title || !payload.content) {
     return c.json({ error: "title and content are required" }, 422);
   }
 
-  const data = await createBlogModel(supabase, admin.id, payload);
+  const data = await createArticleModel(supabase, admin.id, payload);
   return c.json(data, 201);
 }
 
-export async function updateBlog(c: Context) {
+export async function updateArticle(c: Context) {
   const admin = await requireAdmin(c.req.raw);
   const supabase = createAuthClient(admin.accessToken);
-  const payload = (await c.req.json()) as Partial<BlogPayload>;
+  const payload = (await c.req.json()) as Partial<ArticlePayload>;
 
-  const data = await updateBlogModel(
+  const data = await updateArticleModel(
     supabase,
     c.req.param("idOrSlug"),
     payload,
   );
   if (!data) {
-    return c.json({ error: "Blog not found" }, 404);
+    return c.json({ error: "Article not found" }, 404);
   }
 
   return c.json(data);
 }
 
-export async function deleteBlog(c: Context) {
+export async function deleteArticle(c: Context) {
   const admin = await requireAdmin(c.req.raw);
   const supabase = createAuthClient(admin.accessToken);
 
-  await deleteBlogModel(supabase, c.req.param("idOrSlug"));
+  await deleteArticleModel(supabase, c.req.param("idOrSlug"));
   return c.body(null, 204);
 }
 
@@ -214,7 +214,7 @@ export async function createUploadDraft(c: Context) {
 
   const settings = await getCloudinarySettingsModel(supabase);
   const timestamp = Math.round(new Date().getTime() / 1000);
-  const folder = "blogs";
+  const folder = "articles";
 
   // Parameters to sign
   const params: Record<string, string | number> = {

@@ -1,23 +1,23 @@
-import { AdminBlogStudio } from "@/components/blog/admin-blog-studio";
-import { BlogSeoSettings } from "@/components/blog/admin-seo-settings";
-import { AdminStudioProvider } from "@/components/blog/admin-studio-context";
-import { BlogHeaderControls } from "@/components/blog/admin-header-controls";
+import { AdminArticleStudio } from "@/components/article/admin-article-studio";
+import { ArticleSeoSettings } from "@/components/article/admin-seo-settings";
+import { AdminStudioProvider } from "@/components/article/admin-studio-context";
+import { ArticleHeaderControls } from "@/components/article/admin-header-controls";
 import { requireAdmin } from "@/lib/supabase/guards";
 import { createClient } from "@/lib/supabase/server";
-import { blogService } from "@/services/blog-service";
+import { articleService } from "@/services/article-service";
 
-interface AdminBlogsPageProps {
+interface AdminArticlesPageProps {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function AdminBlogsPage({
+export default async function AdminArticlesPage({
   searchParams,
-}: AdminBlogsPageProps) {
+}: AdminArticlesPageProps) {
   await requireAdmin();
 
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const editParam = resolvedSearchParams?.edit;
-  const editBlogId = typeof editParam === "string" ? editParam : null;
+  const editArticleId = typeof editParam === "string" ? editParam : null;
 
   const supabase = await createClient();
   const {
@@ -26,8 +26,8 @@ export default async function AdminBlogsPage({
 
   const accessToken = session?.access_token ?? "";
 
-  const blogsResponse = accessToken
-    ? await blogService.listAdmin(
+  const articlesResponse = accessToken
+    ? await articleService.listAdmin(
         {
           page: 1,
           pageSize: 100,
@@ -47,15 +47,15 @@ export default async function AdminBlogsPage({
             </p>
           </header>
           <div className="flex items-center gap-2">
-            <BlogHeaderControls />
-            <BlogSeoSettings accessToken={accessToken} blogId={editBlogId} />
+            <ArticleHeaderControls />
+            <ArticleSeoSettings accessToken={accessToken} articleId={editArticleId} />
           </div>
         </div>
 
-        <AdminBlogStudio
+        <AdminArticleStudio
           accessToken={accessToken}
-          initialBlogs={blogsResponse.data}
-          initialEditBlogId={editBlogId}
+          initialArticles={articlesResponse.data}
+          initialEditArticleId={editArticleId}
         />
       </section>
     </AdminStudioProvider>

@@ -5,26 +5,26 @@ import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import type { Blog } from "@/types/domain";
-import { blogService } from "@/services/blog-service";
+import type { Article } from "@/types/domain";
+import { articleService } from "@/services/article-service";
 import { formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-interface AdminBlogsListProps {
+interface AdminArticlesListProps {
   accessToken: string;
-  initialBlogs: Blog[];
+  initialArticles: Article[];
 }
 
-export function AdminBlogsList({ accessToken, initialBlogs }: AdminBlogsListProps) {
+export function AdminArticlesList({ accessToken, initialArticles }: AdminArticlesListProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const blogsQuery = useQuery({
-    queryKey: ["admin-blogs"],
+  const articlesQuery = useQuery({
+    queryKey: ["admin-articles"],
     queryFn: () =>
-      blogService.listAdmin(
+      articleService.listAdmin(
         {
           page: 1,
           pageSize: 100,
@@ -32,36 +32,36 @@ export function AdminBlogsList({ accessToken, initialBlogs }: AdminBlogsListProp
         accessToken,
       ),
     initialData: {
-      data: initialBlogs,
+      data: initialArticles,
       page: 1,
       pageSize: 100,
-      total: initialBlogs.length,
+      total: initialArticles.length,
     },
     enabled: Boolean(accessToken),
   });
 
-  const blogs = blogsQuery.data?.data ?? [];
+  const articles = articlesQuery.data?.data ?? [];
 
-  const deleteBlogMutation = useMutation({
-    mutationFn: async (blogId: string) => {
+  const deleteArticleMutation = useMutation({
+    mutationFn: async (articleId: string) => {
       if (!accessToken) {
         throw new Error("Missing admin session token.");
       }
-      return blogService.remove(blogId, accessToken);
+      return articleService.remove(articleId, accessToken);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-blogs"] });
-      toast.success("Blog deleted");
+      queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
+      toast.success("Article deleted");
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Failed to delete blog");
+      toast.error(error instanceof Error ? error.message : "Failed to delete article");
     },
   });
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>All Blogs</CardTitle>
+        <CardTitle>All Articles</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
@@ -74,25 +74,25 @@ export function AdminBlogsList({ accessToken, initialBlogs }: AdminBlogsListProp
             </TableRow>
           </TableHeader>
           <TableBody>
-            {blogs.length === 0 ? (
+            {articles.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="text-muted-foreground">
-                  No blogs found.
+                  No articles found.
                 </TableCell>
               </TableRow>
             ) : (
-              blogs.map((blog) => (
-                <TableRow key={blog.id}>
-                  <TableCell>{blog.title}</TableCell>
-                  <TableCell className="capitalize">{blog.status}</TableCell>
-                  <TableCell>{formatDate(blog.updated_at)}</TableCell>
+              articles.map((article) => (
+                <TableRow key={article.id}>
+                  <TableCell>{article.title}</TableCell>
+                  <TableCell className="capitalize">{article.status}</TableCell>
+                  <TableCell>{formatDate(article.updated_at)}</TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-2">
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => {
-                          router.push(`/admin/blogs?edit=${blog.id}`);
+                          router.push(`/admin/articles?edit=${article.id}`);
                         }}
                       >
                         Edit
@@ -101,13 +101,13 @@ export function AdminBlogsList({ accessToken, initialBlogs }: AdminBlogsListProp
                         size="sm"
                         variant="destructive"
                         onClick={() => {
-                          const ok = globalThis.confirm("Delete this blog?");
+                          const ok = globalThis.confirm("Delete this article?");
                           if (!ok) {
                             return;
                           }
-                          deleteBlogMutation.mutate(blog.id);
+                          deleteArticleMutation.mutate(article.id);
                         }}
-                        disabled={deleteBlogMutation.isPending}
+                        disabled={deleteArticleMutation.isPending}
                       >
                         Delete
                       </Button>

@@ -1,15 +1,15 @@
-import type { Blog } from "@/types/domain";
+import type { Article } from "@/types/domain";
 import type {
-  BlogFilterInput,
-  CreateBlogInput,
+  ArticleFilterInput,
+  CreateArticleInput,
   PaginatedResponse,
-  UpdateBlogInput,
+  UpdateArticleInput,
 } from "@/types/api";
 
 import { apiFetch } from "@/services/http";
 
-export const blogService = {
-  listPublished(filters: BlogFilterInput = {}) {
+export const articleService = {
+  listPublished(filters: ArticleFilterInput = {}) {
     const query = {
       query: filters.query,
       category: filters.category,
@@ -19,12 +19,12 @@ export const blogService = {
       status: "published" as const,
     };
 
-    return apiFetch<PaginatedResponse<Blog>>("blog", {
+    return apiFetch<PaginatedResponse<Article>>("article", {
       query,
     });
   },
 
-  listAdmin(filters: BlogFilterInput = {}, accessToken?: string) {
+  listAdmin(filters: ArticleFilterInput = {}, accessToken?: string) {
     const query = {
       query: filters.query,
       category: filters.category,
@@ -34,34 +34,34 @@ export const blogService = {
       status: filters.status,
     };
 
-    return apiFetch<PaginatedResponse<Blog>>("blog", {
+    return apiFetch<PaginatedResponse<Article>>("article", {
       query,
       accessToken,
     });
   },
 
   getBySlug(slug: string) {
-    return apiFetch<Blog>(`blog/${slug}`);
+    return apiFetch<Article>(`article/${slug}`);
   },
 
-  create(input: CreateBlogInput, accessToken: string) {
-    return apiFetch<Blog>("blog", {
+  create(input: CreateArticleInput, accessToken: string) {
+    return apiFetch<Article>("article", {
       method: "POST",
       body: input,
       accessToken,
     });
   },
 
-  update(input: UpdateBlogInput, accessToken: string) {
-    return apiFetch<Blog>(`blog/${input.id}`, {
+  update(input: UpdateArticleInput, accessToken: string) {
+    return apiFetch<Article>(`article/${input.id}`, {
       method: "PATCH",
       body: input,
       accessToken,
     });
   },
 
-  remove(blogId: string, accessToken: string) {
-    return apiFetch<void>(`blog/${blogId}`, {
+  remove(articleId: string, accessToken: string) {
+    return apiFetch<void>(`article/${articleId}`, {
       method: "DELETE",
       accessToken,
     });
@@ -76,7 +76,7 @@ export const blogService = {
       folder: string;
       uploadPreset?: string;
       uploadUrl: string;
-    }>("blog/upload-url", {
+    }>("article/upload-url", {
       method: "POST",
       body: { filename },
       accessToken,

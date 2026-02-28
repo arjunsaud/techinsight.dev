@@ -1,5 +1,5 @@
 export type Role = "superadmin" | "admin" | "user";
-export type BlogStatus = "draft" | "published";
+export type ArticleStatus = "draft" | "published";
 
 export interface AppUser {
   id: string;
@@ -23,7 +23,7 @@ export interface Tag {
   created_at: string;
 }
 
-export interface Blog {
+export interface Article {
   id: string;
   title: string;
   slug: string;
@@ -34,7 +34,7 @@ export interface Blog {
   excerpt: string | null;
   category_id: string | null;
   featured_image_url: string | null;
-  status: BlogStatus;
+  status: ArticleStatus;
   author_id: string;
   published_at: string | null;
   created_at: string;
@@ -45,7 +45,7 @@ export interface Blog {
 
 export interface Comment {
   id: string;
-  blog_id: string;
+  article_id: string;
   user_id: string;
   parent_id: string | null;
   content: string;
@@ -59,13 +59,13 @@ export interface AdminComment {
   content: string;
   created_at: string;
   user?: { id?: string; username?: string | null } | null;
-  blog?: { title?: string | null } | null;
+  article?: { title?: string | null } | null;
 }
 
 export interface DashboardStats {
-  totalBlogs: number;
+  totalArticles: number;
   totalUsers: number;
   totalComments: number;
-  publishedBlogs: number;
-  draftBlogs: number;
+  publishedArticles: number;
+  draftArticles: number;
 }

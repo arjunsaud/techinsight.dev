@@ -1,6 +1,6 @@
 import type {
   AdminComment,
-  Blog,
+  Article,
   Category,
   Comment,
   DashboardStats,
@@ -14,7 +14,7 @@ export interface PaginatedResponse<T> {
   total: number;
 }
 
-export interface BlogFilterInput {
+export interface ArticleFilterInput {
   query?: string;
   category?: string;
   tag?: string;
@@ -23,7 +23,7 @@ export interface BlogFilterInput {
   status?: "draft" | "published";
 }
 
-export interface CreateBlogInput {
+export interface CreateArticleInput {
   title: string;
   slug: string;
   content: string;
@@ -37,19 +37,19 @@ export interface CreateBlogInput {
   keywords?: string;
 }
 
-export interface UpdateBlogInput extends Partial<CreateBlogInput> {
+export interface UpdateArticleInput extends Partial<CreateArticleInput> {
   id: string;
 }
 
 export interface CreateCommentInput {
-  blogId: string;
+  articleId: string;
   content: string;
   parentId?: string;
 }
 
 export interface DashboardResponse {
   stats: DashboardStats;
-  recentBlogs: Blog[];
+  recentArticles: Article[];
   recentComments: AdminComment[];
 }
 

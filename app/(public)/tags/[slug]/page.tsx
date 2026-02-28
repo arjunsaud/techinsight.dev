@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
-import { BlogList } from "@/components/blog/blog-list";
-import { getPublishedBlogs, getTags } from "@/lib/server-data";
+import { ArticleList } from "@/components/article/article-list";
+import { getPublishedArticles, getTags } from "@/lib/server-data";
 
 interface TagPageProps {
   params: Promise<{ slug: string }>;
@@ -9,7 +9,7 @@ interface TagPageProps {
 
 export default async function TagPage({ params }: TagPageProps) {
   const { slug } = await params;
-  const [tags, blogs] = await Promise.all([getTags(), getPublishedBlogs()]);
+  const [tags, articles] = await Promise.all([getTags(), getPublishedArticles()]);
 
   const tag = tags.find((item) => item.slug === slug);
 
@@ -17,8 +17,8 @@ export default async function TagPage({ params }: TagPageProps) {
     notFound();
   }
 
-  const filteredBlogs = blogs.filter((blog) =>
-    blog.tags?.some((blogTag) => blogTag.slug === tag.slug),
+  const filteredArticles = articles.filter((article) =>
+    article.tags?.some((articleTag) => articleTag.slug === tag.slug),
   );
 
   return (
@@ -32,7 +32,7 @@ export default async function TagPage({ params }: TagPageProps) {
             Tag: {tag.name}
           </h1>
         </header>
-        <BlogList blogs={filteredBlogs} />
+        <ArticleList articles={filteredArticles} />
       </section>
     </div>
   );
