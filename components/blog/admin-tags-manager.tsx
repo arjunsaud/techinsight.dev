@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { toast } from "sonner";
 
 import type { Tag } from "@/types/domain";
@@ -19,8 +21,16 @@ interface AdminTagsManagerProps {
 
 export function AdminTagsManager({ accessToken, initialTags }: AdminTagsManagerProps) {
   const queryClient = useQueryClient();
-  const [newTagName, setNewTagName] = useState("");
   const [tagDrafts, setTagDrafts] = useState<Record<string, string>>({});
+
+  const schema = z.object({
+    name: z.string().min(1, "Tag name is required").max(80),
+  });
+  type FormValues = z.infer<typeof schema>;
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { name: "" },
+  });
 
   const tagsQuery = useQuery({
     queryKey: ["admin-tags"],
@@ -31,15 +41,15 @@ export function AdminTagsManager({ accessToken, initialTags }: AdminTagsManagerP
   const tags = tagsQuery.data ?? [];
 
   const createTagMutation = useMutation({
-    mutationFn: async (name: string) => {
+    mutationFn: async (values: FormValues) => {
       if (!accessToken) {
         throw new Error("Missing admin session token.");
       }
-      return adminService.createTag(name, accessToken);
+      return adminService.createTag(values.name, accessToken);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-tags"] });
-      setNewTagName("");
+      form.reset({ name: "" });
       toast.success("Tag created");
     },
     onError: (error) => {
@@ -84,14 +94,9 @@ export function AdminTagsManager({ accessToken, initialTags }: AdminTagsManagerP
     },
   });
 
-  const onCreateTag = () => {
-    const name = newTagName.trim();
-    if (!name) {
-      toast.error("Tag name is required");
-      return;
-    }
-    createTagMutation.mutate(name);
-  };
+  const onSubmit = form.handleSubmit((values) => {
+    createTagMutation.mutate(values);
+  });
 
   return (
     <Card>
@@ -99,16 +104,12 @@ export function AdminTagsManager({ accessToken, initialTags }: AdminTagsManagerP
         <CardTitle>Tags</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex gap-2">
-          <Input
-            value={newTagName}
-            onChange={(event) => setNewTagName(event.target.value)}
-            placeholder="New tag"
-          />
-          <Button onClick={onCreateTag} disabled={createTagMutation.isPending}>
-            Add
+        <form className="flex gap-2" onSubmit={onSubmit}>
+          <Input placeholder="New tag" {...form.register("name")} />
+          <Button type="submit" disabled={createTagMutation.isPending}>
+            {createTagMutation.isPending ? "Adding..." : "Add"}
           </Button>
-        </div>
+        </form>
 
         <Table>
           <TableHeader>
@@ -133,7 +134,7 @@ export function AdminTagsManager({ accessToken, initialTags }: AdminTagsManagerP
                       <Input
                         value={draft}
                         onChange={(event) =>
-                          setTagDrafts((prev) => ({
+                          setTagDrafts((prev: Record<string, string>) => ({
                             ...prev,
                             [tag.id]: event.target.value,
                           }))}

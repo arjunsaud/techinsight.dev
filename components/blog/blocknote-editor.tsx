@@ -22,7 +22,7 @@ export default function BlockNoteEditor({
   useEffect(() => {
     async function loadInitialContent() {
       if (isInitialRendering.current && value) {
-        const blocks = await editor.tryParseHTML(value);
+        const blocks = await editor.tryParseHTMLToBlocks(value);
         editor.replaceBlocks(editor.document, blocks);
         isInitialRendering.current = false;
       }
@@ -30,12 +30,15 @@ export default function BlockNoteEditor({
     loadInitialContent();
   }, [editor, value]);
 
+  const debounceRef = useRef<number | null>(null);
   const handleChange = () => {
-    const pushChanges = async () => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    debounceRef.current = window.setTimeout(async () => {
       const html = await editor.blocksToHTMLLossy(editor.document);
       onChange(html);
-    };
-    pushChanges();
+    }, 200);
   };
 
   return (

@@ -1,5 +1,7 @@
 import { AdminBlogStudio } from "@/components/blog/admin-blog-studio";
-import { Button } from "@/components/ui/button";
+import { BlogSeoSettings } from "@/components/blog/admin-seo-settings";
+import { AdminStudioProvider } from "@/components/blog/admin-studio-context";
+import { BlogHeaderControls } from "@/components/blog/admin-header-controls";
 import { requireAdmin } from "@/lib/supabase/guards";
 import { createClient } from "@/lib/supabase/server";
 import { blogService } from "@/services/blog-service";
@@ -35,27 +37,27 @@ export default async function AdminBlogsPage({
     : { data: [], page: 1, pageSize: 100, total: 0 };
 
   return (
-    <section className="space-y-6">
-      <div className="flex items-center justify-between">
-        <header>
-          <h1 className="text-3xl font-bold tracking-tight">Write Blogs</h1>
-          <p className="text-sm text-muted-foreground">
-            Write and publish blogs here. Use Edit to open the editor page.
-          </p>
-        </header>
-        <div>
-          <Button>Save</Button>
-          <Button>Publish</Button>
-          <Button>Preview</Button>
-          <Button>Settings</Button>
+    <AdminStudioProvider>
+      <section className="space-y-6">
+        <div className="flex items-center justify-between">
+          <header>
+            <p className="text-2xl font-bold tracking-tight">Write Articles</p>
+            <p className="text-sm text-muted-foreground">
+              Write articles here
+            </p>
+          </header>
+          <div className="flex items-center gap-2">
+            <BlogHeaderControls />
+            <BlogSeoSettings accessToken={accessToken} blogId={editBlogId} />
+          </div>
         </div>
-      </div>
 
-      <AdminBlogStudio
-        accessToken={accessToken}
-        initialBlogs={blogsResponse.data}
-        initialEditBlogId={editBlogId}
-      />
-    </section>
+        <AdminBlogStudio
+          accessToken={accessToken}
+          initialBlogs={blogsResponse.data}
+          initialEditBlogId={editBlogId}
+        />
+      </section>
+    </AdminStudioProvider>
   );
 }

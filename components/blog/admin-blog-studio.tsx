@@ -3,16 +3,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2, Save, Send } from "lucide-react";
+import {} from "lucide-react";
 
 import type { Blog } from "@/types/domain";
 import { blogService } from "@/services/blog-service";
 import { BlogEditor } from "@/components/blog/editor";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { CoverImageUploader } from "./cover-image-uploader";
+import {
+  registerAdminStudioControls,
+  setAdminStudioState,
+} from "@/components/blog/admin-studio-context";
 
 interface HashnodeStudioProps {
   accessToken: string;
@@ -179,11 +179,24 @@ export function AdminBlogStudio({
       toast.error(error instanceof Error ? error.message : "Failed to save"),
   });
 
+  useEffect(() => {
+    registerAdminStudioControls({
+      saveDraft: () => saveBlogMutation.mutate("draft"),
+      savePublished: () => saveBlogMutation.mutate("published"),
+      togglePreview: () => setIsPreviewMode((p) => !p),
+    });
+  }, [saveBlogMutation]);
+
+  useEffect(() => {
+    setAdminStudioState({
+      isSaving: saveBlogMutation.isPending,
+      isPreviewMode,
+    });
+  }, [saveBlogMutation.isPending, isPreviewMode]);
+
   return (
-    <Card>
-      <CardContent className="flex flex-col mt-8 gap-12 lg:flex-row">
-        {/* Editor Area */}
-        <div className="flex-1 lg:w-[70%]">
+        <div className="mt-8 flex w-full justify-center">
+          <div className="w-full max-w-3xl px-4">
           {isPreviewMode ? (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
               {featuredImageUrl && (
@@ -214,7 +227,7 @@ export function AdminBlogStudio({
               />
             </div>
           ) : (
-            <>
+            <div>
               <CoverImageUploader
                 url={featuredImageUrl}
                 onChange={setFeaturedImageUrl}
@@ -243,118 +256,9 @@ export function AdminBlogStudio({
                   <BlogEditor value={content} onChange={setContent} />
                 </div>
               </div>
-            </>
+            </div>
           )}
+          </div>
         </div>
-        {/* Sidebar */}
-        <aside className="lg:w-[30%] space-y-6">
-          <Card className="border-none shadow-none bg-muted/30">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button
-                className="w-full gap-2 bg-foreground text-background hover:bg-foreground/90"
-                onClick={() => saveBlogMutation.mutate("draft")}
-                disabled={saveBlogMutation.isPending}
-              >
-                {saveBlogMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4" />
-                )}
-                {saveBlogMutation.isPending ? "Saving..." : "Save Draft"}
-              </Button>
-              <Button
-                className="w-full gap-2"
-                onClick={() => setIsPreviewMode(!isPreviewMode)}
-                variant="secondary"
-              >
-                {isPreviewMode ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-                {isPreviewMode ? "Back to Edit" : "Preview"}
-              </Button>
-              {!isPreviewMode && (
-                <Button
-                  className="w-full gap-2"
-                  variant="outline"
-                  onClick={() => saveBlogMutation.mutate("published")}
-                  disabled={saveBlogMutation.isPending}
-                >
-                  <Send className="h-4 w-4" />
-                  Publish
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-none bg-muted/30">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Analysis
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 text-xs">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Words</span>
-                <span className="font-bold">{analysis.words}</span>
-              </div>
-              <div className="flex justify-between border-t border-border/50 pt-3">
-                <span className="text-muted-foreground">Read Time</span>
-                <span className="font-bold">{analysis.readingTime} min</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-none bg-muted/30">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                SEO Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase text-muted-foreground/70">
-                  Slug
-                </label>
-                <Input
-                  value={slug}
-                  onChange={(e) => {
-                    setSlug(makeSlug(e.target.value));
-                    setIsSlugManual(true);
-                  }}
-                  className="h-8 bg-background/50 text-xs"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase text-muted-foreground/70">
-                  SEO Title
-                </label>
-                <Input
-                  value={seoTitle}
-                  onChange={(e) => setSeoTitle(e.target.value)}
-                  className="h-8 bg-background/50 text-xs"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold uppercase text-muted-foreground/70">
-                  Meta Desc
-                </label>
-                <Textarea
-                  value={metaDescription}
-                  onChange={(e) => setMetaDescription(e.target.value)}
-                  className="h-20 bg-background/50 text-xs"
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </aside>
-      </CardContent>
-    </Card>
   );
 }

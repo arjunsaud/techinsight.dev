@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { toast } from "sonner";
 
 import type { Category } from "@/types/domain";
@@ -22,8 +24,16 @@ export function AdminCategoriesManager({
   initialCategories,
 }: AdminCategoriesManagerProps) {
   const queryClient = useQueryClient();
-  const [newCategoryName, setNewCategoryName] = useState("");
   const [categoryDrafts, setCategoryDrafts] = useState<Record<string, string>>({});
+
+  const schema = z.object({
+    name: z.string().min(1, "Category name is required").max(80),
+  });
+  type FormValues = z.infer<typeof schema>;
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { name: "" },
+  });
 
   const categoriesQuery = useQuery({
     queryKey: ["admin-categories"],
@@ -34,15 +44,15 @@ export function AdminCategoriesManager({
   const categories = categoriesQuery.data ?? [];
 
   const createCategoryMutation = useMutation({
-    mutationFn: async (name: string) => {
+    mutationFn: async (values: FormValues) => {
       if (!accessToken) {
         throw new Error("Missing admin session token.");
       }
-      return adminService.createCategory(name, accessToken);
+      return adminService.createCategory(values.name, accessToken);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
-      setNewCategoryName("");
+      form.reset({ name: "" });
       toast.success("Category created");
     },
     onError: (error) => {
@@ -75,7 +85,7 @@ export function AdminCategoriesManager({
     },
     onSuccess: (_, categoryId) => {
       queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
-      setCategoryDrafts((prev) => {
+      setCategoryDrafts((prev: Record<string, string>) => {
         const next = { ...prev };
         delete next[categoryId];
         return next;
@@ -87,14 +97,9 @@ export function AdminCategoriesManager({
     },
   });
 
-  const onCreateCategory = () => {
-    const name = newCategoryName.trim();
-    if (!name) {
-      toast.error("Category name is required");
-      return;
-    }
-    createCategoryMutation.mutate(name);
-  };
+  const onSubmit = form.handleSubmit((values) => {
+    createCategoryMutation.mutate(values);
+  });
 
   return (
     <Card>
@@ -102,16 +107,12 @@ export function AdminCategoriesManager({
         <CardTitle>Categories</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex gap-2">
-          <Input
-            value={newCategoryName}
-            onChange={(event) => setNewCategoryName(event.target.value)}
-            placeholder="New category"
-          />
-          <Button onClick={onCreateCategory} disabled={createCategoryMutation.isPending}>
-            Add
+        <form className="flex gap-2" onSubmit={onSubmit}>
+          <Input placeholder="New category" {...form.register("name")} />
+          <Button type="submit" disabled={createCategoryMutation.isPending}>
+            {createCategoryMutation.isPending ? "Adding..." : "Add"}
           </Button>
-        </div>
+        </form>
 
         <Table>
           <TableHeader>
@@ -136,7 +137,7 @@ export function AdminCategoriesManager({
                       <Input
                         value={draft}
                         onChange={(event) =>
-                          setCategoryDrafts((prev) => ({
+                          setCategoryDrafts((prev: Record<string, string>) => ({
                             ...prev,
                             [category.id]: event.target.value,
                           }))}
