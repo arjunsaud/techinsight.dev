@@ -3,7 +3,11 @@ import Link from "next/link";
 import { ArticleList } from "@/components/article/article-list";
 import { RecommendedArticles } from "@/components/article/recommended-articles";
 import { SidebarCategories } from "@/components/article/sidebar-categories";
-import { getCategories, getPublishedArticles, getTags } from "@/lib/server-data";
+import {
+  getCategories,
+  getPublishedArticles,
+  getTags,
+} from "@/lib/server-data";
 
 export default async function ArticleIndexPage() {
   const [articles, categories, tags] = await Promise.all([
