@@ -1,8 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { adminService } from "@/services/admin-service";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/utils";
+import { AdminHeader } from "@/components/layout/admin.header";
 
 export default async function AdminUsersPage() {
   const supabase = await createClient();
@@ -15,9 +23,7 @@ export default async function AdminUsersPage() {
 
   return (
     <section className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight">Users</h1>
-      </header>
+      <AdminHeader title="Users" description="Manage users" />
       <Card>
         <CardHeader>
           <CardTitle>Registered Users</CardTitle>

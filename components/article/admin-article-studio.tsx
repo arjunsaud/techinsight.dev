@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {} from "lucide-react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 import type { Article } from "@/types/domain";
 import { articleService } from "@/services/article-service";
@@ -19,6 +21,18 @@ interface HashnodeStudioProps {
   initialArticles: Article[];
   initialEditArticleId?: string | null;
 }
+
+const articleSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  slug: z.string(),
+  excerpt: z.string().optional(),
+  content: z.string().min(1, "Content is required"),
+  featuredImageUrl: z.string().optional(),
+  seoTitle: z.string().optional(),
+  metaDescription: z.string().optional(),
+  keywords: z.string().optional(),
+});
+type ArticleFormValues = z.infer<typeof articleSchema>;
 
 function htmlToPlainText(html: string) {
   if (typeof window === "undefined")
@@ -46,7 +60,9 @@ function makeUniqueSlug(
 ) {
   const fallback = baseSlug || `post-${Date.now()}`;
   const inUse = new Set(
-    articles.filter((article) => article.id !== editingArticleId).map((article) => article.slug),
+    articles
+      .filter((article) => article.id !== editingArticleId)
+      .map((article) => article.slug),
   );
   if (!inUse.has(fallback)) return fallback;
   let counter = 2;
@@ -64,19 +80,11 @@ export function AdminArticleStudio({
   initialEditArticleId = null,
 }: HashnodeStudioProps) {
   const queryClient = useQueryClient();
-  const [content, setContent] = useState("<p></p>");
-  const [title, setTitle] = useState("");
-  const [excerpt, setExcerpt] = useState("");
   const [editingArticleId, setEditingArticleId] = useState<string | null>(
     initialEditArticleId,
   );
-  const [slug, setSlug] = useState("");
-  const [isSlugManual, setIsSlugManual] = useState(false);
-  const [featuredImageUrl, setFeaturedImageUrl] = useState("");
-  const [seoTitle, setSeoTitle] = useState("");
-  const [metaDescription, setMetaDescription] = useState("");
-  const [keywords, setKeywords] = useState("");
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const isSlugManual = useRef(false);
 
   const articlesQuery = useQuery({
     queryKey: ["admin-articles"],
@@ -97,31 +105,62 @@ export function AdminArticleStudio({
     [articles, editingArticleId],
   );
 
+  const form = useForm<ArticleFormValues>({
+    resolver: zodResolver(articleSchema),
+    mode: "onChange",
+    defaultValues: {
+      title: "",
+      slug: "",
+      excerpt: "",
+      content: "<p></p>",
+      featuredImageUrl: "",
+      seoTitle: "",
+      metaDescription: "",
+      keywords: "",
+    },
+  });
+
+  const { register, control, handleSubmit, watch, reset, setValue } = form;
+
+  const currentTitle = watch("title");
+  const previewTitle = currentTitle;
+  const previewExcerpt = watch("excerpt");
+  const previewContent = watch("content");
+  const previewImage = watch("featuredImageUrl");
+  const currentKeywords = watch("keywords");
+  const currentSeoTitle = watch("seoTitle");
+  const currentMetaDescription = watch("metaDescription");
+
   useEffect(() => {
     if (!initialEditArticleId) return;
     const article = articles.find((item) => item.id === initialEditArticleId);
     if (!article) return;
     setEditingArticleId(article.id);
-    setTitle(article.title || "");
-    setExcerpt(article.excerpt || "");
-    setContent(article.content || "<p></p>");
-    setSlug(article.slug || "");
-    setIsSlugManual(true);
-    setFeaturedImageUrl(article.featured_image_url || "");
-    setSeoTitle(article.seoTitle || "");
-    setMetaDescription(article.metaDescription || article.excerpt || "");
-    setKeywords(article.keywords || "");
-  }, [articles, initialEditArticleId]);
+    isSlugManual.current = true;
+    reset({
+      title: article.title || "",
+      slug: article.slug || "",
+      excerpt: article.excerpt || "",
+      content: article.content || "<p></p>",
+      featuredImageUrl: article.featured_image_url || "",
+      seoTitle: article.seoTitle || "",
+      metaDescription: article.metaDescription || article.excerpt || "",
+      keywords: article.keywords || "",
+    });
+  }, [articles, initialEditArticleId, reset]);
 
   useEffect(() => {
-    if (!isSlugManual && title) setSlug(makeSlug(title));
-  }, [title, isSlugManual]);
+    if (!isSlugManual.current && currentTitle) {
+      setValue("slug", makeSlug(currentTitle), { shouldValidate: true });
+    }
+  }, [currentTitle, setValue]);
 
+  // Derived state (for features like analysis panel if needed elsewhere)
   const analysis = useMemo(() => {
-    const plainText = htmlToPlainText(content);
+    const plainText = htmlToPlainText(previewContent || "");
     const words = plainText.split(/\s+/).filter(Boolean).length;
     const readingTime = Math.ceil(words / 200);
-    const activeKeywords = keywords
+    const activeKeywords = (currentKeywords || "")
       .split(",")
       .map((k) => k.trim().toLowerCase())
       .filter(Boolean);
@@ -134,31 +173,45 @@ export function AdminArticleStudio({
       readingTime,
       keywordsFound: foundKeywords,
       totalKeywords: activeKeywords.length,
-      seoTitleLength: seoTitle.length,
-      metaDescriptionLength: metaDescription.length,
-      isTitleGood: seoTitle.length >= 30 && seoTitle.length <= 60,
+      seoTitleLength: (currentSeoTitle || "").length,
+      metaDescriptionLength: (currentMetaDescription || "").length,
+      isTitleGood:
+        (currentSeoTitle || "").length >= 30 &&
+        (currentSeoTitle || "").length <= 60,
       isDescriptionGood:
-        metaDescription.length >= 120 && metaDescription.length <= 160,
+        (currentMetaDescription || "").length >= 120 &&
+        (currentMetaDescription || "").length <= 160,
     };
-  }, [content, seoTitle, metaDescription, keywords]);
+  }, [
+    previewContent,
+    currentSeoTitle,
+    currentMetaDescription,
+    currentKeywords,
+  ]);
 
   const saveArticleMutation = useMutation({
-    mutationFn: async (status: "draft" | "published") => {
+    mutationFn: async ({
+      data,
+      status,
+    }: {
+      data: ArticleFormValues;
+      status: "draft" | "published";
+    }) => {
       const finalSlug = makeUniqueSlug(
-        makeSlug(slug || title),
+        makeSlug(data.slug || data.title),
         articles,
         editingArticleId,
       );
       const payload = {
-        title: title || "Untitled Post",
+        title: data.title || "Untitled Post",
         slug: finalSlug,
-        content,
-        excerpt: excerpt || undefined,
+        content: data.content,
+        excerpt: data.excerpt || undefined,
         status,
-        featuredImageUrl: featuredImageUrl || undefined,
-        seoTitle: seoTitle || undefined,
-        metaDescription: metaDescription || undefined,
-        keywords: keywords || undefined,
+        featuredImageUrl: data.featuredImageUrl || undefined,
+        seoTitle: data.seoTitle || undefined,
+        metaDescription: data.metaDescription || undefined,
+        keywords: data.keywords || undefined,
         tagIds: editingArticle?.tags?.map((t) => t.id) ?? [],
         categoryId: editingArticle?.category_id ?? undefined,
       };
@@ -170,22 +223,30 @@ export function AdminArticleStudio({
         );
       return articleService.create(payload, accessToken);
     },
-    onSuccess: (savedArticle, status) => {
+    onSuccess: (savedArticle, variables) => {
       queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
-      toast.success(status === "published" ? "Article published" : "Draft saved");
+      toast.success(
+        variables.status === "published" ? "Article published" : "Draft saved",
+      );
       setEditingArticleId(savedArticle.id);
     },
     onError: (error) =>
       toast.error(error instanceof Error ? error.message : "Failed to save"),
   });
 
+  const onSave = (status: "draft" | "published") => {
+    handleSubmit((data) => {
+      saveArticleMutation.mutate({ data, status });
+    })();
+  };
+
   useEffect(() => {
     registerAdminStudioControls({
-      saveDraft: () => saveArticleMutation.mutate("draft"),
-      savePublished: () => saveArticleMutation.mutate("published"),
+      saveDraft: () => onSave("draft"),
+      savePublished: () => onSave("published"),
       togglePreview: () => setIsPreviewMode((p) => !p),
     });
-  }, [saveArticleMutation]);
+  }, [onSave]);
 
   useEffect(() => {
     setAdminStudioState({
@@ -195,70 +256,83 @@ export function AdminArticleStudio({
   }, [saveArticleMutation.isPending, isPreviewMode]);
 
   return (
-        <div className="mt-8 flex w-full justify-center">
-          <div className="w-full max-w-3xl px-4">
-          {isPreviewMode ? (
-            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-              {featuredImageUrl && (
-                <div className="aspect-[21/9] w-full overflow-hidden rounded-xl">
-                  <img
-                    src={featuredImageUrl}
-                    alt="Cover"
-                    className="h-full w-full object-cover"
-                  />
-                </div>
+    <div className="mt-8 flex w-full justify-center">
+      <div className="w-full max-w-3xl px-4">
+        {isPreviewMode ? (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            {previewImage && (
+              <div className="aspect-[21/9] w-full overflow-hidden rounded-xl">
+                <img
+                  src={previewImage}
+                  alt="Cover"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            )}
+            <div className="space-y-4">
+              <h1
+                className="text-5xl font-bold tracking-tight"
+                style={{ fontFamily: "serif" }}
+              >
+                {previewTitle || "Untitled Post"}
+              </h1>
+              {previewExcerpt && (
+                <p className="text-xl text-muted-foreground leading-relaxed italic">
+                  {previewExcerpt}
+                </p>
               )}
-              <div className="space-y-4">
-                <h1
-                  className="text-5xl font-bold tracking-tight"
-                  style={{ fontFamily: "serif" }}
-                >
-                  {title || "Untitled Post"}
-                </h1>
-                {excerpt && (
-                  <p className="text-xl text-muted-foreground leading-relaxed italic">
-                    {excerpt}
-                  </p>
-                )}
-              </div>
-              <div
-                className="prose prose-lg dark:prose-invert max-w-none pt-8 border-t"
-                dangerouslySetInnerHTML={{ __html: content }}
-              />
             </div>
-          ) : (
-            <div>
-              <CoverImageUploader
-                url={featuredImageUrl}
-                onChange={setFeaturedImageUrl}
-                accessToken={accessToken}
-              />
-
-              <div className="space-y-6">
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Article Title"
-                  className="w-full border-none bg-transparent p-0 text-5xl font-bold tracking-tight outline-none placeholder:text-muted-foreground/30 focus:ring-0"
-                  style={{ fontFamily: "serif" }}
-                />
-
-                <textarea
-                  value={excerpt}
-                  onChange={(e) => setExcerpt(e.target.value)}
-                  placeholder="Short description..."
-                  className="w-full resize-none border-none bg-transparent p-0 text-xl text-muted-foreground/60 outline-none placeholder:text-muted-foreground/20 focus:ring-0"
-                  rows={2}
-                />
-
-                <div className="pt-8">
-                  <ArticleEditor value={content} onChange={setContent} />
-                </div>
-              </div>
-            </div>
-          )}
+            <div
+              className="prose prose-lg dark:prose-invert max-w-none pt-8 border-t"
+              dangerouslySetInnerHTML={{ __html: previewContent || "" }}
+            />
           </div>
-        </div>
+        ) : (
+          <form className="block">
+            <Controller
+              control={control}
+              name="featuredImageUrl"
+              render={({ field }) => (
+                <CoverImageUploader
+                  url={field.value || ""}
+                  onChange={field.onChange}
+                  accessToken={accessToken}
+                />
+              )}
+            />
+
+            <div className="space-y-6">
+              <input
+                {...register("title")}
+                type="text"
+                placeholder="Article Title"
+                className="w-full border-none bg-transparent p-0 text-5xl font-bold tracking-tight outline-none placeholder:text-muted-foreground/30 focus:ring-0"
+                style={{ fontFamily: "serif" }}
+              />
+
+              <textarea
+                {...register("excerpt")}
+                placeholder="Short description..."
+                className="w-full resize-none border-none bg-transparent p-0 text-xl text-muted-foreground/60 outline-none placeholder:text-muted-foreground/20 focus:ring-0"
+                rows={2}
+              />
+
+              <div className="pt-8">
+                <Controller
+                  control={control}
+                  name="content"
+                  render={({ field }) => (
+                    <ArticleEditor
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
   );
 }

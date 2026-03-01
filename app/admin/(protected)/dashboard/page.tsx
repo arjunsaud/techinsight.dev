@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/supabase/guards";
 import { adminService } from "@/services/admin-service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AdminHeader } from "@/components/layout/admin.header";
 
 export default async function AdminDashboardPage() {
   await requireAdmin();
@@ -13,16 +14,16 @@ export default async function AdminDashboardPage() {
   const dashboard = session
     ? await adminService.getDashboard(session.access_token)
     : {
-      stats: {
-        totalArticles: 0,
-        totalUsers: 0,
-        totalComments: 0,
-        publishedArticles: 0,
-        draftArticles: 0,
-      },
-      recentArticles: [],
-      recentComments: [],
-    };
+        stats: {
+          totalArticles: 0,
+          totalUsers: 0,
+          totalComments: 0,
+          publishedArticles: 0,
+          draftArticles: 0,
+        },
+        recentArticles: [],
+        recentComments: [],
+      };
 
   const cards = [
     { label: "Total Articles", value: dashboard.stats.totalArticles },
@@ -33,11 +34,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <section className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Admin Dashboard
-        </h1>
-      </header>
+      <AdminHeader title="Admin Dashboard" description="Admin Dashboard" />
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {cards.map((card) => (
           <Card key={card.label}>

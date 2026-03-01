@@ -5,6 +5,7 @@ import { ArticleHeaderControls } from "@/components/article/admin-header-control
 import { requireAdmin } from "@/lib/supabase/guards";
 import { createClient } from "@/lib/supabase/server";
 import { articleService } from "@/services/article-service";
+import { AdminHeader } from "@/components/layout/admin.header";
 
 interface AdminArticlesPageProps {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -40,18 +41,18 @@ export default async function AdminArticlesPage({
     <AdminStudioProvider>
       <section className="space-y-6">
         <div className="flex items-center justify-between">
-          <header>
-            <p className="text-2xl font-bold tracking-tight">Write Articles</p>
-            <p className="text-sm text-muted-foreground">
-              Write articles here
-            </p>
-          </header>
+          <AdminHeader
+            title="Write Articles"
+            description="Write articles here"
+          />
           <div className="flex items-center gap-2">
             <ArticleHeaderControls />
-            <ArticleSeoSettings accessToken={accessToken} articleId={editArticleId} />
+            <ArticleSeoSettings
+              accessToken={accessToken}
+              articleId={editArticleId}
+            />
           </div>
         </div>
-
         <AdminArticleStudio
           accessToken={accessToken}
           initialArticles={articlesResponse.data}

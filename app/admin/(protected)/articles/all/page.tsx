@@ -3,7 +3,11 @@ import { requireAdmin } from "@/lib/supabase/guards";
 import { createClient } from "@/lib/supabase/server";
 import { articleService } from "@/services/article-service";
 
-export default async function AdminAllArticlesPage() {
+export default async function AdminAllArticlesPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
   await requireAdmin();
 
   const supabase = await createClient();
@@ -12,6 +16,10 @@ export default async function AdminAllArticlesPage() {
   } = await supabase.auth.getSession();
 
   const accessToken = session?.access_token ?? "";
+
+  const resolvedParams = searchParams ? await searchParams : {};
+  const filter =
+    typeof resolvedParams.filter === "string" ? resolvedParams.filter : "all";
 
   const articlesResponse = accessToken
     ? await articleService.listAdmin(
@@ -34,6 +42,7 @@ export default async function AdminAllArticlesPage() {
       <AdminArticlesList
         accessToken={accessToken}
         initialArticles={articlesResponse.data}
+        filter={filter}
       />
     </section>
   );

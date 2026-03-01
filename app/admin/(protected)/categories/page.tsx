@@ -1,4 +1,5 @@
 import { AdminCategoriesManager } from "@/components/article/admin-categories-manager";
+import { AdminHeader } from "@/components/layout/admin.header";
 import { requireAdmin } from "@/lib/supabase/guards";
 import { createClient } from "@/lib/supabase/server";
 import { adminService } from "@/services/admin-service";
@@ -18,13 +19,11 @@ export default async function AdminCategoriesPage() {
 
   return (
     <section className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight">Categories</h1>
-        <p className="text-sm text-muted-foreground">
-          Manage category CRUD on this page only.
-        </p>
-      </header>
-      <AdminCategoriesManager accessToken={accessToken} initialCategories={categories} />
+      <AdminHeader title="Categories" description="Manage categories" />
+      <AdminCategoriesManager
+        accessToken={accessToken}
+        initialCategories={categories}
+      />
     </section>
   );
 }

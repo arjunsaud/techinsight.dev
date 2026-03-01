@@ -27,7 +27,7 @@ export default async function ArticleIndexPage() {
           <div className="mx-auto flex max-w-[1440px] gap-1 overflow-x-auto px-4 py-3 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <Link
               href="/articles"
-              className="whitespace-nowrap rounded-full bg-gray-900 px-4 py-1.5 text-xs font-medium text-white"
+              className="whitespace-nowrap rounded-full bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground"
             >
               For you
             </Link>
@@ -56,7 +56,7 @@ export default async function ArticleIndexPage() {
               <nav className="flex flex-col gap-2">
                 <Link
                   href="/articles"
-                  className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white transition-all"
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
                 >
                   All Stories
                 </Link>
@@ -105,7 +105,7 @@ export default async function ArticleIndexPage() {
                   Join the TechInsight community to get the best stories in your
                   inbox.
                 </p>
-                <button className="mt-4 w-full rounded-full bg-gray-900 py-2 text-sm font-bold text-white transition-colors hover:bg-gray-800">
+                <button className="mt-4 w-full rounded-full bg-primary py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90">
                   Subscribe
                 </button>
               </div>

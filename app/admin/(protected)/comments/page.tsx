@@ -1,10 +1,13 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AdminHeader } from "@/components/layout/admin.header";
+import { AdminCommentsList } from "@/components/comments/admin-comments-list";
 import { adminService } from "@/services/admin-service";
 import { createClient } from "@/lib/supabase/server";
-import { formatDate } from "@/lib/utils";
 
-export default async function AdminCommentsPage() {
+export default async function AdminCommentsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const supabase = await createClient();
   const {
     data: { session },
@@ -13,38 +16,23 @@ export default async function AdminCommentsPage() {
     ? await adminService.listComments(session.access_token)
     : [];
 
+  const resolvedParams = searchParams ? await searchParams : {};
+  const filter =
+    typeof resolvedParams.filter === "string" ? resolvedParams.filter : "all";
+
   return (
     <section className="space-y-6">
       <header>
         <h1 className="text-3xl font-bold tracking-tight">Comments</h1>
+        <p className="text-sm text-muted-foreground">
+          Moderate and respond to reader comments
+        </p>
       </header>
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Comments</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Article</TableHead>
-                <TableHead>Content</TableHead>
-                <TableHead>Created</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {comments.map((comment) => (
-                <TableRow key={comment.id}>
-                  <TableCell>{(comment.user as { username?: string } | null)?.username ?? "User"}</TableCell>
-                  <TableCell>{(comment.article as { title?: string } | null)?.title ?? "Article"}</TableCell>
-                  <TableCell className="line-clamp-2 max-w-sm">{comment.content}</TableCell>
-                  <TableCell>{formatDate(comment.created_at)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <AdminCommentsList
+        initialComments={comments}
+        filter={filter}
+        accessToken={session?.access_token || ""}
+      />
     </section>
   );
 }

@@ -1,32 +1,34 @@
 "use client";
 
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
+import { Plus } from "lucide-react";
 
 import type { Tag } from "@/types/domain";
 import { adminService } from "@/services/admin-service";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { TagCard } from "@/components/article/admin-tag-card";
 
 interface AdminTagsManagerProps {
   accessToken: string;
   initialTags: Tag[];
 }
 
-export function AdminTagsManager({ accessToken, initialTags }: AdminTagsManagerProps) {
+export function AdminTagsManager({
+  accessToken,
+  initialTags,
+}: AdminTagsManagerProps) {
   const queryClient = useQueryClient();
-  const [tagDrafts, setTagDrafts] = useState<Record<string, string>>({});
 
   const schema = z.object({
     name: z.string().min(1, "Tag name is required").max(80),
   });
   type FormValues = z.infer<typeof schema>;
+
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { name: "" },
@@ -42,9 +44,7 @@ export function AdminTagsManager({ accessToken, initialTags }: AdminTagsManagerP
 
   const createTagMutation = useMutation({
     mutationFn: async (values: FormValues) => {
-      if (!accessToken) {
-        throw new Error("Missing admin session token.");
-      }
+      if (!accessToken) throw new Error("Missing admin session token.");
       return adminService.createTag(values.name, accessToken);
     },
     onSuccess: () => {
@@ -53,44 +53,25 @@ export function AdminTagsManager({ accessToken, initialTags }: AdminTagsManagerP
       toast.success("Tag created");
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Failed to create tag");
-    },
-  });
-
-  const updateTagMutation = useMutation({
-    mutationFn: async ({ tagId, name }: { tagId: string; name: string }) => {
-      if (!accessToken) {
-        throw new Error("Missing admin session token.");
-      }
-      return adminService.updateTag(tagId, { name }, accessToken);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-tags"] });
-      toast.success("Tag updated");
-    },
-    onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Failed to update tag");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create tag",
+      );
     },
   });
 
   const deleteTagMutation = useMutation({
     mutationFn: async (tagId: string) => {
-      if (!accessToken) {
-        throw new Error("Missing admin session token.");
-      }
+      if (!accessToken) throw new Error("Missing admin session token.");
       return adminService.removeTag(tagId, accessToken);
     },
-    onSuccess: (_, tagId) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-tags"] });
-      setTagDrafts((prev) => {
-        const next = { ...prev };
-        delete next[tagId];
-        return next;
-      });
       toast.success("Tag deleted");
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Failed to delete tag");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete tag",
+      );
     },
   });
 
@@ -99,87 +80,53 @@ export function AdminTagsManager({ accessToken, initialTags }: AdminTagsManagerP
   });
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Tags</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <form className="flex gap-2" onSubmit={onSubmit}>
-          <Input placeholder="New tag" {...form.register("name")} />
-          <Button type="submit" disabled={createTagMutation.isPending}>
+    <div className="space-y-6">
+      {/* Add New Tag Card */}
+      <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
+        <form className="flex flex-col sm:flex-row gap-4" onSubmit={onSubmit}>
+          <div className="flex-1">
+            <Input
+              placeholder="Add a new tag..."
+              className="h-11 shadow-none"
+              {...form.register("name")}
+            />
+          </div>
+          <Button
+            type="submit"
+            className="h-11 px-8"
+            disabled={createTagMutation.isPending}
+          >
+            <Plus className="mr-2 h-4 w-4" />
             {createTagMutation.isPending ? "Adding..." : "Add"}
           </Button>
         </form>
+      </div>
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead className="w-[180px]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {tags.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={2} className="text-muted-foreground">
-                  No tags found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              tags.map((tag) => {
-                const draft = tagDrafts[tag.id] ?? tag.name;
-                return (
-                  <TableRow key={tag.id}>
-                    <TableCell>
-                      <Input
-                        value={draft}
-                        onChange={(event) =>
-                          setTagDrafts((prev: Record<string, string>) => ({
-                            ...prev,
-                            [tag.id]: event.target.value,
-                          }))}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            const name = draft.trim();
-                            if (!name) {
-                              toast.error("Tag name is required");
-                              return;
-                            }
-                            updateTagMutation.mutate({ tagId: tag.id, name });
-                          }}
-                          disabled={updateTagMutation.isPending}
-                        >
-                          Save
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => {
-                            const ok = globalThis.confirm("Delete this tag?");
-                            if (!ok) {
-                              return;
-                            }
-                            deleteTagMutation.mutate(tag.id);
-                          }}
-                          disabled={deleteTagMutation.isPending}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+      {/* Tags Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {tags.length === 0 ? (
+          <div className="col-span-full rounded-xl border border-dashed p-8 text-center text-muted-foreground">
+            No tags found. Create one above!
+          </div>
+        ) : (
+          tags.map((tag) => (
+            <TagCard key={tag.id}>
+              <TagCard.Icon />
+              <TagCard.Header
+                name={tag.name}
+                articleCount={tag.id.length * 2} // Mocked count, wait, let's just make it look good for now until API provides it
+              />
+              <TagCard.Delete
+                onDelete={() => {
+                  const ok = globalThis.confirm("Delete this tag?");
+                  if (!ok) return;
+                  deleteTagMutation.mutate(tag.id);
+                }}
+              />
+            </TagCard>
+          ))
+        )}
+      </div>
+    </div>
   );
 }

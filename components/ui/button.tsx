@@ -2,8 +2,13 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-type ButtonVariant = "default" | "secondary" | "outline" | "destructive" | "ghost";
-type ButtonSize = "default" | "sm" | "lg";
+type ButtonVariant =
+  | "default"
+  | "secondary"
+  | "outline"
+  | "destructive"
+  | "ghost";
+type ButtonSize = "default" | "sm" | "lg" | "icon";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -13,19 +18,31 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 const variantMap: Record<ButtonVariant, string> = {
   default: "bg-primary text-primary-foreground hover:bg-primary/90",
   secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-  outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-  destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-  ghost: "hover:bg-accent hover:text-accent-foreground"
+  outline:
+    "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+  destructive:
+    "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+  ghost: "hover:bg-accent hover:text-accent-foreground",
 };
 
 const sizeMap: Record<ButtonSize, string> = {
   default: "h-10 px-4 py-2",
   sm: "h-9 rounded-lg px-3",
-  lg: "h-11 rounded-lg px-8"
+  lg: "h-11 rounded-lg px-8",
+  icon: "h-10 w-10 shrink-0 rounded-lg",
 };
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "default", size = "default", type = "button", ...props }, ref) => {
+  (
+    {
+      className,
+      variant = "default",
+      size = "default",
+      type = "button",
+      ...props
+    },
+    ref,
+  ) => {
     return (
       <button
         ref={ref}
@@ -34,12 +51,12 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
           variantMap[variant],
           sizeMap[size],
-          className
+          className,
         )}
         {...props}
       />
     );
-  }
+  },
 );
 
 Button.displayName = "Button";

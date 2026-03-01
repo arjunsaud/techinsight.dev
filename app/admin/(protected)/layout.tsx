@@ -1,7 +1,11 @@
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { requireAdmin } from "@/lib/supabase/guards";
 
-export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   await requireAdmin();
 
   return (
