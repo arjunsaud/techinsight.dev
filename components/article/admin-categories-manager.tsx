@@ -6,13 +6,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
+import { Folder, Pencil, Trash2, Plus } from "lucide-react";
 
 import type { Category } from "@/types/domain";
 import { adminService } from "@/services/admin-service";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 interface AdminCategoriesManagerProps {
   accessToken: string;
@@ -24,15 +26,17 @@ export function AdminCategoriesManager({
   initialCategories,
 }: AdminCategoriesManagerProps) {
   const queryClient = useQueryClient();
-  const [categoryDrafts, setCategoryDrafts] = useState<Record<string, string>>({});
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const schema = z.object({
     name: z.string().min(1, "Category name is required").max(80),
+    description: z.string().max(200).optional(),
   });
   type FormValues = z.infer<typeof schema>;
+
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: "" },
+    defaultValues: { name: "", description: "" },
   });
 
   const categoriesQuery = useQuery({
@@ -45,55 +49,61 @@ export function AdminCategoriesManager({
 
   const createCategoryMutation = useMutation({
     mutationFn: async (values: FormValues) => {
-      if (!accessToken) {
-        throw new Error("Missing admin session token.");
-      }
-      return adminService.createCategory(values.name, accessToken);
+      if (!accessToken) throw new Error("Missing admin session token.");
+      return adminService.createCategory(
+        values.name,
+        values.description ?? null,
+        accessToken,
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
-      form.reset({ name: "" });
+      form.reset();
       toast.success("Category created");
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Failed to create category");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create category",
+      );
     },
   });
 
   const updateCategoryMutation = useMutation({
-    mutationFn: async ({ categoryId, name }: { categoryId: string; name: string }) => {
-      if (!accessToken) {
-        throw new Error("Missing admin session token.");
-      }
-      return adminService.updateCategory(categoryId, { name }, accessToken);
+    mutationFn: async ({
+      categoryId,
+      values,
+    }: {
+      categoryId: string;
+      values: Partial<FormValues>;
+    }) => {
+      if (!accessToken) throw new Error("Missing admin session token.");
+      return adminService.updateCategory(categoryId, values, accessToken);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
+      setEditingId(null);
       toast.success("Category updated");
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Failed to update category");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update category",
+      );
     },
   });
 
   const deleteCategoryMutation = useMutation({
     mutationFn: async (categoryId: string) => {
-      if (!accessToken) {
-        throw new Error("Missing admin session token.");
-      }
+      if (!accessToken) throw new Error("Missing admin session token.");
       return adminService.removeCategory(categoryId, accessToken);
     },
-    onSuccess: (_, categoryId) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
-      setCategoryDrafts((prev: Record<string, string>) => {
-        const next = { ...prev };
-        delete next[categoryId];
-        return next;
-      });
       toast.success("Category deleted");
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Failed to delete category");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete category",
+      );
     },
   });
 
@@ -102,87 +112,108 @@ export function AdminCategoriesManager({
   });
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Categories</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <form className="flex gap-2" onSubmit={onSubmit}>
-          <Input placeholder="New category" {...form.register("name")} />
-          <Button type="submit" disabled={createCategoryMutation.isPending}>
-            {createCategoryMutation.isPending ? "Adding..." : "Add"}
-          </Button>
+    <div className="space-y-8">
+      {/* Add Category Section */}
+      <div className="rounded-xl w-1/2 border bg-card p-6 shadow-sm">
+        <form onSubmit={onSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 items-start">
+            <div className="flex-1 w-full space-y-4">
+              <div className="flex gap-4 items-start">
+                <Input
+                  placeholder="Category name..."
+                  className="h-11 shadow-none bg-background"
+                  {...form.register("name")}
+                />
+              </div>
+              <Input
+                placeholder="Short description (optional)"
+                className="h-11 shadow-none bg-background"
+                {...form.register("description")}
+              />
+              <Button
+                type="submit"
+                className="h-11 px-6 bg-blue-600 hover:bg-blue-700 text-white shrink-0"
+                disabled={createCategoryMutation.isPending}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Add
+              </Button>
+            </div>
+          </div>
         </form>
+      </div>
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead className="w-[180px]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {categories.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={2} className="text-muted-foreground">
-                  No categories found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              categories.map((category) => {
-                const draft = categoryDrafts[category.id] ?? category.name;
-                return (
-                  <TableRow key={category.id}>
-                    <TableCell>
-                      <Input
-                        value={draft}
-                        onChange={(event) =>
-                          setCategoryDrafts((prev: Record<string, string>) => ({
-                            ...prev,
-                            [category.id]: event.target.value,
-                          }))}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            const name = draft.trim();
-                            if (!name) {
-                              toast.error("Category name is required");
-                              return;
-                            }
-                            updateCategoryMutation.mutate({ categoryId: category.id, name });
-                          }}
-                          disabled={updateCategoryMutation.isPending}
-                        >
-                          Save
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => {
-                            const ok = globalThis.confirm("Delete this category?");
-                            if (!ok) {
-                              return;
-                            }
-                            deleteCategoryMutation.mutate(category.id);
-                          }}
-                          disabled={deleteCategoryMutation.isPending}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+      {/* Categories List */}
+      <div className="space-y-4">
+        {categories.length === 0 ? (
+          <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground bg-card/50">
+            No categories found. Create one above to get started.
+          </div>
+        ) : (
+          categories.map((category) => (
+            <div
+              key={category.id}
+              className="group flex flex-col sm:flex-row sm:items-center gap-4 rounded-xl border bg-card p-4 transition-all hover:shadow-md"
+            >
+              <div className="flex items-center gap-4 flex-1">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                  <Folder className="h-6 w-6" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={cn(
+                        "h-2 w-2 rounded-full",
+                        category.color || "bg-blue-500",
+                      )}
+                    />
+                    <h3 className="font-semibold text-foreground truncate">
+                      {category.name}
+                    </h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground line-clamp-1">
+                    {category.description || "No description provided"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 sm:gap-6">
+                <Badge
+                  variant="secondary"
+                  className="bg-slate-100 text-slate-700 hover:bg-slate-100 border-none px-3 py-1 font-medium"
+                >
+                  0 articles
+                </Badge>
+                <code className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded">
+                  /{category.slug}
+                </code>
+                <div className="flex items-center gap-1 ml-auto">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted"
+                    onClick={() => setEditingId(category.id)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => {
+                      if (globalThis.confirm("Delete this category?")) {
+                        deleteCategoryMutation.mutate(category.id);
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
   );
 }

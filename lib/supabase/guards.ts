@@ -33,7 +33,7 @@ export async function requireAdmin(nextPath: Route = "/admin/login") {
       redirect("/articles");
     }
   } catch {
-    redirect("/articles");
+    redirect("/admin/login");
   }
 
   return session.user;
@@ -55,7 +55,7 @@ export async function requireSuperAdmin(nextPath: Route = "/admin/login") {
       redirect("/articles");
     }
   } catch {
-    redirect("/articles");
+    redirect("/admin/login");
   }
 
   return session.user;

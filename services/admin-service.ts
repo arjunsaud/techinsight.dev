@@ -12,13 +12,13 @@ export const adminService = {
 
   getDashboard(accessToken: string) {
     return apiFetch<DashboardResponse>("admin/dashboard", {
-      accessToken
+      accessToken,
     });
   },
 
   listUsers(accessToken: string) {
     return apiFetch<AppUser[]>("admin/users", {
-      accessToken
+      accessToken,
     });
   },
 
@@ -30,36 +30,49 @@ export const adminService = {
 
   listCategories(accessToken?: string) {
     return apiFetch<Category[]>("article/categories", {
-      accessToken
+      accessToken,
     });
   },
 
-  createCategory(name: string, accessToken: string) {
+  createCategory(
+    name: string,
+    description: string | null,
+    accessToken: string,
+  ) {
     return apiFetch<Category>("article/categories", {
       method: "POST",
       accessToken,
-      body: { name }
+      body: { name, description },
     });
   },
 
-  updateCategory(categoryId: string, input: { name?: string; slug?: string }, accessToken: string) {
+  updateCategory(
+    categoryId: string,
+    input: {
+      name?: string;
+      slug?: string;
+      description?: string | null;
+      color?: string | null;
+    },
+    accessToken: string,
+  ) {
     return apiFetch<Category>(`article/categories/${categoryId}`, {
       method: "PATCH",
       accessToken,
-      body: input
+      body: input,
     });
   },
 
   removeCategory(categoryId: string, accessToken: string) {
     return apiFetch<void>(`article/categories/${categoryId}`, {
       method: "DELETE",
-      accessToken
+      accessToken,
     });
   },
 
   listTags(accessToken?: string) {
     return apiFetch<Tag[]>("article/tags", {
-      accessToken
+      accessToken,
     });
   },
 
@@ -67,22 +80,26 @@ export const adminService = {
     return apiFetch<Tag>("article/tags", {
       method: "POST",
       accessToken,
-      body: { name }
+      body: { name },
     });
   },
 
-  updateTag(tagId: string, input: { name?: string; slug?: string }, accessToken: string) {
+  updateTag(
+    tagId: string,
+    input: { name?: string; slug?: string },
+    accessToken: string,
+  ) {
     return apiFetch<Tag>(`article/tags/${tagId}`, {
       method: "PATCH",
       accessToken,
-      body: input
+      body: input,
     });
   },
 
   removeTag(tagId: string, accessToken: string) {
     return apiFetch<void>(`article/tags/${tagId}`, {
       method: "DELETE",
-      accessToken
+      accessToken,
     });
   },
 };

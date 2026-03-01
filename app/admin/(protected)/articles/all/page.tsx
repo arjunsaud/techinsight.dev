@@ -1,4 +1,5 @@
 import { AdminArticlesList } from "@/components/article/admin-articles-list";
+import { AdminHeader } from "@/components/layout/admin.header";
 import { requireAdmin } from "@/lib/supabase/guards";
 import { createClient } from "@/lib/supabase/server";
 import { articleService } from "@/services/article-service";
@@ -33,12 +34,10 @@ export default async function AdminAllArticlesPage({
 
   return (
     <section className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight">All Articles</h1>
-        <p className="text-sm text-muted-foreground">
-          Manage and delete articles here. Use Edit to open the editor page.
-        </p>
-      </header>
+      <AdminHeader
+        title="All Articles"
+        description="Manage and delete articles here. Use Edit to open the editor page."
+      />
       <AdminArticlesList
         accessToken={accessToken}
         initialArticles={articlesResponse.data}

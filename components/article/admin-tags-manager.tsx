@@ -82,22 +82,22 @@ export function AdminTagsManager({
   return (
     <div className="space-y-6">
       {/* Add New Tag Card */}
-      <div className="rounded-xl border bg-card p-4 sm:p-6 shadow-sm">
-        <form className="flex flex-col sm:flex-row gap-4" onSubmit={onSubmit}>
+      <div className="rounded-xl w-1/2 border bg-card p-6 shadow-sm">
+        <form className="flex gap-4" onSubmit={onSubmit}>
           <div className="flex-1">
             <Input
               placeholder="Add a new tag..."
-              className="h-11 shadow-none"
+              className="h-11 shadow-none bg-background focus-visible:ring-blue-500"
               {...form.register("name")}
             />
           </div>
           <Button
             type="submit"
-            className="h-11 px-8"
+            className="h-11 px-8 bg-blue-600 hover:bg-blue-700 text-white shrink-0 font-medium"
             disabled={createTagMutation.isPending}
           >
             <Plus className="mr-2 h-4 w-4" />
-            {createTagMutation.isPending ? "Adding..." : "Add"}
+            Add
           </Button>
         </form>
       </div>
