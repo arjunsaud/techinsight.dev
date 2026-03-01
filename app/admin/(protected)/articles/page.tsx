@@ -3,7 +3,6 @@ import { ArticleSeoSettings } from "@/components/article/admin-seo-settings";
 import { AdminStudioProvider } from "@/components/article/admin-studio-context";
 import { ArticleHeaderControls } from "@/components/article/admin-header-controls";
 import { requireAdmin } from "@/lib/supabase/guards";
-import { createClient } from "@/lib/supabase/server";
 import { articleService } from "@/services/article-service";
 import { AdminHeader } from "@/components/layout/admin.header";
 
@@ -14,18 +13,13 @@ interface AdminArticlesPageProps {
 export default async function AdminArticlesPage({
   searchParams,
 }: AdminArticlesPageProps) {
-  await requireAdmin();
+  const session = await requireAdmin();
 
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const editParam = resolvedSearchParams?.edit;
   const editArticleId = typeof editParam === "string" ? editParam : null;
 
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  const accessToken = session?.access_token ?? "";
+  const accessToken = session.access_token;
 
   const articlesResponse = accessToken
     ? await articleService.listAdmin(

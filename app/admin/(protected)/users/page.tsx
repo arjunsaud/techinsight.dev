@@ -8,18 +8,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { adminService } from "@/services/admin-service";
-import { createClient } from "@/lib/supabase/server";
-import { formatDate } from "@/lib/utils";
+import { requireAdmin } from "@/lib/supabase/guards";
 import { AdminHeader } from "@/components/layout/admin.header";
+import { formatDate } from "@/lib/utils";
 
 export default async function AdminUsersPage() {
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const users = session
-    ? await adminService.listUsers(session.access_token)
-    : [];
+  const session = await requireAdmin();
+  const users = await adminService.listUsers(session.access_token);
 
   return (
     <section className="space-y-6">

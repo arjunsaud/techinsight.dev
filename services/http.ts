@@ -8,6 +8,8 @@ interface RequestOptions {
   accessToken?: string;
   query?: Record<string, string | number | boolean | undefined>;
   headers?: Record<string, string>;
+  next?: NextFetchRequestConfig;
+  cache?: RequestCache;
 }
 
 const API_FUNCTION_NAME = "api";
@@ -31,7 +33,10 @@ function buildUrl(path: string, query?: RequestOptions["query"]) {
   return url.toString();
 }
 
-export async function apiFetch<T>(path: string, options: RequestOptions = {}): Promise<T> {
+export async function apiFetch<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
   const env = getPublicEnv();
 
   const response = await fetch(buildUrl(path, options.query), {
@@ -39,11 +44,14 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
     headers: {
       "Content-Type": "application/json",
       apikey: env.supabaseAnonKey,
-      ...(options.accessToken ? { Authorization: `Bearer ${options.accessToken}` } : {}),
-      ...(options.headers ?? {})
+      ...(options.accessToken
+        ? { Authorization: `Bearer ${options.accessToken}` }
+        : {}),
+      ...(options.headers ?? {}),
     },
     body: options.body ? JSON.stringify(options.body) : undefined,
-    cache: "no-store"
+    cache: options.cache ?? (options.next ? undefined : "no-store"),
+    next: options.next,
   });
 
   if (!response.ok) {

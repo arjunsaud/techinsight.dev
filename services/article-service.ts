@@ -9,7 +9,10 @@ import type {
 import { apiFetch } from "@/services/http";
 
 export const articleService = {
-  listPublished(filters: ArticleFilterInput = {}) {
+  listPublished(
+    filters: ArticleFilterInput = {},
+    options: { next?: NextFetchRequestConfig; cache?: RequestCache } = {},
+  ) {
     const query = {
       query: filters.query,
       category: filters.category,
@@ -21,6 +24,7 @@ export const articleService = {
 
     return apiFetch<PaginatedResponse<Article>>("article", {
       query,
+      ...options,
     });
   },
 
@@ -40,8 +44,11 @@ export const articleService = {
     });
   },
 
-  getBySlug(slug: string) {
-    return apiFetch<Article>(`article/${slug}`);
+  getBySlug(
+    slug: string,
+    options: { next?: NextFetchRequestConfig; cache?: RequestCache } = {},
+  ) {
+    return apiFetch<Article>(`article/${slug}`, options);
   },
 
   create(input: CreateArticleInput, accessToken: string) {

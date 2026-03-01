@@ -28,9 +28,13 @@ export const adminService = {
     });
   },
 
-  listCategories(accessToken?: string) {
+  listCategories(
+    accessToken?: string,
+    options: { next?: NextFetchRequestConfig; cache?: RequestCache } = {},
+  ) {
     return apiFetch<Category[]>("article/categories", {
       accessToken,
+      ...options,
     });
   },
 
@@ -70,9 +74,13 @@ export const adminService = {
     });
   },
 
-  listTags(accessToken?: string) {
+  listTags(
+    accessToken?: string,
+    options: { next?: NextFetchRequestConfig; cache?: RequestCache } = {},
+  ) {
     return apiFetch<Tag[]>("article/tags", {
       accessToken,
+      ...options,
     });
   },
 

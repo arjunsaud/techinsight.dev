@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import type { Route } from "next";
 
-import { adminService } from "@/services/admin-service";
 import { createClient } from "@/lib/supabase/server";
 
 export async function requireSession(nextPath: Route = "/admin/login") {
@@ -27,16 +26,21 @@ export async function requireAdmin(nextPath: Route = "/admin/login") {
     redirect(nextPath);
   }
 
-  try {
-    const me = await adminService.getMe(session.access_token);
-    if (me.role !== "admin" && me.role !== "superadmin") {
-      redirect("/articles");
-    }
-  } catch {
+  const { data: profile, error } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.user.id)
+    .single();
+
+  if (
+    error ||
+    !profile ||
+    (profile.role !== "admin" && profile.role !== "superadmin")
+  ) {
     redirect("/admin/login");
   }
 
-  return session.user;
+  return session;
 }
 
 export async function requireSuperAdmin(nextPath: Route = "/admin/login") {
@@ -49,14 +53,15 @@ export async function requireSuperAdmin(nextPath: Route = "/admin/login") {
     redirect(nextPath);
   }
 
-  try {
-    const me = await adminService.getMe(session.access_token);
-    if (me.role !== "superadmin") {
-      redirect("/articles");
-    }
-  } catch {
+  const { data: profile, error } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", session.user.id)
+    .single();
+
+  if (error || !profile || profile.role !== "superadmin") {
     redirect("/admin/login");
   }
 
-  return session.user;
+  return session;
 }

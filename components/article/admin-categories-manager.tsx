@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -26,7 +25,6 @@ export function AdminCategoriesManager({
   initialCategories,
 }: AdminCategoriesManagerProps) {
   const queryClient = useQueryClient();
-  const [editingId, setEditingId] = useState<string | null>(null);
 
   const schema = z.object({
     name: z.string().min(1, "Category name is required").max(80),
@@ -81,7 +79,6 @@ export function AdminCategoriesManager({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
-      setEditingId(null);
       toast.success("Category updated");
     },
     onError: (error) => {
@@ -192,7 +189,6 @@ export function AdminCategoriesManager({
                     variant="ghost"
                     size="icon"
                     className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted"
-                    onClick={() => setEditingId(category.id)}
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>

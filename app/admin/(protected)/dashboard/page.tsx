@@ -1,29 +1,12 @@
-import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/supabase/guards";
 import { adminService } from "@/services/admin-service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AdminHeader } from "@/components/layout/admin.header";
 
 export default async function AdminDashboardPage() {
-  await requireAdmin();
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const session = await requireAdmin();
 
-  const dashboard = session
-    ? await adminService.getDashboard(session.access_token)
-    : {
-        stats: {
-          totalArticles: 0,
-          totalUsers: 0,
-          totalComments: 0,
-          publishedArticles: 0,
-          draftArticles: 0,
-        },
-        recentArticles: [],
-        recentComments: [],
-      };
+  const dashboard = await adminService.getDashboard(session.access_token);
 
   const cards = [
     { label: "Total Articles", value: dashboard.stats.totalArticles },

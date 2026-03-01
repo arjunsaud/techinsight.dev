@@ -11,7 +11,10 @@ async function getAllPublishedArticles() {
   const all: Article[] = [];
 
   do {
-    const response = await articleService.listPublished({ page, pageSize });
+    const response = await articleService.listPublished(
+      { page, pageSize },
+      { next: { revalidate: 3600, tags: ["articles"] } },
+    );
     all.push(...response.data);
     total = response.total;
     if (response.data.length === 0) {
@@ -33,7 +36,9 @@ export async function getPublishedArticles() {
 
 export async function getArticleBySlug(slug: string) {
   try {
-    return await articleService.getBySlug(slug);
+    return await articleService.getBySlug(slug, {
+      next: { revalidate: 3600, tags: [`article-${slug}`] },
+    });
   } catch {
     return null;
   }
@@ -49,7 +54,9 @@ export async function getCommentsByArticle(articleId: string) {
 
 export async function getCategories() {
   try {
-    return await adminService.listCategories();
+    return await adminService.listCategories(undefined, {
+      next: { revalidate: 3600, tags: ["categories"] },
+    });
   } catch {
     return [] as Category[];
   }
@@ -57,7 +64,9 @@ export async function getCategories() {
 
 export async function getTags() {
   try {
-    return await adminService.listTags();
+    return await adminService.listTags(undefined, {
+      next: { revalidate: 3600, tags: ["tags"] },
+    });
   } catch {
     return [] as Tag[];
   }

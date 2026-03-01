@@ -1,20 +1,15 @@
 import { AdminHeader } from "@/components/layout/admin.header";
 import { AdminCommentsList } from "@/components/comments/admin-comments-list";
 import { adminService } from "@/services/admin-service";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/supabase/guards";
 
 export default async function AdminCommentsPage({
   searchParams,
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const comments = session
-    ? await adminService.listComments(session.access_token)
-    : [];
+  const session = await requireAdmin();
+  const comments = await adminService.listComments(session.access_token);
 
   const resolvedParams = searchParams ? await searchParams : {};
   const filter =
