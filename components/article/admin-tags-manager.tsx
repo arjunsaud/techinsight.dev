@@ -1,11 +1,12 @@
 "use client";
 
+import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 
 import type { Tag } from "@/types/domain";
 import { adminService } from "@/services/admin-service";
@@ -41,6 +42,14 @@ export function AdminTagsManager({
   });
 
   const tags = tagsQuery.data ?? [];
+
+  const [searchTerm, setSearchTerm] = React.useState("");
+
+  const filteredTags = React.useMemo(() => {
+    return tags.filter((t) =>
+      t.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
+  }, [tags, searchTerm]);
 
   const createTagMutation = useMutation({
     mutationFn: async (values: FormValues) => {
@@ -102,14 +111,35 @@ export function AdminTagsManager({
         </form>
       </div>
 
+      {/* Search Tags */}
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search tags..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10 h-10 shadow-none bg-background"
+        />
+        {searchTerm && (
+          <button
+            onClick={() => setSearchTerm("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
       {/* Tags Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {tags.length === 0 ? (
+        {filteredTags.length === 0 ? (
           <div className="col-span-full rounded-xl border border-dashed p-8 text-center text-muted-foreground">
-            No tags found. Create one above!
+            {searchTerm
+              ? "No tags match your search."
+              : "No tags found. Create one above!"}
           </div>
         ) : (
-          tags.map((tag) => (
+          filteredTags.map((tag) => (
             <TagCard key={tag.id}>
               <TagCard.Icon />
               <TagCard.Header

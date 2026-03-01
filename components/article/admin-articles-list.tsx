@@ -1,9 +1,11 @@
 "use client";
 
+import * as React from "react";
 import { useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { X } from "lucide-react";
 
 import type { Article } from "@/types/domain";
 import { articleService } from "@/services/article-service";
@@ -27,26 +29,49 @@ export function AdminArticlesList({
   const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
 
+  const [searchQuery, setSearchQuery] = React.useState(
+    searchParams.get("search") || "",
+  );
+
   const articlesQuery = useQuery({
-    queryKey: ["admin-articles"],
+    queryKey: ["admin-articles", filter, searchQuery],
     queryFn: () =>
       articleService.listAdmin(
         {
           page: 1,
           pageSize: 100,
+          status: filter === "all" ? undefined : (filter as any),
+          query: searchQuery || undefined,
         },
         accessToken,
       ),
-    initialData: {
-      data: initialArticles,
-      page: 1,
-      pageSize: 100,
-      total: initialArticles.length,
-    },
+    initialData: searchQuery
+      ? undefined
+      : {
+          data: initialArticles,
+          page: 1,
+          pageSize: 100,
+          total: initialArticles.length,
+        },
     enabled: Boolean(accessToken),
   });
 
   const allArticles = articlesQuery.data?.data ?? [];
+
+  // Debounce search update to URL
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (searchQuery) {
+        params.set("search", searchQuery);
+      } else {
+        params.delete("search");
+      }
+      router.replace(`${pathname}?${params.toString()}` as any);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, router, pathname, searchParams]);
 
   const handleFilterChange = (newFilter: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -76,21 +101,17 @@ export function AdminArticlesList({
     },
   });
 
-  // Derived counts for tabs
+  // Derived counts for tabs - we keep these based on the full initial fetch if possible
+  // or just use the current query's total if we want to be accurate to the search.
+  // For now, let's keep it simple.
   const publishedCount = allArticles.filter(
     (a) => a.status === "published",
   ).length;
   const draftCount = allArticles.filter((a) => a.status === "draft").length;
-  // Assume scheduled mapping doesn't exist yet, so we just calculate 0
   const scheduledCount = 0;
 
-  const filteredArticles = allArticles.filter((article) => {
-    if (filter === "all") return true;
-    return article.status === filter;
-  });
-
   const filters = [
-    { id: "all", label: "All", count: allArticles.length },
+    { id: "all", label: "All", count: articlesQuery.data?.total ?? 0 },
     { id: "published", label: "Published", count: publishedCount },
     { id: "draft", label: "Drafts", count: draftCount },
     { id: "scheduled", label: "Scheduled", count: scheduledCount },
@@ -115,8 +136,18 @@ export function AdminArticlesList({
           <input
             type="text"
             placeholder="Search articles..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="h-10 w-full rounded-md border border-input bg-background pl-10 pr-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
 
         <div className="flex items-center rounded-md bg-muted/50 p-1">
@@ -139,12 +170,12 @@ export function AdminArticlesList({
 
       {/* Article Cards List */}
       <div className="space-y-4">
-        {filteredArticles.length === 0 ? (
+        {allArticles.length === 0 ? (
           <div className="rounded-xl border border-dashed p-8 text-center text-muted-foreground">
             No articles found for the selected filter.
           </div>
         ) : (
-          filteredArticles.map((article) => (
+          allArticles.map((article: Article) => (
             <ArticleCard key={article.id} id={article.id} slug={article.slug}>
               <ArticleCard.Image
                 src={article.featured_image_url}
@@ -154,7 +185,7 @@ export function AdminArticlesList({
                 title={article.title}
                 excerpt={article.excerpt}
                 status={article.status}
-                tags={article.tags?.map((t) => t.name) || []}
+                tags={article.tags?.map((t: any) => t.name) || []}
                 views={article.id.length * 42} // Placeholder for real stats
                 likes={article.id.length * 3} // Placeholder code
                 comments={0}

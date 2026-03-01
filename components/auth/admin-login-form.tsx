@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 
 const schema = z.object({
   email: z.string().email(),
-  password: z.string().min(8)
+  password: z.string().min(8),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -29,8 +29,8 @@ export function AdminLoginForm() {
     resolver: zodResolver(schema),
     defaultValues: {
       email: "",
-      password: ""
-    }
+      password: "",
+    },
   });
 
   const onSubmit = form.handleSubmit(async (values) => {
@@ -41,7 +41,7 @@ export function AdminLoginForm() {
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email: values.email,
-        password: values.password
+        password: values.password,
       });
 
       if (error || !data.user) {
@@ -56,8 +56,7 @@ export function AdminLoginForm() {
       }
 
       toast.success("Admin login successful");
-      router.push("/admin/articles");
-      router.refresh();
+      window.location.href = "/admin/dashboard";
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to login");
     } finally {

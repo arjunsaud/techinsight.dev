@@ -19,17 +19,17 @@ export async function requireSession(nextPath: Route = "/admin/login") {
 export async function requireAdmin(nextPath: Route = "/admin/login") {
   const supabase = await createClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
     redirect(nextPath);
   }
 
   const { data: profile, error } = await supabase
-    .from("users")
+    .from("superadmins")
     .select("role")
-    .eq("id", session.user.id)
+    .eq("id", user.id)
     .single();
 
   if (
@@ -40,28 +40,42 @@ export async function requireAdmin(nextPath: Route = "/admin/login") {
     redirect("/admin/login");
   }
 
+  // To maintain compatibility with existing pages that expect a session-like object
+  // we can return a mock session or just the user.
+  // Most callers only care about access_token if they call services.
+  // We can get the session to get the access token if needed, or just return the user.
+  // Wait, some pages do `session.access_token`.
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) redirect(nextPath);
   return session;
 }
 
 export async function requireSuperAdmin(nextPath: Route = "/admin/login") {
   const supabase = await createClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
     redirect(nextPath);
   }
 
   const { data: profile, error } = await supabase
-    .from("users")
+    .from("superadmins")
     .select("role")
-    .eq("id", session.user.id)
+    .eq("id", user.id)
     .single();
 
   if (error || !profile || profile.role !== "superadmin") {
     redirect("/admin/login");
   }
 
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) redirect(nextPath);
   return session;
 }

@@ -1,5 +1,5 @@
 import { AdminArticleStudio } from "@/components/article/admin-article-studio";
-import { ArticleSeoSettings } from "@/components/article/admin-seo-settings";
+import { ArticleSettings } from "@/components/article/admin-article-settings";
 import { AdminStudioProvider } from "@/components/article/admin-studio-context";
 import { ArticleHeaderControls } from "@/components/article/admin-header-controls";
 import { requireAdmin } from "@/lib/supabase/guards";
@@ -41,7 +41,7 @@ export default async function AdminArticlesPage({
           />
           <div className="flex items-center gap-2">
             <ArticleHeaderControls />
-            <ArticleSeoSettings
+            <ArticleSettings
               accessToken={accessToken}
               articleId={editArticleId}
             />

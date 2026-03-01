@@ -1,11 +1,12 @@
 "use client";
 
+import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Folder, Pencil, Trash2, Plus } from "lucide-react";
+import { Folder, Pencil, Trash2, Plus, Search, X } from "lucide-react";
 
 import type { Category } from "@/types/domain";
 import { adminService } from "@/services/admin-service";
@@ -104,6 +105,14 @@ export function AdminCategoriesManager({
     },
   });
 
+  const [searchTerm, setSearchTerm] = React.useState("");
+
+  const filteredCategories = React.useMemo(() => {
+    return categories.filter((c) =>
+      c.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
+  }, [categories, searchTerm]);
+
   const onSubmit = form.handleSubmit((values) => {
     createCategoryMutation.mutate(values);
   });
@@ -140,14 +149,35 @@ export function AdminCategoriesManager({
         </form>
       </div>
 
+      {/* Search Categories */}
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search categories..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10 h-10 shadow-none bg-background"
+        />
+        {searchTerm && (
+          <button
+            onClick={() => setSearchTerm("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
       {/* Categories List */}
       <div className="space-y-4">
-        {categories.length === 0 ? (
+        {filteredCategories.length === 0 ? (
           <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground bg-card/50">
-            No categories found. Create one above to get started.
+            {searchTerm
+              ? "No categories match your search."
+              : "No categories found. Create one above to get started."}
           </div>
         ) : (
-          categories.map((category) => (
+          filteredCategories.map((category) => (
             <div
               key={category.id}
               className="group flex flex-col sm:flex-row sm:items-center gap-4 rounded-xl border bg-card p-4 transition-all hover:shadow-md"
