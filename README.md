@@ -11,7 +11,7 @@ A Next.js + Supabase starter implementation based on the provided SRS (v1.1,
 - Hono (routing layer inside Supabase Edge Functions)
 - React Query for API state
 - React Hook Form + Zod for forms
-- Editor.js for block-based article editor
+- BlockNote (React) for block-based article editor
 - R2 integration entrypoint for article image uploads
 
 ## Quick Start

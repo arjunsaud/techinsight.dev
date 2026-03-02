@@ -20,7 +20,7 @@
   `app/admin/(protected)/articles/all/page.tsx`,
   `components/article/studio/hashnode-studio.tsx`,
   `components/article/admin-articles-list.tsx`
-- Rich content (Editor.js): `components/article/editor.tsx`
+- Rich content (BlockNote): `components/article/editor.tsx`
 
 ## Category & Tag Management
 

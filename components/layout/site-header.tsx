@@ -13,19 +13,27 @@ export function SiteHeader() {
           <span className="text-gray-900">Tech</span>
           <span className="text-blue-500">Insight</span>
         </Link>
-
         {/* Center nav — hidden on mobile */}
-        <nav className="hidden items-center gap-6 text-sm text-gray-500 md:flex">
-          <Link href="/articles" className="transition-colors hover:text-gray-900">
+        <nav className="hidden items-center gap-6 text-sm absolute justify-center left-1/2 -translate-x-1/2 text-gray-500 md:flex">
+          <Link
+            href="/articles"
+            className="transition-colors hover:text-gray-900"
+          >
             Home
           </Link>
-          <Link href="/articles" className="transition-colors hover:text-gray-900">
-            Stories
+          <Link
+            href="/articles"
+            className="transition-colors hover:text-gray-900"
+          >
+            Top
+          </Link>
+          <Link
+            href="/articles"
+            className="transition-colors hover:text-gray-900"
+          >
+            Series
           </Link>
         </nav>
-
-        {/* Right actions */}
-        <div className="flex items-center gap-2 sm:gap-3"></div>
       </div>
     </header>
   );
