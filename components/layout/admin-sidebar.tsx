@@ -7,6 +7,7 @@ import {
   Tags,
   MessageSquare,
   Users,
+  Settings2,
 } from "lucide-react";
 
 const adminLinks = [
@@ -17,6 +18,7 @@ const adminLinks = [
   { href: "/admin/tags", label: "Tags", Icon: Tags },
   { href: "/admin/comments", label: "Comments", Icon: MessageSquare },
   { href: "/admin/users", label: "Users", Icon: Users },
+  { href: "/admin/settings", label: "Settings", Icon: Settings2 },
 ] as const;
 
 export function AdminSidebar() {

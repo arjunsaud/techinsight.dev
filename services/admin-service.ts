@@ -32,7 +32,7 @@ export const adminService = {
     accessToken?: string,
     options: { next?: NextFetchRequestConfig; cache?: RequestCache } = {},
   ) {
-    return apiFetch<Category[]>("article/categories", {
+    return apiFetch<Category[]>("category", {
       accessToken,
       ...options,
     });
@@ -43,7 +43,7 @@ export const adminService = {
     description: string | null,
     accessToken: string,
   ) {
-    return apiFetch<Category>("article/categories", {
+    return apiFetch<Category>("category", {
       method: "POST",
       accessToken,
       body: { name, description },
@@ -60,7 +60,7 @@ export const adminService = {
     },
     accessToken: string,
   ) {
-    return apiFetch<Category>(`article/categories/${categoryId}`, {
+    return apiFetch<Category>(`category/${categoryId}`, {
       method: "PATCH",
       accessToken,
       body: input,
@@ -68,7 +68,7 @@ export const adminService = {
   },
 
   removeCategory(categoryId: string, accessToken: string) {
-    return apiFetch<void>(`article/categories/${categoryId}`, {
+    return apiFetch<void>(`category/${categoryId}`, {
       method: "DELETE",
       accessToken,
     });
@@ -78,14 +78,14 @@ export const adminService = {
     accessToken?: string,
     options: { next?: NextFetchRequestConfig; cache?: RequestCache } = {},
   ) {
-    return apiFetch<Tag[]>("article/tags", {
+    return apiFetch<Tag[]>("tag", {
       accessToken,
       ...options,
     });
   },
 
   createTag(name: string, accessToken: string) {
-    return apiFetch<Tag>("article/tags", {
+    return apiFetch<Tag>("tag", {
       method: "POST",
       accessToken,
       body: { name },
@@ -97,7 +97,7 @@ export const adminService = {
     input: { name?: string; slug?: string },
     accessToken: string,
   ) {
-    return apiFetch<Tag>(`article/tags/${tagId}`, {
+    return apiFetch<Tag>(`tag/${tagId}`, {
       method: "PATCH",
       accessToken,
       body: input,
@@ -105,7 +105,7 @@ export const adminService = {
   },
 
   removeTag(tagId: string, accessToken: string) {
-    return apiFetch<void>(`article/tags/${tagId}`, {
+    return apiFetch<void>(`tag/${tagId}`, {
       method: "DELETE",
       accessToken,
     });

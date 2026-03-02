@@ -144,3 +144,53 @@ body {
   margin: 1rem auto;
   max-width: 100%;
 }
+
+/* Links inside rendered content */
+.hashnode-render-content a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Inline formatting */
+.hashnode-render-content strong {
+  font-weight: 700;
+}
+
+.hashnode-render-content em {
+  font-style: italic;
+}
+
+/* Images inside rendered content */
+.hashnode-render-content img {
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.8rem;
+  display: block;
+  margin: 1rem auto;
+  max-width: 100%;
+}
+
+/* Tables */
+.hashnode-render-content table {
+  border-collapse: collapse;
+  margin: 1rem 0;
+  width: 100%;
+  font-size: 0.95em;
+}
+
+.hashnode-render-content th,
+.hashnode-render-content td {
+  border: 1px solid hsl(var(--border));
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.hashnode-render-content th {
+  background: hsl(var(--secondary));
+  font-weight: 600;
+}
+
+/* List item spacing */
+.hashnode-render-content li {
+  margin: 0.25rem 0;
+}

@@ -5,6 +5,7 @@ import type {
   ArticlePayload,
   CloudinarySettings,
 } from "../types.ts";
+import { isUuid, slugify } from "../../../shared/utils.ts";
 
 const CLOUDINARY_SETTING_KEYS = [
   "CLOUDINARY_CLOUD_NAME",
@@ -15,21 +16,6 @@ const CLOUDINARY_SETTING_KEYS = [
 
 const ARTICLE_SELECT =
   "id,title,slug,content,excerpt,category_id,featured_image_url,status,author_id,published_at,created_at,updated_at,seo_title,meta_description,keywords,category:categories(id,name,slug,created_at),tags:article_tags(tag:tags(id,name,slug,created_at))";
-
-export function slugify(input: string) {
-  return input
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "")
-    .slice(0, 120);
-}
-
-export function isUuid(value: string) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-    value,
-  );
-}
 
 export async function getCloudinarySettingsModel(
   supabase: SupabaseClient,
@@ -280,154 +266,6 @@ export async function deleteArticleModel(
     .from("articles")
     .delete()
     .eq("id", articleId);
-  if (error) {
-    throw new Error(error.message);
-  }
-}
-
-export async function listCategoriesModel(supabase: SupabaseClient) {
-  const { data, error } = await supabase
-    .from("categories")
-    .select("id,name,slug,created_at")
-    .order("name");
-  if (error) {
-    throw new Error(error.message);
-  }
-  return data ?? [];
-}
-
-export async function createCategoryModel(
-  supabase: SupabaseClient,
-  payload: { name?: string; slug?: string },
-) {
-  if (!payload.name) {
-    throw new Error("name is required");
-  }
-
-  const { data, error } = await supabase
-    .from("categories")
-    .insert({
-      name: payload.name,
-      slug: payload.slug ? slugify(payload.slug) : slugify(payload.name),
-    })
-    .select("id,name,slug,created_at")
-    .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data;
-}
-
-export async function updateCategoryModel(
-  supabase: SupabaseClient,
-  categoryId: string,
-  payload: { name?: string; slug?: string },
-) {
-  const updates: Record<string, unknown> = {};
-  if (payload.name !== undefined) {
-    updates.name = payload.name;
-  }
-  if (payload.slug !== undefined) {
-    updates.slug = slugify(payload.slug);
-  } else if (payload.name !== undefined) {
-    updates.slug = slugify(payload.name);
-  }
-
-  const { data, error } = await supabase
-    .from("categories")
-    .update(updates)
-    .eq("id", categoryId)
-    .select("id,name,slug,created_at")
-    .maybeSingle();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data;
-}
-
-export async function deleteCategoryModel(
-  supabase: SupabaseClient,
-  categoryId: string,
-) {
-  const { error } = await supabase
-    .from("categories")
-    .delete()
-    .eq("id", categoryId);
-  if (error) {
-    throw new Error(error.message);
-  }
-}
-
-export async function listTagsModel(supabase: SupabaseClient) {
-  const { data, error } = await supabase
-    .from("tags")
-    .select("id,name,slug,created_at")
-    .order("name");
-  if (error) {
-    throw new Error(error.message);
-  }
-  return data ?? [];
-}
-
-export async function createTagModel(
-  supabase: SupabaseClient,
-  payload: { name?: string; slug?: string },
-) {
-  if (!payload.name) {
-    throw new Error("name is required");
-  }
-
-  const { data, error } = await supabase
-    .from("tags")
-    .insert({
-      name: payload.name,
-      slug: payload.slug ? slugify(payload.slug) : slugify(payload.name),
-    })
-    .select("id,name,slug,created_at")
-    .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data;
-}
-
-export async function updateTagModel(
-  supabase: SupabaseClient,
-  tagId: string,
-  payload: { name?: string; slug?: string },
-) {
-  const updates: Record<string, unknown> = {};
-  if (payload.name !== undefined) {
-    updates.name = payload.name;
-  }
-  if (payload.slug !== undefined) {
-    updates.slug = slugify(payload.slug);
-  } else if (payload.name !== undefined) {
-    updates.slug = slugify(payload.name);
-  }
-
-  const { data, error } = await supabase
-    .from("tags")
-    .update(updates)
-    .eq("id", tagId)
-    .select("id,name,slug,created_at")
-    .maybeSingle();
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data;
-}
-
-export async function deleteTagModel(supabase: SupabaseClient, tagId: string) {
-  const { error } = await supabase.from("tags").delete().eq("id", tagId);
   if (error) {
     throw new Error(error.message);
   }

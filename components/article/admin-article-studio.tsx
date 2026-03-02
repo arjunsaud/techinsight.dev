@@ -283,7 +283,7 @@ export function AdminArticleStudio({
               )}
             </div>
             <div
-              className="prose prose-lg dark:prose-invert max-w-none pt-8 border-t"
+              className="hashnode-render-content max-w-none pt-8 border-t"
               dangerouslySetInnerHTML={{ __html: previewContent || "" }}
             />
           </div>
