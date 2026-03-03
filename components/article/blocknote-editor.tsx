@@ -42,7 +42,7 @@ export default function BlockNoteEditor({
   };
 
   return (
-    <div className="min-h-[460px] bg-background">
+    <div className="w-full bg-background">
       <BlockNoteView editor={editor} onChange={handleChange} theme="light" />
     </div>
   );

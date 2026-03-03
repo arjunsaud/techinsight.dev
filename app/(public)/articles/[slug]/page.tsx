@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import Image from "next/image";
+
 import { RecommendedArticles } from "@/components/article/recommended-articles";
 import { SidebarCategories } from "@/components/article/sidebar-categories";
 
@@ -136,11 +138,14 @@ export default async function ArticleDetailPage({
                   </span>
                 </div>
                 <h1
-                  className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl"
+                  className="text-4xl font-bold tracking-tight sm:text-4xl md:text-4xl"
                   style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
                 >
                   {article.title}
                 </h1>
+                {article.excerpt ? (
+                  <p className="text-lg text-gray-600">{article.excerpt}</p>
+                ) : null}
                 <div className="flex flex-wrap gap-2">
                   {(article.tags ?? []).map((tag) => (
                     <Link key={tag.id} href={`/tags/${tag.slug}`}>
@@ -151,6 +156,19 @@ export default async function ArticleDetailPage({
                   ))}
                 </div>
               </header>
+
+              {article.featured_image_url ? (
+                <figure className="overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 shadow-sm">
+                  <Image
+                    src={article.featured_image_url}
+                    alt={article.title || "Article featured image"}
+                    width={1400}
+                    height={750}
+                    className="h-auto w-full object-cover"
+                    priority
+                  />
+                </figure>
+              ) : null}
 
               <section
                 className="hashnode-render-content prose max-w-none"

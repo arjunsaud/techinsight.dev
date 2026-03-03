@@ -28,9 +28,15 @@ export function AdminCommentsList({
     } else {
       params.set("filter", newFilter);
     }
-    startTransition(() => {
-      router.push(`${pathname}?${params.toString()}` as any);
-    });
+
+    const newSearch = params.toString();
+    const currentSearch = searchParams.toString();
+
+    if (newSearch !== currentSearch) {
+      startTransition(() => {
+        router.push(`${pathname}?${newSearch}` as any);
+      });
+    }
   };
 
   const getStatus = (comment: any) => {

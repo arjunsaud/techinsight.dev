@@ -257,7 +257,7 @@ export function AdminArticleStudio({
 
   return (
     <div className="mt-8 flex w-full justify-center">
-      <div className="w-full max-w-3xl px-4">
+      <div className="w-full max-w-4xl -translate-x-24 px-4">
         {isPreviewMode ? (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
             {previewImage && (
@@ -271,13 +271,13 @@ export function AdminArticleStudio({
             )}
             <div className="space-y-4">
               <h1
-                className="text-5xl font-bold tracking-tight"
+                className="text-4xl font-bold tracking-tight"
                 style={{ fontFamily: "serif" }}
               >
                 {previewTitle || "Untitled Post"}
               </h1>
               {previewExcerpt && (
-                <p className="text-xl text-muted-foreground leading-relaxed italic">
+                <p className="text-xl text-muted-foreground/80 leading-relaxed italic">
                   {previewExcerpt}
                 </p>
               )}
@@ -302,19 +302,28 @@ export function AdminArticleStudio({
             />
 
             <div className="space-y-6">
-              <input
+              <textarea
                 {...register("title")}
-                type="text"
-                placeholder="Article Title"
-                className="w-full border-none bg-transparent p-0 text-5xl font-bold tracking-tight outline-none placeholder:text-muted-foreground/30 focus:ring-0"
-                style={{ fontFamily: "serif" }}
+                placeholder="Untitled"
+                rows={1}
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = "auto";
+                  target.style.height = target.scrollHeight + "px";
+                }}
+                className="w-full resize-none overflow-hidden border-none bg-transparent p-0 text-4xl font-bold tracking-tight outline-none placeholder:text-muted-foreground/40"
               />
 
               <textarea
                 {...register("excerpt")}
                 placeholder="Short description..."
-                className="w-full resize-none border-none bg-transparent p-0 text-xl text-muted-foreground/60 outline-none placeholder:text-muted-foreground/20 focus:ring-0"
+                className="w-full resize-none border-none bg-transparent p-0 text-xl text-muted-foreground/90 outline-none placeholder:text-muted-foreground/40 focus:ring-0"
                 rows={2}
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = "auto";
+                  target.style.height = target.scrollHeight + "px";
+                }}
               />
 
               <div className="pt-8">

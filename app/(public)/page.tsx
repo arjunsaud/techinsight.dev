@@ -45,7 +45,7 @@ export default async function ArticleIndexPage() {
       )}
 
       {/* Main Container */}
-      <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 md:py-10">
+      <div className="mx-auto container w-full px-4 py-8 sm:px-6 md:py-10">
         <div className="flex flex-col gap-0 md:flex-row lg:gap-12">
           {/* LEFT COLUMN: Categories (Desktop Only) */}
           <aside className="hidden shrink-0 lg:block lg:w-[20%]">
@@ -56,7 +56,7 @@ export default async function ArticleIndexPage() {
               <nav className="flex flex-col gap-2">
                 <Link
                   href="/articles"
-                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
+                  className="rounded-lg w-1/2 bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
                 >
                   All Stories
                 </Link>
@@ -74,7 +74,7 @@ export default async function ArticleIndexPage() {
           </aside>
 
           {/* MIDDLE COLUMN: Article Feed */}
-          <main className="w-full md:w-[70%] lg:w-[55%] md:border-r md:border-gray-100 md:pr-10 lg:pr-0 lg:border-r-0">
+          <main className="w-full md:w-[70%] lg:w-[65%] md:border-r md:border-gray-100 md:pr-10 lg:pr-0 lg:border-r-0">
             <div className="mb-8 block lg:hidden">
               <h2 className="text-xl font-bold text-gray-900">
                 Latest Stories
@@ -84,7 +84,7 @@ export default async function ArticleIndexPage() {
           </main>
 
           {/* RIGHT COLUMN: Tags & Meta */}
-          <aside className="hidden md:block md:w-[30%] md:pl-10 lg:w-[25%] lg:pl-0">
+          <aside className="hidden md:block md:w-[25%] md:pl-10 lg:w-[20%] lg:pl-0">
             <div className="sticky top-24 space-y-10">
               {/* Recommended Categories */}
               <SidebarCategories categories={categories} />

@@ -33,6 +33,8 @@ export function AdminArticlesList({
     searchParams.get("search") || "",
   );
 
+  const hasInitialData = !searchQuery && initialArticles.length > 0;
+
   const articlesQuery = useQuery({
     queryKey: ["admin-articles", filter, searchQuery],
     queryFn: () =>
@@ -45,15 +47,19 @@ export function AdminArticlesList({
         },
         accessToken,
       ),
-    initialData: searchQuery
-      ? undefined
-      : {
+    initialData: hasInitialData
+      ? {
           data: initialArticles,
           page: 1,
           pageSize: 100,
           total: initialArticles.length,
-        },
+        }
+      : undefined,
     enabled: Boolean(accessToken),
+    staleTime: 60_000, // avoid refetching on every focus in admin view
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: hasInitialData ? false : true,
   });
 
   const allArticles = articlesQuery.data?.data ?? [];
@@ -67,7 +73,13 @@ export function AdminArticlesList({
       } else {
         params.delete("search");
       }
-      router.replace(`${pathname}?${params.toString()}` as any);
+
+      const newSearch = params.toString();
+      const currentSearch = searchParams.toString();
+
+      if (newSearch !== currentSearch) {
+        router.replace(`${pathname}?${newSearch}` as any);
+      }
     }, 500);
 
     return () => clearTimeout(timer);
