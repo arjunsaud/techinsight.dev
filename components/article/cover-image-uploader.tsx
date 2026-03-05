@@ -121,7 +121,7 @@ export function CoverImageUploader({
           ) : (
             <Upload className="h-4 w-4" />
           )}
-          <span className="text-sm font-medium">Add cover image</span>
+          <span className="text-lg font-medium">Add cover image</span>
         </div>
       </Button>
     </div>

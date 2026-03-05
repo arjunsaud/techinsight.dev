@@ -25,7 +25,12 @@ export function ArticleHeaderControls() {
         {isSaving ? "Saving..." : "Save"}
       </Button>
 
-      <Button className="gap-2" onClick={togglePreview} variant="outline" size="sm">
+      <Button
+        className="gap-2"
+        onClick={togglePreview}
+        variant="outline"
+        size="sm"
+      >
         {isPreviewMode ? (
           <EyeOff className="h-4 w-4" />
         ) : (

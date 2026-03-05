@@ -15,6 +15,7 @@ import {
   registerAdminStudioControls,
   setAdminStudioState,
 } from "@/components/article/admin-studio-context";
+import { revalidateArticle } from "@/lib/actions";
 
 interface HashnodeStudioProps {
   accessToken: string;
@@ -225,6 +226,9 @@ export function AdminArticleStudio({
     },
     onSuccess: (savedArticle, variables) => {
       queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
+      // Revalidate Next.js cache
+      revalidateArticle(savedArticle.slug);
+
       toast.success(
         variables.status === "published" ? "Article published" : "Draft saved",
       );
@@ -334,6 +338,7 @@ export function AdminArticleStudio({
                     <ArticleEditor
                       value={field.value}
                       onChange={field.onChange}
+                      accessToken={accessToken}
                     />
                   )}
                 />

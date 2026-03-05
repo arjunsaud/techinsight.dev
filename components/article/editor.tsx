@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 interface ArticleEditorProps {
   value: string;
   onChange: (value: string) => void;
+  accessToken: string;
 }
 
 const BlockNoteEditor = dynamic(() => import("./blocknote-editor"), {

@@ -37,9 +37,13 @@ body {
 .hashnode-editor-content {
   min-height: 420px;
   line-height: 1.75;
-  font-size: 1.04rem;
+  font-size: var(--bn-font-size, 1.04rem);
   color: hsl(var(--foreground));
   outline: none;
+}
+
+.bn-editor {
+  font-size: var(--bn-font-size, 1.04rem) !important;
 }
 
 .hashnode-render-content {
@@ -143,6 +147,24 @@ body {
   display: block;
   margin: 1rem auto;
   max-width: 100%;
+}
+
+/* BlockNote specific image styles */
+.hashnode-render-content .bn-visual-wrapper img,
+.hashnode-render-content .bn-image-container img {
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.8rem;
+  display: block;
+  margin: 1rem auto;
+  max-width: 100%;
+  height: auto;
+}
+
+.hashnode-render-content .bn-visual-wrapper,
+.hashnode-render-content .bn-image-container {
+  margin: 1.5rem 0;
+  display: flex;
+  justify-content: center;
 }
 
 /* Links inside rendered content */
