@@ -32,10 +32,7 @@ export function SiteHeader() {
             Home
           </Link>
           <Link href="/" className="transition-colors hover:text-gray-900">
-            Top
-          </Link>
-          <Link href="/" className="transition-colors hover:text-gray-900">
-            Series
+            Featured
           </Link>
         </nav>
       </div>

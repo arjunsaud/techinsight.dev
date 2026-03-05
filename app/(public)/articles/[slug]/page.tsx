@@ -5,11 +5,13 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 
 import { RecommendedArticles } from "@/components/article/recommended-articles";
+import { PublicSidebar } from "@/components/layout/public-sidebar";
 import { SidebarCategories } from "@/components/article/sidebar-categories";
 
 import { CommentForm } from "@/components/comments/comment-form";
 import { CommentList } from "@/components/comments/comment-list";
 import { Badge } from "@/components/ui/badge";
+import { TableOfContents } from "@/components/article/toc";
 import {
   getArticleBySlug,
   getCategories,
@@ -17,7 +19,7 @@ import {
   getPublishedArticles,
   getTags,
 } from "@/lib/server-data";
-import { formatDate } from "@/lib/utils";
+import { formatDate, injectHeadingIds } from "@/lib/utils";
 import type { Article, Category, Tag } from "@/types/domain";
 
 interface ArticleDetailPageProps {
@@ -170,9 +172,15 @@ export default async function ArticleDetailPage({
                 </figure>
               ) : null}
 
+              {article.show_toc && (
+                <TableOfContents content={article.content} />
+              )}
+
               <section
                 className="hashnode-render-content prose max-w-none"
-                dangerouslySetInnerHTML={{ __html: article.content }}
+                dangerouslySetInnerHTML={{
+                  __html: injectHeadingIds(article.content),
+                }}
               />
 
               <section className="space-y-6 border-t pt-10">
@@ -185,44 +193,12 @@ export default async function ArticleDetailPage({
             </article>
           </main>
 
-          {/* RIGHT COLUMN: Sidebar (Tags & CTA) */}
-          <aside className="hidden md:block md:w-[30%] md:pl-10 lg:w-[25%] lg:pl-0">
-            <div className="sticky top-24 space-y-10">
-              {/* Recommended Articles */}
-              <RecommendedArticles articles={recommendedArticles} />
-
-              <hr className="border-gray-100" />
-
-              {/* Recommended Categories */}
-              <SidebarCategories
-                categories={categories}
-                activeCategoryId={article.category?.id}
-              />
-
-              <hr className="border-gray-100" />
-
-              {/* Newsletter / CTA */}
-              <div className="rounded-2xl bg-gray-50 p-6">
-                <h4 className="font-serif text-lg font-bold text-gray-900">
-                  Enjoying this article?
-                </h4>
-                <p className="mt-2 text-sm text-gray-500">
-                  Stay ahead with more insights like this delivered to your
-                  inbox.
-                </p>
-                <button className="mt-4 w-full rounded-full bg-primary py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90">
-                  Subscribe
-                </button>
-              </div>
-
-              {/* Footer mini */}
-              <div className="border-t border-gray-100 pt-8 text-xs text-gray-400">
-                <p>
-                  © {new Date().getFullYear()} TechInsight. All rights reserved.
-                </p>
-              </div>
-            </div>
-          </aside>
+          <PublicSidebar
+            categories={categories}
+            recommendedArticles={recommendedArticles}
+            activeCategoryId={article.category?.id}
+            className="hidden md:block md:w-[30%] md:pl-10 lg:w-[25%] lg:pl-0"
+          />
         </div>
       </div>
     </div>

@@ -10,7 +10,7 @@ interface SidebarCategoriesProps {
 export function SidebarCategories({
   categories,
   activeCategoryId,
-  title = "Recommended Categories",
+  title = "Recommended Topics",
 }: SidebarCategoriesProps) {
   if (categories.length === 0) return null;
 

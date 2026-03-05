@@ -9,7 +9,7 @@ export function formatDate(isoDate: string) {
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
-    year: "numeric"
+    year: "numeric",
   }).format(new Date(isoDate));
 }
 
@@ -19,4 +19,24 @@ export function createExcerpt(content: string, maxLength = 180) {
     return stripped;
   }
   return `${stripped.slice(0, maxLength).trim()}...`;
+}
+
+export function injectHeadingIds(html: string) {
+  let index = 0;
+  return html.replace(
+    /<(h[1-3])([^>]*)>(.*?)<\/h[1-3]>/gi,
+    (match, tag, attrs, content) => {
+      if (attrs.includes("id=")) return match;
+
+      // Simple slugify for the ID
+      const text = content.replace(/<[^>]+>/g, "").trim();
+      const id =
+        text
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "") || `heading-${index++}`;
+
+      return `<${tag}${attrs} id="${id}">${content}</${tag}>`;
+    },
+  );
 }

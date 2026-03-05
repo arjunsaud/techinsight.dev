@@ -3,25 +3,15 @@
 import { revalidateTag, revalidatePath } from "next/cache";
 
 export async function revalidateArticle(slug?: string) {
-  // Revalidate by tag
-  revalidateTag("articles");
-  if (slug) {
-    revalidateTag(`article-${slug}`);
-  }
-
   // Revalidate by path for immediate effect
-  revalidatePath("/articles");
-  revalidatePath("/");
+  revalidatePath("/articles", "page");
+  revalidatePath("/", "page");
   if (slug) {
-    revalidatePath(`/articles/${slug}`);
-    revalidatePath(`/${slug}`);
+    revalidatePath(`/articles/${slug}`, "page");
+    revalidatePath(`/${slug}`, "page");
   }
 }
 
 export async function revalidateGlobal() {
-  revalidateTag("categories");
-  revalidateTag("tags");
-  revalidateTag("articles");
-
   revalidatePath("/", "layout");
 }

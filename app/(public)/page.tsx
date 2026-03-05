@@ -1,8 +1,7 @@
 import Link from "next/link";
 
 import { ArticleList } from "@/components/article/article-list";
-import { RecommendedArticles } from "@/components/article/recommended-articles";
-import { SidebarCategories } from "@/components/article/sidebar-categories";
+import { PublicSidebar } from "@/components/layout/public-sidebar";
 import {
   getCategories,
   getPublishedArticles,
@@ -75,67 +74,18 @@ export default async function ArticleIndexPage() {
 
           {/* MIDDLE COLUMN: Article Feed */}
           <main className="w-full md:w-[70%] lg:w-[65%] md:border-r md:border-gray-100 md:pr-10 lg:pr-0 lg:border-r-0">
-            <div className="mb-8 block lg:hidden">
-              <h2 className="text-xl font-bold text-gray-900">
-                Latest Stories
-              </h2>
-            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-8">
+              Latest Stories
+              <div className="h-0.5 w-full bg-gray-100 mt-2"></div>
+            </h2>
             <ArticleList articles={articles} />
           </main>
 
-          {/* RIGHT COLUMN: Tags & Meta */}
-          <aside className="hidden md:block md:w-[25%] md:pl-10 lg:w-[20%] lg:pl-0">
-            <div className="sticky top-24 space-y-10">
-              {/* Recommended Categories */}
-              <SidebarCategories categories={categories} />
-
-              <hr className="border-gray-100" />
-
-              {/* Recommended Articles */}
-              <RecommendedArticles articles={recommendedArticles} />
-
-              <hr className="border-gray-100" />
-
-              {/* Newsletter / CTA Placeholder */}
-              <div className="rounded-2xl bg-gray-50 p-6">
-                <h4 className="font-serif text-lg font-bold text-gray-900">
-                  Stay updated.
-                </h4>
-                <p className="mt-2 text-sm text-gray-500">
-                  Join the TechInsight community to get the best stories in your
-                  inbox.
-                </p>
-                <button className="mt-4 w-full rounded-full bg-primary py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90">
-                  Subscribe
-                </button>
-              </div>
-
-              {/* Footer */}
-              <div className="border-t border-gray-100 pt-8 text-xs text-gray-400">
-                <div className="flex flex-wrap gap-x-4 gap-y-2">
-                  <Link href="#" className="hover:text-gray-600">
-                    Help
-                  </Link>
-                  <Link href="#" className="hover:text-gray-600">
-                    Status
-                  </Link>
-                  <Link href="#" className="hover:text-gray-600">
-                    About
-                  </Link>
-                  <Link href="#" className="hover:text-gray-600">
-                    Careers
-                  </Link>
-                  <Link href="#" className="hover:text-gray-600">
-                    Terms
-                  </Link>
-                </div>
-                <p className="mt-6">
-                  © {new Date().getFullYear()} TechInsight. Stories worth
-                  reading.
-                </p>
-              </div>
-            </div>
-          </aside>
+          <PublicSidebar
+            categories={categories}
+            recommendedArticles={recommendedArticles}
+            className="hidden md:block md:w-[25%] md:pl-10 lg:w-[20%] lg:pl-0"
+          />
         </div>
       </div>
     </div>

@@ -46,6 +46,7 @@ const schema = z.object({
   keywords: z.string().optional(),
   categoryId: z.string().optional(),
   tagIds: z.array(z.string()).default([]),
+  show_toc: z.boolean().default(false),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -63,6 +64,7 @@ export function ArticleSettings({ accessToken, articleId }: Props) {
       keywords: "",
       categoryId: "",
       tagIds: [],
+      show_toc: false,
     },
   });
 
@@ -97,6 +99,7 @@ export function ArticleSettings({ accessToken, articleId }: Props) {
             keywords: values.keywords || null,
             categoryId: values.categoryId || null,
             tagIds: values.tagIds,
+            show_toc: values.show_toc,
           },
         });
       }
@@ -127,6 +130,7 @@ export function ArticleSettings({ accessToken, articleId }: Props) {
         keywords: articleQuery.data.keywords ?? "",
         categoryId: articleQuery.data.category_id ?? "",
         tagIds: articleQuery.data.tags?.map((t) => t.id) ?? [],
+        show_toc: articleQuery.data.show_toc ?? false,
       });
     }
   }, [articleQuery.data, open, form]);
@@ -181,7 +185,7 @@ export function ArticleSettings({ accessToken, articleId }: Props) {
           </button>
         </SheetHeader>
         <form onSubmit={onSubmit}>
-          <SheetBody className="space-y-6 pb-20 custom-scrollbar">
+          <SheetBody className="space-y-6 pb-8">
             {articleQuery.isLoading ? (
               <div className="flex animate-pulse flex-col gap-4">
                 <div className="h-10 w-full rounded bg-muted" />
@@ -226,6 +230,34 @@ export function ArticleSettings({ accessToken, articleId }: Props) {
                           value={field.value}
                           onChange={field.onChange}
                           placeholder="Add tags..."
+                        />
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4 rounded-xl border bg-muted/30 p-4">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Features
+                  </h3>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <label className="text-sm font-medium">
+                        Table of Contents
+                      </label>
+                      <p className="text-xs text-muted-foreground">
+                        Show TOC on article page
+                      </p>
+                    </div>
+                    <Controller
+                      control={form.control}
+                      name="show_toc"
+                      render={({ field }) => (
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          checked={field.value}
+                          onChange={(e) => field.onChange(e.target.checked)}
                         />
                       )}
                     />

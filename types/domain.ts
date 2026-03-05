@@ -38,6 +38,7 @@ export interface Article {
   featured_image_url: string | null;
   status: ArticleStatus;
   author_id: string;
+  show_toc: boolean;
   published_at: string | null;
   created_at: string;
   updated_at: string;
