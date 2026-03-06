@@ -13,35 +13,49 @@ export const articleService = {
     filters: ArticleFilterInput = {},
     options: { next?: NextFetchRequestConfig; cache?: RequestCache } = {},
   ) {
-    const query = {
-      query: filters.query,
-      category: filters.category,
-      tag: filters.tag,
-      page: filters.page,
-      pageSize: filters.pageSize,
-      status: "published" as const,
+    const queryParams: Record<string, string | number | boolean> = {
+      page: filters.page || 1,
+      pageSize: filters.pageSize || 10,
+      status: "published",
     };
 
+    if (filters.query) queryParams.query = filters.query;
+    if (filters.category) queryParams.category = filters.category;
+    if (filters.tag) queryParams.tag = filters.tag;
+    if (filters.isFeatured !== undefined && filters.isFeatured !== null) {
+      queryParams.featured = filters.isFeatured;
+    }
+
     return apiFetch<PaginatedResponse<Article>>("article", {
-      query,
+      query: queryParams,
       ...options,
     });
   },
 
   listAdmin(filters: ArticleFilterInput = {}, accessToken?: string) {
-    const query = {
-      query: filters.query,
-      category: filters.category,
-      tag: filters.tag,
-      page: filters.page,
-      pageSize: filters.pageSize,
-      status: filters.status,
+    const queryParams: Record<string, string | number | boolean> = {
+      page: filters.page || 1,
+      pageSize: filters.pageSize || 10,
     };
 
+    if (filters.query) queryParams.query = filters.query;
+    if (filters.category) queryParams.category = filters.category;
+    if (filters.tag) queryParams.tag = filters.tag;
+    if (filters.isFeatured !== undefined && filters.isFeatured !== null) {
+      queryParams.featured = filters.isFeatured;
+    }
+    if (filters.status) queryParams.status = filters.status;
+
     return apiFetch<PaginatedResponse<Article>>("article", {
-      query,
+      query: queryParams,
       accessToken,
     });
+  },
+
+  getRecommended(
+    options: { next?: NextFetchRequestConfig; cache?: RequestCache } = {},
+  ) {
+    return apiFetch<Article[]>("article/recommended", options);
   },
 
   getBySlug(

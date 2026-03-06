@@ -17,6 +17,7 @@ import {
   getCategories,
   getCommentsByArticle,
   getPublishedArticles,
+  getRecommendedArticles,
   getTags,
 } from "@/lib/server-data";
 import { formatDate, injectHeadingIds } from "@/lib/utils";
@@ -49,20 +50,16 @@ export default async function ArticleDetailPage({
 }: ArticleDetailPageProps) {
   const { slug } = await params;
 
-  const [article, categories, tags, allArticles] = await Promise.all([
+  const [article, categories, tags, recommendedArticles] = await Promise.all([
     getArticleBySlug(slug),
     getCategories() as Promise<Category[]>,
     getTags() as Promise<Tag[]>,
-    getPublishedArticles() as Promise<Article[]>,
+    getRecommendedArticles(),
   ]);
 
   if (!article) {
     notFound();
   }
-
-  const recommendedArticles = allArticles
-    .filter((b) => b.id !== article.id)
-    .slice(0, 4);
 
   const comments = await getCommentsByArticle(article.id);
 

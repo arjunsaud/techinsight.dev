@@ -10,6 +10,7 @@ export interface ArticlePayload {
   seoTitle?: string;
   metaDescription?: string;
   keywords?: string;
+  is_featured: boolean;
 }
 
 export interface ArticleListFilters {
@@ -17,6 +18,9 @@ export interface ArticleListFilters {
   pageSize: number;
   status: string | null;
   queryText: string | null;
+  categoryId: string | null;
+  tagSlug: string | null;
+  isFeatured: boolean | null;
   isAdmin: boolean;
 }
 

@@ -14,13 +14,16 @@ export interface PaginatedResponse<T> {
   total: number;
 }
 
+type ArticleStatus = "draft" | "published";
+
 export interface ArticleFilterInput {
   query?: string;
-  category?: string;
-  tag?: string;
+  category?: string | null;
+  tag?: string | null;
+  isFeatured?: boolean | null;
+  status?: ArticleStatus | null;
   page?: number;
   pageSize?: number;
-  status?: "draft" | "published";
 }
 
 export interface CreateArticleInput {
@@ -30,8 +33,9 @@ export interface CreateArticleInput {
   excerpt?: string;
   categoryId?: string;
   tagIds: string[];
-  featuredImageUrl?: string;
-  status: "draft" | "published";
+  featuredImageUrl?: string | null;
+  status: ArticleStatus;
+  is_featured?: boolean;
   seoTitle?: string;
   metaDescription?: string;
   keywords?: string;

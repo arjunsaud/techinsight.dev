@@ -5,6 +5,7 @@ import {
   createUploadDraft,
   deleteArticle,
   getArticle,
+  getRecommendedArticles,
   listArticles,
   updateArticle,
 } from "../controllers/article.controller.ts";
@@ -12,6 +13,7 @@ import {
 export function registerArticleRoutes(app: Hono) {
   // Supabase framework routing requires function-name prefix.
   app.get("/api/article", listArticles);
+  app.get("/api/article/recommended", getRecommendedArticles);
   app.post("/api/article", createArticle);
 
   app.post("/api/article/upload-url", createUploadDraft);

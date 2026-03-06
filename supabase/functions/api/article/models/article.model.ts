@@ -15,7 +15,7 @@ const CLOUDINARY_SETTING_KEYS = [
 ] as const;
 
 const ARTICLE_SELECT =
-  "id,title,slug,content,excerpt,category_id,featured_image_url,status,author_id,published_at,created_at,updated_at,seo_title,meta_description,keywords,category:categories(id,name,slug,created_at),tags:article_tags(tag:tags(id,name,slug,created_at))";
+  "id,title,slug,content,excerpt,category_id,featured_image_url,status,author_id,published_at,created_at,updated_at,seo_title,meta_description,keywords,is_featured,category:categories(id,name,slug,created_at),tags:article_tags(tag:tags(id,name,slug,created_at))";
 
 export async function getCloudinarySettingsModel(
   supabase: SupabaseClient,
@@ -74,6 +74,21 @@ export async function listArticlesModel(
     query = query.or(
       `title.ilike.%${filters.queryText}%,excerpt.ilike.%${filters.queryText}%`,
     );
+  }
+
+  if (filters.categoryId) {
+    query = query.eq("category_id", filters.categoryId);
+  }
+
+  if (filters.isFeatured !== null) {
+    query = query.eq("is_featured", filters.isFeatured);
+  }
+
+  if (filters.tagSlug) {
+    // Correct way to filter by tag slug in Supabase JS with joined tables:
+    // We use the joined ArticleTags table to check if any associated tag matches the slug.
+    // Note: Due to Supabase's PostgREST behavior, sometimes it's cleaner to use a filter on the nested object if selecting it.
+    query = query.eq("article_tags.tag.slug", filters.tagSlug);
   }
 
   const { data, error, count } = await query;
@@ -149,9 +164,10 @@ export async function createArticleModel(
       seo_title: payload.seoTitle,
       meta_description: payload.metaDescription,
       keywords: payload.keywords,
+      is_featured: payload.is_featured || false,
     })
     .select(
-      "id,title,slug,content,excerpt,category_id,featured_image_url,status,author_id,published_at,created_at,updated_at,seo_title,meta_description,keywords",
+      "id,title,slug,content,excerpt,category_id,featured_image_url,status,author_id,published_at,created_at,updated_at,seo_title,meta_description,keywords,is_featured",
     )
     .single();
 
@@ -207,13 +223,15 @@ export async function updateArticleModel(
     updates.meta_description = payload.metaDescription;
   }
   if (payload.keywords !== undefined) updates.keywords = payload.keywords;
+  if (payload.is_featured !== undefined)
+    updates.is_featured = payload.is_featured;
 
   const { data, error } = await supabase
     .from("articles")
     .update(updates)
     .eq("id", articleId)
     .select(
-      "id,title,slug,content,excerpt,category_id,featured_image_url,status,author_id,published_at,created_at,updated_at,seo_title,meta_description,keywords",
+      "id,title,slug,content,excerpt,category_id,featured_image_url,status,author_id,published_at,created_at,updated_at,seo_title,meta_description,keywords,is_featured",
     )
     .maybeSingle();
 
@@ -269,4 +287,26 @@ export async function deleteArticleModel(
   if (error) {
     throw new Error(error.message);
   }
+}
+
+export async function getRecommendedArticlesModel(supabase: SupabaseClient) {
+  // Logic: Get up to 6 articles that are either featured or latest
+  // Preference to featured articles
+  const { data, error } = await supabase
+    .from("articles")
+    .select(ARTICLE_SELECT)
+    .eq("status", "published")
+    .order("is_featured", { ascending: false })
+    .order("published_at", { ascending: false, nullsFirst: false })
+    .limit(6);
+
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).map((row: any) => ({
+    ...row,
+    seoTitle: row.seo_title,
+    metaDescription: row.meta_description,
+    keywords: row.keywords,
+    tags: (row.tags ?? []).map((item: any) => item.tag),
+  }));
 }

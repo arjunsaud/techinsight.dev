@@ -1,93 +1,42 @@
-import Link from "next/link";
-
 import { ArticleList } from "@/components/article/article-list";
-import { PublicSidebar } from "@/components/layout/public-sidebar";
+import { PublicPageLayout } from "@/components/layout/public-page-layout";
 import {
   getCategories,
   getPublishedArticles,
+  getRecommendedArticles,
   getTags,
 } from "@/lib/server-data";
 
-export default async function ArticleIndexPage() {
-  const [articles, categories, tags] = await Promise.all([
-    getPublishedArticles(),
+interface ArticleIndexPageProps {
+  searchParams: Promise<{ featured?: string }>;
+}
+
+export default async function ArticleIndexPage({
+  searchParams,
+}: ArticleIndexPageProps) {
+  const { featured } = await searchParams;
+  const isFeatured = featured === "true";
+
+  const [articles, categories, tags, recommendedArticles] = await Promise.all([
+    getPublishedArticles(isFeatured ? { featured: true } : {}),
     getCategories(),
     getTags(),
+    getRecommendedArticles(),
   ]);
 
-  // For demonstration, use a slice of articles for recommendations
-  const recommendedArticles = articles.slice(0, 4);
-
   return (
-    <div className="bg-white">
-      {/* Topics strip — visible ONLY on mobile/tablet to save space */}
-      {categories.length > 0 && (
-        <div className="border-b border-gray-100 lg:hidden">
-          <div className="mx-auto flex max-w-[1440px] gap-1 overflow-x-auto px-4 py-3 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <Link
-              href="/articles"
-              className="whitespace-nowrap rounded-full bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground"
-            >
-              For you
-            </Link>
-            {categories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/categories/${cat.slug}`}
-                className="whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
-              >
-                {cat.name}
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Main Container */}
-      <div className="mx-auto container w-full px-4 py-8 sm:px-6 md:py-10">
-        <div className="flex flex-col gap-0 md:flex-row lg:gap-12">
-          {/* LEFT COLUMN: Categories (Desktop Only) */}
-          <aside className="hidden shrink-0 lg:block lg:w-[20%]">
-            <div className="sticky top-24">
-              <h3 className="mb-6 text-sm font-bold uppercase tracking-widest text-gray-900">
-                Topics
-              </h3>
-              <nav className="flex flex-col gap-2">
-                <Link
-                  href="/articles"
-                  className="rounded-lg w-1/2 bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90"
-                >
-                  All Stories
-                </Link>
-                {categories.map((cat) => (
-                  <Link
-                    key={cat.id}
-                    href={`/categories/${cat.slug}`}
-                    className="rounded-lg px-4 py-2 text-sm font-medium text-gray-500 transition-all hover:bg-gray-50 hover:text-gray-900"
-                  >
-                    {cat.name}
-                  </Link>
-                ))}
-              </nav>
-            </div>
-          </aside>
-
-          {/* MIDDLE COLUMN: Article Feed */}
-          <main className="w-full md:w-[70%] lg:w-[65%] md:border-r md:border-gray-100 md:pr-10 lg:pr-0 lg:border-r-0">
-            <h2 className="text-xl font-bold text-gray-900 mb-8">
-              Latest Stories
-              <div className="h-0.5 w-full bg-gray-100 mt-2"></div>
-            </h2>
-            <ArticleList articles={articles} />
-          </main>
-
-          <PublicSidebar
-            categories={categories}
-            recommendedArticles={recommendedArticles}
-            className="hidden md:block md:w-[25%] md:pl-10 lg:w-[20%] lg:pl-0"
-          />
-        </div>
-      </div>
-    </div>
+    <PublicPageLayout
+      categories={categories}
+      tags={tags}
+      recommendedArticles={recommendedArticles}
+      title={isFeatured ? "Featured Stories" : "Latest Stories"}
+      description={
+        isFeatured
+          ? "The most impactful stories and insights from our community."
+          : "Discover the latest insights, tutorials, and news from the world of tech."
+      }
+    >
+      <ArticleList articles={articles} />
+    </PublicPageLayout>
   );
 }

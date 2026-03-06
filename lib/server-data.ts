@@ -4,7 +4,9 @@ import { adminService } from "@/services/admin-service";
 import { articleService } from "@/services/article-service";
 import { commentService } from "@/services/comment-service";
 
-async function getAllPublishedArticles() {
+async function getAllPublishedArticles(
+  filters: { category?: string; tag?: string; featured?: boolean } = {},
+) {
   const pageSize = 50;
   let page = 1;
   let total = 0;
@@ -12,7 +14,7 @@ async function getAllPublishedArticles() {
 
   do {
     const response = await articleService.listPublished(
-      { page, pageSize },
+      { page, pageSize, ...filters },
       { next: { revalidate: 3600, tags: ["articles"] } },
     );
     all.push(...response.data);
@@ -26,9 +28,21 @@ async function getAllPublishedArticles() {
   return all;
 }
 
-export async function getPublishedArticles() {
+export async function getPublishedArticles(
+  filters: { category?: string; tag?: string; featured?: boolean } = {},
+) {
   try {
-    return await getAllPublishedArticles();
+    return await getAllPublishedArticles(filters);
+  } catch {
+    return [] as Article[];
+  }
+}
+
+export async function getRecommendedArticles() {
+  try {
+    return await articleService.getRecommended({
+      next: { revalidate: 3600, tags: ["articles", "recommended"] },
+    });
   } catch {
     return [] as Article[];
   }

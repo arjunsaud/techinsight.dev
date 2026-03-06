@@ -1,20 +1,25 @@
 import Link from "next/link";
 import { SidebarCategories } from "@/components/article/sidebar-categories";
 import { RecommendedArticles } from "@/components/article/recommended-articles";
-import type { Article, Category } from "@/types/domain";
+import { SidebarTags } from "@/components/article/sidebar-tags";
+import type { Article, Category, Tag } from "@/types/domain";
 
 interface PublicSidebarProps {
   categories: Category[];
+  tags?: Tag[];
   recommendedArticles: Article[];
-  activeCategoryId?: string;
   className?: string;
+  activeCategoryId?: string;
+  activeTagSlug?: string;
 }
 
 export function PublicSidebar({
   categories,
+  tags = [],
   recommendedArticles,
-  activeCategoryId,
   className,
+  activeCategoryId,
+  activeTagSlug,
 }: PublicSidebarProps) {
   return (
     <aside className={className}>
@@ -31,6 +36,14 @@ export function PublicSidebar({
         <RecommendedArticles articles={recommendedArticles} />
 
         <hr className="border-gray-100" />
+
+        {/* Trending Tags */}
+        {tags.length > 0 && (
+          <>
+            <SidebarTags tags={tags} activeTagSlug={activeTagSlug} />
+            <hr className="border-gray-100" />
+          </>
+        )}
 
         {/* Newsletter / CTA Placeholder */}
         <div className="rounded-2xl bg-gray-50 p-6">

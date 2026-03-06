@@ -11,6 +11,7 @@ import {
   deleteArticleModel,
   getArticleByIdOrSlugModel,
   getCloudinarySettingsModel,
+  getRecommendedArticlesModel,
   listArticlesModel,
   updateArticleModel,
 } from "../models/article.model.ts";
@@ -31,6 +32,12 @@ function toPositiveInt(
   return integer;
 }
 
+export async function getRecommendedArticles(c: Context) {
+  const supabase = createPublicClient();
+  const data = await getRecommendedArticlesModel(supabase);
+  return c.json(data);
+}
+
 export async function listArticles(c: Context) {
   const maybeUser = await getOptionalAuth(c.req.raw);
   const isAdmin =
@@ -44,6 +51,9 @@ export async function listArticles(c: Context) {
     pageSize: toPositiveInt(c.req.query("pageSize"), 10, 50),
     status: c.req.query("status") ?? null,
     queryText: c.req.query("query") ?? null,
+    categoryId: c.req.query("category") ?? null,
+    tagSlug: c.req.query("tag") ?? null,
+    isFeatured: c.req.query("featured") === "true" ? true : null,
     isAdmin,
   });
 
