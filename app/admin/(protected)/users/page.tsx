@@ -39,7 +39,7 @@ export default async function AdminUsersPage() {
                   <TableCell>{user.username ?? "-"}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell className="capitalize">{user.role}</TableCell>
-                  <TableCell>{formatDate(user.created_at)}</TableCell>
+                  <TableCell>{formatDate(user.createdAt)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

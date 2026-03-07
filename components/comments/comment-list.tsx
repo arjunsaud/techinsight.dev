@@ -6,12 +6,20 @@ interface CommentListProps {
   depth?: number;
 }
 
-function CommentItem({ comment, depth = 0 }: { comment: Comment; depth?: number }) {
+function CommentItem({
+  comment,
+  depth = 0,
+}: {
+  comment: Comment;
+  depth?: number;
+}) {
   return (
     <article className="space-y-2 rounded-md border bg-card p-4">
       <header className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
         <span>{comment.user?.username ?? "User"}</span>
-        <time dateTime={comment.created_at}>{formatDate(comment.created_at)}</time>
+        <time dateTime={comment.createdAt}>
+          {formatDate(comment.createdAt)}
+        </time>
       </header>
       <p className="text-sm leading-6">{comment.content}</p>
       {comment.children && comment.children.length > 0 ? (

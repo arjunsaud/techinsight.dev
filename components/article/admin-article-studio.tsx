@@ -143,7 +143,7 @@ export function AdminArticleStudio({
       slug: article.slug || "",
       excerpt: article.excerpt || "",
       content: article.content || "<p></p>",
-      featuredImageUrl: article.featured_image_url || "",
+      featuredImageUrl: article.featuredImageUrl || "",
       seoTitle: article.seoTitle || "",
       metaDescription: article.metaDescription || article.excerpt || "",
       keywords: article.keywords || "",
@@ -213,8 +213,10 @@ export function AdminArticleStudio({
         seoTitle: data.seoTitle || undefined,
         metaDescription: data.metaDescription || undefined,
         keywords: data.keywords || undefined,
-        tagIds: editingArticle?.tags?.map((t) => t.id) ?? [],
-        categoryId: editingArticle?.category_id ?? undefined,
+        tagIds: editingArticle?.tags?.map((t: any) => t.id) ?? [],
+        categoryId: editingArticle?.categoryId ?? undefined,
+        showToc: editingArticle?.showToc ?? false,
+        isFeatured: editingArticle?.isFeatured ?? false,
       };
 
       if (editingArticle)

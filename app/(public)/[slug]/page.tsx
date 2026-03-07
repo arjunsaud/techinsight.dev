@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { RecommendedArticles } from "@/components/article/recommended-articles";
 import { SidebarCategories } from "@/components/article/sidebar-categories";
+import { SidebarTags } from "@/components/article/sidebar-tags";
 
 import { CommentForm } from "@/components/comments/comment-form";
 import { CommentList } from "@/components/comments/comment-list";
@@ -132,7 +133,7 @@ export default async function ArticleDetailPage({
                     </Link>
                   ) : null}
                   <span>
-                    {formatDate(article.published_at ?? article.created_at)}
+                    {formatDate(article.publishedAt ?? article.createdAt)}
                   </span>
                 </div>
                 <h1
@@ -180,6 +181,11 @@ export default async function ArticleDetailPage({
                 categories={categories}
                 activeCategoryId={article.category?.id}
               />
+
+              <hr className="border-gray-100" />
+
+              {/* Trending Tags */}
+              <SidebarTags tags={tags} />
 
               <hr className="border-gray-100" />
 

@@ -111,7 +111,7 @@ export function AdminCommentsList({
                 <CommentCard.Content
                   authorName={authorName}
                   status={comment.status as any}
-                  date={formatDate(comment.created_at)}
+                  date={formatDate(comment.createdAt)}
                   content={comment.content}
                   articleTitle={articleTitle}
                   likes={comment.id.length * 2} // mock data to satisfy UI mapping

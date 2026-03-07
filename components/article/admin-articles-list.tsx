@@ -190,7 +190,7 @@ export function AdminArticlesList({
           allArticles.map((article: Article) => (
             <ArticleCard key={article.id} id={article.id} slug={article.slug}>
               <ArticleCard.Image
-                src={article.featured_image_url}
+                src={article.featuredImageUrl}
                 alt={article.title}
               />
               <ArticleCard.Content

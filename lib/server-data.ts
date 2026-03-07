@@ -3,6 +3,7 @@ import type { Article, Category, Comment, Tag } from "@/types/domain";
 import { adminService } from "@/services/admin-service";
 import { articleService } from "@/services/article-service";
 import { commentService } from "@/services/comment-service";
+import { CACHE_TTL } from "./constants/common.constants";
 
 async function getAllPublishedArticles(
   filters: { category?: string; tag?: string; featured?: boolean } = {},
@@ -15,7 +16,7 @@ async function getAllPublishedArticles(
   do {
     const response = await articleService.listPublished(
       { page, pageSize, ...filters },
-      { next: { revalidate: 3600, tags: ["articles"] } },
+      { next: { revalidate: CACHE_TTL, tags: ["articles"] } },
     );
     all.push(...response.data);
     total = response.total;
@@ -41,7 +42,7 @@ export async function getPublishedArticles(
 export async function getRecommendedArticles() {
   try {
     return await articleService.getRecommended({
-      next: { revalidate: 3600, tags: ["articles", "recommended"] },
+      next: { revalidate: CACHE_TTL, tags: ["articles", "recommended"] },
     });
   } catch {
     return [] as Article[];
@@ -51,7 +52,7 @@ export async function getRecommendedArticles() {
 export async function getArticleBySlug(slug: string) {
   try {
     return await articleService.getBySlug(slug, {
-      next: { revalidate: 3600, tags: [`article-${slug}`] },
+      next: { revalidate: CACHE_TTL, tags: [`article-${slug}`] },
     });
   } catch {
     return null;
@@ -69,7 +70,7 @@ export async function getCommentsByArticle(articleId: string) {
 export async function getCategories() {
   try {
     return await adminService.listCategories(undefined, {
-      next: { revalidate: 3600, tags: ["categories"] },
+      next: { revalidate: CACHE_TTL, tags: ["categories"] },
     });
   } catch {
     return [] as Category[];
@@ -79,7 +80,7 @@ export async function getCategories() {
 export async function getTags() {
   try {
     return await adminService.listTags(undefined, {
-      next: { revalidate: 3600, tags: ["tags"] },
+      next: { revalidate: CACHE_TTL, tags: ["tags"] },
     });
   } catch {
     return [] as Tag[];

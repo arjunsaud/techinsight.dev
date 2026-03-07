@@ -34,17 +34,17 @@ export function RecommendedArticles({
                   </span>
                 )}
                 <span className="text-[10px] text-gray-400">
-                  {formatDate(article.published_at ?? article.created_at)}
+                  {formatDate(article.publishedAt ?? article.createdAt)}
                 </span>
               </div>
               <h4 className="line-clamp-2 text-sm font-bold text-gray-900 transition-colors group-hover:text-gray-600 font-serif">
                 {article.title}
               </h4>
             </div>
-            {article.featured_image_url && (
+            {article.featuredImageUrl && (
               <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-md bg-gray-100">
                 <Image
-                  src={article.featured_image_url}
+                  src={article.featuredImageUrl}
                   alt={article.title}
                   fill
                   className="object-cover"

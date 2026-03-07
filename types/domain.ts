@@ -6,7 +6,7 @@ export interface AppUser {
   email: string;
   username: string | null;
   role: Role;
-  created_at: string;
+  createdAt: string;
 }
 
 export interface Category {
@@ -15,14 +15,14 @@ export interface Category {
   slug: string;
   description?: string | null;
   color?: string | null;
-  created_at: string;
+  createdAt: string;
 }
 
 export interface Tag {
   id: string;
   name: string;
   slug: string;
-  created_at: string;
+  createdAt: string;
 }
 
 export interface Article {
@@ -34,25 +34,26 @@ export interface Article {
   keywords?: string | null;
   content: string;
   excerpt: string | null;
-  category_id: string | null;
-  featured_image_url: string | null;
+  categoryId: string | null;
+  featuredImageUrl: string | null;
   status: ArticleStatus;
-  author_id: string;
-  show_toc: boolean;
-  published_at: string | null;
-  created_at: string;
-  updated_at: string;
+  authorId: string;
+  showToc: boolean;
+  isFeatured: boolean;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
   category?: Category | null;
   tags?: Tag[];
 }
 
 export interface Comment {
   id: string;
-  article_id: string;
-  user_id: string;
-  parent_id: string | null;
+  articleId: string;
+  userId: string;
+  parentId: string | null;
   content: string;
-  created_at: string;
+  createdAt: string;
   user?: Pick<AppUser, "id" | "username">;
   children?: Comment[];
 }
@@ -60,7 +61,7 @@ export interface Comment {
 export interface AdminComment {
   id: string;
   content: string;
-  created_at: string;
+  createdAt: string;
   user?: { id?: string; username?: string | null } | null;
   article?: { title?: string | null } | null;
 }

@@ -10,7 +10,8 @@ export interface ArticlePayload {
   seoTitle?: string;
   metaDescription?: string;
   keywords?: string;
-  is_featured: boolean;
+  isFeatured: boolean;
+  showToc: boolean;
 }
 
 export interface ArticleListFilters {

@@ -4,9 +4,7 @@ import { notFound } from "next/navigation";
 
 import Image from "next/image";
 
-import { RecommendedArticles } from "@/components/article/recommended-articles";
 import { PublicSidebar } from "@/components/layout/public-sidebar";
-import { SidebarCategories } from "@/components/article/sidebar-categories";
 
 import { CommentForm } from "@/components/comments/comment-form";
 import { CommentList } from "@/components/comments/comment-list";
@@ -16,12 +14,11 @@ import {
   getArticleBySlug,
   getCategories,
   getCommentsByArticle,
-  getPublishedArticles,
   getRecommendedArticles,
   getTags,
 } from "@/lib/server-data";
 import { formatDate, injectHeadingIds } from "@/lib/utils";
-import type { Article, Category, Tag } from "@/types/domain";
+import type { Category, Tag } from "@/types/domain";
 
 interface ArticleDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -133,7 +130,7 @@ export default async function ArticleDetailPage({
                     </Link>
                   ) : null}
                   <span>
-                    {formatDate(article.published_at ?? article.created_at)}
+                    {formatDate(article.publishedAt ?? article.createdAt)}
                   </span>
                 </div>
                 <h1
@@ -156,10 +153,10 @@ export default async function ArticleDetailPage({
                 </div>
               </header>
 
-              {article.featured_image_url ? (
+              {article.featuredImageUrl ? (
                 <figure className="overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 shadow-sm">
                   <Image
-                    src={article.featured_image_url}
+                    src={article.featuredImageUrl}
                     alt={article.title || "Article featured image"}
                     width={1400}
                     height={750}
@@ -169,9 +166,7 @@ export default async function ArticleDetailPage({
                 </figure>
               ) : null}
 
-              {article.show_toc && (
-                <TableOfContents content={article.content} />
-              )}
+              {article.showToc && <TableOfContents content={article.content} />}
 
               <section
                 className="hashnode-render-content prose max-w-none"
@@ -192,6 +187,7 @@ export default async function ArticleDetailPage({
 
           <PublicSidebar
             categories={categories}
+            tags={tags}
             recommendedArticles={recommendedArticles}
             activeCategoryId={article.category?.id}
             className="hidden md:block md:w-[30%] md:pl-10 lg:w-[25%] lg:pl-0"

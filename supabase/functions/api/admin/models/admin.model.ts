@@ -4,10 +4,11 @@ export async function getUserRoleModel(
   supabase: SupabaseClient,
   userId: string,
 ) {
-  const { data, error } = await supabase.from("superadmins").select("role").eq(
-    "id",
-    userId,
-  ).maybeSingle();
+  const { data, error } = await supabase
+    .from("superadmins")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle();
 
   if (error) {
     throw new Error(error.message);
@@ -29,22 +30,26 @@ export async function getDashboardModel(supabase: SupabaseClient) {
     supabase.from("articles").select("id", { count: "exact", head: true }),
     supabase.from("superadmins").select("id", { count: "exact", head: true }),
     supabase.from("comments").select("id", { count: "exact", head: true }),
-    supabase.from("articles").select("id", { count: "exact", head: true }).eq(
-      "status",
-      "published",
-    ),
-    supabase.from("articles").select("id", { count: "exact", head: true }).eq(
-      "status",
-      "draft",
-    ),
     supabase
       .from("articles")
-      .select("id,title,slug,status,created_at,published_at")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "published"),
+    supabase
+      .from("articles")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "draft"),
+    supabase
+      .from("articles")
+      .select(
+        "id,title,slug,status,createdAt:created_at,publishedAt:published_at",
+      )
       .order("created_at", { ascending: false })
       .limit(5),
     supabase
       .from("comments")
-      .select("id,content,created_at,article:articles(title),user:superadmins(username)")
+      .select(
+        "id,content,createdAt:created_at,article:articles(title),user:superadmins(username)",
+      )
       .order("created_at", { ascending: false })
       .limit(5),
   ]);
@@ -65,7 +70,7 @@ export async function getDashboardModel(supabase: SupabaseClient) {
 export async function listUsersModel(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("superadmins")
-    .select("id,email,username,role,created_at")
+    .select("id,email,username,role,createdAt:created_at")
     .order("created_at", { ascending: false })
     .limit(200);
 
@@ -79,7 +84,9 @@ export async function listUsersModel(supabase: SupabaseClient) {
 export async function listCommentsModel(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("comments")
-    .select("id,content,created_at,user:superadmins(username),article:articles(title)")
+    .select(
+      "id,content,createdAt:created_at,user:superadmins(username),article:articles(title)",
+    )
     .order("created_at", { ascending: false })
     .limit(200);
 

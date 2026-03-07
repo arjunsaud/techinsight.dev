@@ -15,7 +15,7 @@ const CLOUDINARY_SETTING_KEYS = [
 ] as const;
 
 const ARTICLE_SELECT =
-  "id,title,slug,content,excerpt,category_id,featured_image_url,status,author_id,published_at,created_at,updated_at,seo_title,meta_description,keywords,is_featured,category:categories(id,name,slug,created_at),tags:article_tags(tag:tags(id,name,slug,created_at))";
+  "id,title,slug,content,excerpt,categoryId:category_id,featuredImageUrl:featured_image_url,status,authorId:author_id,publishedAt:published_at,createdAt:created_at,updatedAt:updated_at,seoTitle:seo_title,metaDescription:meta_description,keywords,isFeatured:is_featured,showToc:show_toc,category:categories(id,name,slug,createdAt:created_at),tags:article_tags(tag:tags(id,name,slug,createdAt:created_at))";
 
 export async function getCloudinarySettingsModel(
   supabase: SupabaseClient,
@@ -96,9 +96,6 @@ export async function listArticlesModel(
 
   const mapped = (data ?? []).map((row: any) => ({
     ...row,
-    seoTitle: row.seo_title,
-    metaDescription: row.meta_description,
-    keywords: row.keywords,
     tags: (row.tags ?? []).map((item: any) => item.tag),
   }));
 
@@ -132,9 +129,6 @@ export async function getArticleByIdOrSlugModel(
 
   return {
     ...data,
-    seoTitle: (data as any).seo_title,
-    metaDescription: (data as any).meta_description,
-    keywords: (data as any).keywords,
     tags: ((data.tags as { tag: unknown }[] | null) ?? []).map(
       (item) => item.tag,
     ),
@@ -164,10 +158,11 @@ export async function createArticleModel(
       seo_title: payload.seoTitle,
       meta_description: payload.metaDescription,
       keywords: payload.keywords,
-      is_featured: payload.is_featured || false,
+      is_featured: payload.isFeatured || false,
+      show_toc: payload.showToc || false,
     })
     .select(
-      "id,title,slug,content,excerpt,category_id,featured_image_url,status,author_id,published_at,created_at,updated_at,seo_title,meta_description,keywords,is_featured",
+      "id,title,slug,content,excerpt,categoryId:category_id,featuredImageUrl:featured_image_url,status,authorId:author_id,publishedAt:published_at,createdAt:created_at,updatedAt:updated_at,seoTitle:seo_title,metaDescription:meta_description,keywords,isFeatured:is_featured,showToc:show_toc",
     )
     .single();
 
@@ -188,12 +183,12 @@ export async function createArticleModel(
     }
   }
 
-  return {
-    ...data,
-    seoTitle: (data as any).seo_title,
-    metaDescription: (data as any).meta_description,
-    keywords: (data as any).keywords,
-  };
+  const fullArticle = await getArticleByIdOrSlugModel(supabase, data.id);
+  if (!fullArticle) {
+    throw new Error("Failed to fetch created article");
+  }
+
+  return fullArticle;
 }
 
 export async function updateArticleModel(
@@ -223,15 +218,16 @@ export async function updateArticleModel(
     updates.meta_description = payload.metaDescription;
   }
   if (payload.keywords !== undefined) updates.keywords = payload.keywords;
-  if (payload.is_featured !== undefined)
-    updates.is_featured = payload.is_featured;
+  if (payload.isFeatured !== undefined)
+    updates.is_featured = payload.isFeatured;
+  if (payload.showToc !== undefined) updates.show_toc = payload.showToc;
 
   const { data, error } = await supabase
     .from("articles")
     .update(updates)
     .eq("id", articleId)
     .select(
-      "id,title,slug,content,excerpt,category_id,featured_image_url,status,author_id,published_at,created_at,updated_at,seo_title,meta_description,keywords,is_featured",
+      "id,title,slug,content,excerpt,categoryId:category_id,featuredImageUrl:featured_image_url,status,authorId:author_id,publishedAt:published_at,createdAt:created_at,updatedAt:updated_at,seoTitle:seo_title,metaDescription:meta_description,keywords,isFeatured:is_featured,showToc:show_toc",
     )
     .maybeSingle();
 
@@ -268,12 +264,12 @@ export async function updateArticleModel(
     }
   }
 
-  return {
-    ...data,
-    seoTitle: (data as any).seo_title,
-    metaDescription: (data as any).meta_description,
-    keywords: (data as any).keywords,
-  };
+  const fullArticle = await getArticleByIdOrSlugModel(supabase, articleId);
+  if (!fullArticle) {
+    return null;
+  }
+
+  return fullArticle;
 }
 
 export async function deleteArticleModel(
@@ -304,9 +300,6 @@ export async function getRecommendedArticlesModel(supabase: SupabaseClient) {
 
   return (data ?? []).map((row: any) => ({
     ...row,
-    seoTitle: row.seo_title,
-    metaDescription: row.meta_description,
-    keywords: row.keywords,
     tags: (row.tags ?? []).map((item: any) => item.tag),
   }));
 }

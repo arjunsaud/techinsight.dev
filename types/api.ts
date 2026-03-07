@@ -35,10 +35,11 @@ export interface CreateArticleInput {
   tagIds: string[];
   featuredImageUrl?: string | null;
   status: ArticleStatus;
-  is_featured?: boolean;
+  isFeatured?: boolean;
   seoTitle?: string;
   metaDescription?: string;
   keywords?: string;
+  showToc?: boolean;
 }
 
 export interface UpdateArticleInput extends Partial<CreateArticleInput> {

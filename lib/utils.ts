@@ -5,7 +5,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDate(isoDate: string) {
+export function formatDate(isoDate: string | null | undefined) {
+  if (!isoDate) return "";
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",

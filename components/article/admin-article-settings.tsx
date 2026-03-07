@@ -46,7 +46,8 @@ const schema = z.object({
   keywords: z.string().optional(),
   categoryId: z.string().optional(),
   tagIds: z.array(z.string()).default([]),
-  show_toc: z.boolean().default(false),
+  showToc: z.boolean().default(false),
+  isFeatured: z.boolean().default(false),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -64,7 +65,8 @@ export function ArticleSettings({ accessToken, articleId }: Props) {
       keywords: "",
       categoryId: "",
       tagIds: [],
-      show_toc: false,
+      showToc: false,
+      isFeatured: false,
     },
   });
 
@@ -99,7 +101,8 @@ export function ArticleSettings({ accessToken, articleId }: Props) {
             keywords: values.keywords || null,
             categoryId: values.categoryId || null,
             tagIds: values.tagIds,
-            show_toc: values.show_toc,
+            showToc: values.showToc,
+            isFeatured: values.isFeatured,
           },
         });
       }
@@ -128,9 +131,10 @@ export function ArticleSettings({ accessToken, articleId }: Props) {
         seoTitle: articleQuery.data.seoTitle ?? "",
         metaDescription: articleQuery.data.metaDescription ?? "",
         keywords: articleQuery.data.keywords ?? "",
-        categoryId: articleQuery.data.category_id ?? "",
+        categoryId: articleQuery.data.categoryId ?? "",
         tagIds: articleQuery.data.tags?.map((t) => t.id) ?? [],
-        show_toc: articleQuery.data.show_toc ?? false,
+        showToc: articleQuery.data.showToc ?? false,
+        isFeatured: articleQuery.data.isFeatured ?? false,
       });
     }
   }, [articleQuery.data, open, form]);
@@ -184,7 +188,10 @@ export function ArticleSettings({ accessToken, articleId }: Props) {
             ✕
           </button>
         </SheetHeader>
-        <form onSubmit={onSubmit}>
+        <form
+          onSubmit={onSubmit}
+          className="flex flex-1 flex-col overflow-hidden"
+        >
           <SheetBody className="space-y-6 pb-8">
             {articleQuery.isLoading ? (
               <div className="flex animate-pulse flex-col gap-4">
@@ -251,7 +258,29 @@ export function ArticleSettings({ accessToken, articleId }: Props) {
                     </div>
                     <Controller
                       control={form.control}
-                      name="show_toc"
+                      name="showToc"
+                      render={({ field }) => (
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          checked={field.value}
+                          onChange={(e) => field.onChange(e.target.checked)}
+                        />
+                      )}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <label className="text-sm font-medium">
+                        Featured Article
+                      </label>
+                      <p className="text-xs text-muted-foreground">
+                        Highlight on home page
+                      </p>
+                    </div>
+                    <Controller
+                      control={form.control}
+                      name="isFeatured"
                       render={({ field }) => (
                         <input
                           type="checkbox"

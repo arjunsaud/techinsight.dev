@@ -5,7 +5,7 @@ import { slugify } from "../../../shared/utils.ts";
 export async function listCategoriesModel(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("categories")
-    .select("id,name,slug,created_at")
+    .select("id,name,slug,createdAt:created_at")
     .order("name");
   if (error) {
     throw new Error(error.message);
@@ -27,7 +27,7 @@ export async function createCategoryModel(
       name: payload.name,
       slug: payload.slug ? slugify(payload.slug) : slugify(payload.name),
     })
-    .select("id,name,slug,created_at")
+    .select("id,name,slug,createdAt:created_at")
     .single();
 
   if (error) {
@@ -56,7 +56,7 @@ export async function updateCategoryModel(
     .from("categories")
     .update(updates)
     .eq("id", categoryId)
-    .select("id,name,slug,created_at")
+    .select("id,name,slug,createdAt:created_at")
     .maybeSingle();
 
   if (error) {

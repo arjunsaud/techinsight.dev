@@ -22,7 +22,7 @@ interface ArticleCardProps {
 export function ArticleCard({ article }: ArticleCardProps) {
   const excerpt = article.excerpt ?? createExcerpt(article.content, 150);
   const readTime = estimateReadTime(article.content);
-  const date = formatDate(article.published_at ?? article.created_at);
+  const date = formatDate(article.publishedAt ?? article.createdAt);
   return (
     <Link
       href={`/articles/${article.slug}`}
@@ -104,10 +104,10 @@ export function ArticleCard({ article }: ArticleCardProps) {
       </div>
 
       {/* Thumbnail — visible from xs up, size adapts */}
-      {article.featured_image_url ? (
+      {article.featuredImageUrl ? (
         <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg sm:h-20 sm:w-24">
           <Image
-            src={article.featured_image_url}
+            src={article.featuredImageUrl}
             alt={article.title}
             fill
             className="object-cover"
