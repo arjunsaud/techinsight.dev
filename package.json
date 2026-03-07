@@ -1,6 +1,6 @@
 {
-  "name": "vitafy-admin-article",
-  "version": "0.1.0",
+  "name": "techinsight.dev",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
