@@ -62,19 +62,10 @@ export function PublicSidebar({
         {/* Footer */}
         <div className="border-t border-gray-100 pt-8 text-xs text-gray-400">
           <div className="flex flex-wrap gap-x-4 gap-y-2">
-            <Link href="#" className="hover:text-gray-600">
-              Help
-            </Link>
-            <Link href="#" className="hover:text-gray-600">
-              Status
-            </Link>
-            <Link href="#" className="hover:text-gray-600">
+            <Link href="/about" className="hover:text-gray-600">
               About
             </Link>
-            <Link href="#" className="hover:text-gray-600">
-              Careers
-            </Link>
-            <Link href="#" className="hover:text-gray-600">
+            <Link href="/terms" className="hover:text-gray-600">
               Terms
             </Link>
           </div>
