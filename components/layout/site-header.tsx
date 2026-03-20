@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { ThemeToggle } from "./theme-toggle";
 
 function SiteHeaderContent() {
   const pathname = usePathname();
@@ -52,6 +53,10 @@ function SiteHeaderContent() {
             );
           })}
         </nav>
+        {/* Right nav — Theme toggle */}
+        <div className="flex shrink-0 items-center justify-end">
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

@@ -29,7 +29,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
 
-  const articles = await getPublishedArticles({ category: category.id });
+  const articles = await getPublishedArticles({ category: category.slug });
 
   return (
     <PublicPageLayout

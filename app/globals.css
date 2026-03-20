@@ -26,6 +26,28 @@
   --radius: 0.5rem; /* flatter, more editorial */
 }
 
+.dark {
+  --background: 0 0% 10%; /* very dark gray */
+  --foreground: 0 0% 90%; /* near white */
+  --card: 0 0% 13%;
+  --card-foreground: 0 0% 90%;
+  --popover: 0 0% 13%;
+  --popover-foreground: 0 0% 90%;
+  --primary: 217 91% 60%; /* Rich Blue maintains contrast well */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 18%;
+  --secondary-foreground: 0 0% 90%;
+  --muted: 0 0% 18%;
+  --muted-foreground: 0 0% 65%; /* light gray */
+  --accent: 0 0% 20%;
+  --accent-foreground: 0 0% 90%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 25%; /* dark border */
+  --input: 0 0% 25%;
+  --ring: 217 91% 60%;
+}
+
 * {
   @apply border-border;
 }
