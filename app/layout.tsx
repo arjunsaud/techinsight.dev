@@ -4,6 +4,11 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "@/app/globals.css";
 import { Providers } from "@/app/providers";
 
+function getAppUrl() {
+  const raw = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  return raw.replace(/\/+$/, "");
+}
+
 const sans = Geist({
   variable: "--font-sans",
   subsets: ["latin"],
@@ -17,6 +22,22 @@ const mono = Geist_Mono({
 export const metadata: Metadata = {
   title: "TechInsight",
   description: "Admin-managed article platform built with Next.js and Supabase",
+  metadataBase: new URL(getAppUrl()),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "TechInsight",
+    url: "/",
+    title: "TechInsight",
+    description: "Admin-managed article platform built with Next.js and Supabase",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TechInsight",
+    description: "Admin-managed article platform built with Next.js and Supabase",
+  },
 };
 
 export default function RootLayout({

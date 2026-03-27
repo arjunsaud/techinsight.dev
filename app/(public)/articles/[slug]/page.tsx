@@ -20,6 +20,10 @@ import {
 import { formatDate, injectHeadingIds } from "@/lib/utils";
 import type { Category, Tag } from "@/types/domain";
 
+function stripHtml(html: string) {
+  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
 interface ArticleDetailPageProps {
   params: Promise<{ slug: string }>;
 }
@@ -36,9 +40,30 @@ export async function generateMetadata({
     };
   }
 
+  const title = article.seoTitle ?? article.title;
+  const description =
+    article.metaDescription ?? article.excerpt ?? stripHtml(article.content).slice(0, 160);
+  const images = article.featuredImageUrl
+    ? [{ url: article.featuredImageUrl, alt: article.title ?? title }]
+    : undefined;
+
   return {
-    title: article.title,
-    description: article.excerpt ?? undefined,
+    title,
+    description,
+    alternates: { canonical: `/articles/${article.slug}` },
+    openGraph: {
+      type: "article",
+      title,
+      description,
+      url: `/articles/${article.slug}`,
+      images,
+    },
+    twitter: {
+      card: images ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: images?.map((i) => i.url),
+    },
   };
 }
 
@@ -60,8 +85,28 @@ export default async function ArticleDetailPage({
 
   const comments = await getCommentsByArticle(article.id);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: article.seoTitle ?? article.title,
+    description: article.metaDescription ?? article.excerpt ?? undefined,
+    image: article.featuredImageUrl ?? undefined,
+    datePublished: article.publishedAt ?? undefined,
+    dateModified: article.updatedAt ?? undefined,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `/articles/${article.slug}`,
+    },
+    keywords: article.keywords ?? undefined,
+  };
+
   return (
     <div className="bg-white">
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Mobile/Tablet categories strip */}
       {categories.length > 0 && (
         <div className="border-b border-gray-100 lg:hidden">

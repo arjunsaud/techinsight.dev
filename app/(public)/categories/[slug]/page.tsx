@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 
@@ -12,6 +13,39 @@ import {
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: CategoryPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const categories = await getCategories();
+  const category = categories.find((c) => c.slug === slug);
+
+  if (!category) {
+    return { title: "Category not found" };
+  }
+
+  const title = `${category.name} – TechInsight`;
+  const description =
+    category.description ?? `Articles and insights in ${category.name}.`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/categories/${category.slug}` },
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      url: `/categories/${category.slug}`,
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description,
+    },
+  };
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {

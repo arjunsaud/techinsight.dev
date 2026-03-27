@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { ArticleList } from "@/components/article/article-list";
 import { PublicPageLayout } from "@/components/layout/public-page-layout";
 import {
@@ -6,21 +8,20 @@ import {
   getRecommendedArticles,
   getTags,
 } from "@/lib/server-data";
-import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "TechInsight",
-  description: "Discover the latest insights, tutorials, and news from the world of tech.",
-  alternates: { canonical: "/" },
+  title: "Articles – TechInsight",
+  description: "Browse the latest insights, tutorials, and news from TechInsight.",
+  alternates: { canonical: "/articles" },
 };
 
-interface ArticleIndexPageProps {
+interface ArticlesIndexPageProps {
   searchParams: Promise<{ featured?: string }>;
 }
 
-export default async function ArticleIndexPage({
+export default async function ArticlesIndexPage({
   searchParams,
-}: ArticleIndexPageProps) {
+}: ArticlesIndexPageProps) {
   const { featured } = await searchParams;
   const isFeatured = featured === "true";
 
@@ -47,3 +48,4 @@ export default async function ArticleIndexPage({
     </PublicPageLayout>
   );
 }
+
