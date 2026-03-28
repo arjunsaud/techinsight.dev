@@ -66,6 +66,48 @@ export interface AdminComment {
   article?: { title?: string | null } | null;
 }
 
+export interface SeriesPost {
+  id: string;
+  seriesId: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt?: string | null;
+  featuredImageUrl?: string | null;
+  seriesOrder: number;
+  status: "draft" | "published";
+  publishedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Series {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string | null;
+  coverImage?: string | null;
+  status: "draft" | "published";
+  createdAt: string;
+  updatedAt: string;
+  posts?: SeriesPost[];
+  postsCount?: number;
+}
+
+export interface PostSeriesInfo {
+  inSeries: boolean;
+  series?: {
+    id: string;
+    title: string;
+    slug: string;
+  };
+  seriesOrder?: number;
+  totalInSeries?: number;
+  index?: number;
+  prevPost?: { title: string; slug: string } | null;
+  nextPost?: { title: string; slug: string } | null;
+}
+
 export interface DashboardStats {
   totalArticles: number;
   totalUsers: number;

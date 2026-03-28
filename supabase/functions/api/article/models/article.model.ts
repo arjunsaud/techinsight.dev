@@ -77,7 +77,12 @@ export async function listArticlesModel(
   }
 
   if (filters.categoryId) {
-    query = query.eq("category_id", filters.categoryId);
+    if (isUuid(filters.categoryId)) {
+      query = query.eq("category_id", filters.categoryId);
+    } else {
+      // If it's a slug, filter via the joined category table
+      query = query.eq("categories.slug", filters.categoryId);
+    }
   }
 
   if (filters.isFeatured !== null) {
@@ -86,8 +91,6 @@ export async function listArticlesModel(
 
   if (filters.tagSlug) {
     // Correct way to filter by tag slug in Supabase JS with joined tables:
-    // We use the joined ArticleTags table to check if any associated tag matches the slug.
-    // Note: Due to Supabase's PostgREST behavior, sometimes it's cleaner to use a filter on the nested object if selecting it.
     query = query.eq("article_tags.tag.slug", filters.tagSlug);
   }
 

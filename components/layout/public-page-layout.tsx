@@ -27,7 +27,7 @@ export function PublicPageLayout({
   showBackToHub = false,
 }: PublicPageLayoutProps) {
   return (
-    <div className="bg-white">
+    <div className="bg-background text-foreground transition-colors duration-300">
       {/* Mobile/Tablet Topics Strip */}
       {categories.length > 0 && (
         <div className="border-b border-gray-100 lg:hidden">
@@ -36,8 +36,8 @@ export function PublicPageLayout({
               href="/articles"
               className={`whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-medium transition-colors ${
                 !activeCategoryId && !activeTagSlug
-                  ? "bg-primary text-primary-foreground"
-                  : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
               For you
@@ -48,8 +48,8 @@ export function PublicPageLayout({
                 href={`/categories/${cat.slug}`}
                 className={`whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-medium transition-colors ${
                   activeCategoryId === cat.id
-                    ? "bg-primary text-primary-foreground"
-                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
                 {cat.name}
@@ -62,16 +62,16 @@ export function PublicPageLayout({
       <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 md:py-10">
         <div className="flex flex-col gap-0 md:flex-row lg:gap-12">
           {/* LEFT COLUMN: Categories (Desktop Only) */}
-          <aside className="hidden shrink-0 lg:block lg:w-[20%]">
+          <aside className="hidden shrink-0 lg:block lg:w-[15%]">
             <div className="sticky top-24">
-              <h3 className="mb-6 text-sm font-bold uppercase tracking-widest text-gray-900">
+              <h3 className="mb-6 text-sm font-bold uppercase tracking-widest text-foreground">
                 Topics
               </h3>
               <nav className="flex flex-col gap-2">
                 {showBackToHub && (
                   <Link
                     href="/"
-                    className="mb-4 flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-gray-500 transition-all hover:bg-gray-50 hover:text-gray-900"
+                    className="mb-4 flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
                   >
                     ← Back to Hub
                   </Link>
@@ -83,8 +83,8 @@ export function PublicPageLayout({
                     href={`/categories/${cat.slug}`}
                     className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
                       activeCategoryId === cat.id
-                        ? "bg-gray-50 text-gray-900 font-bold"
-                        : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                        ? "bg-muted text-foreground font-bold"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     }`}
                   >
                     {cat.name}
@@ -95,19 +95,19 @@ export function PublicPageLayout({
           </aside>
 
           {/* MIDDLE COLUMN: Main Content */}
-          <main className="w-full md:w-[70%] lg:w-[55%] md:border-r md:border-gray-100 md:pr-10 lg:pr-0 lg:border-r-0">
+          <main className="w-full md:w-[70%] lg:w-[62%] md:border-r md:border-border md:pr-10 lg:pr-0 lg:border-r-0">
             {(title || description) && (
-              <header className="mb-8 border-b pb-6">
+              <header className="mb-8 border-b border-border pb-6">
                 {title && (
                   <h1
-                    className="text-4xl font-bold tracking-tight text-gray-900"
+                    className="text-4xl font-bold tracking-tight text-foreground"
                     style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
                   >
                     {title}
                   </h1>
                 )}
                 {description && (
-                  <p className="mt-4 text-lg text-gray-600">{description}</p>
+                  <p className="mt-4 text-lg text-muted-foreground">{description}</p>
                 )}
               </header>
             )}
@@ -121,7 +121,7 @@ export function PublicPageLayout({
             recommendedArticles={recommendedArticles}
             activeCategoryId={activeCategoryId}
             activeTagSlug={activeTagSlug}
-            className="hidden md:block md:w-[30%] md:pl-10 lg:w-[25%] lg:pl-0"
+            className="hidden md:block md:w-[30%] md:pl-10 lg:w-[23%] lg:pl-0"
           />
         </div>
       </div>

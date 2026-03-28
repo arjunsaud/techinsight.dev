@@ -1,8 +1,9 @@
-import type { Article, Category, Comment, Tag } from "@/types/domain";
+import type { Article, Category, Comment, Tag, Series, PostSeriesInfo } from "@/types/domain";
 
 import { adminService } from "@/services/admin-service";
 import { articleService } from "@/services/article-service";
 import { commentService } from "@/services/comment-service";
+import { seriesService } from "@/services/series-service";
 import { CACHE_TTL } from "./constants/common.constants";
 
 async function getAllPublishedArticles(
@@ -84,5 +85,43 @@ export async function getTags() {
     });
   } catch {
     return [] as Tag[];
+  }
+}
+
+export async function getSeries() {
+  try {
+    return await seriesService.list({
+      next: { revalidate: CACHE_TTL, tags: ["series"] },
+    });
+  } catch {
+    return [] as Series[];
+  }
+}
+
+export async function getSeriesBySlug(slug: string, withPosts = false) {
+  try {
+    return await seriesService.getBySlug(slug, withPosts, {
+      next: { revalidate: CACHE_TTL, tags: [`series-${slug}`] },
+    });
+  } catch {
+    return null;
+  }
+}
+
+export async function getSeriesPostBySlug(slug: string) {
+  try {
+    return await seriesService.getPostBySlug(slug);
+  } catch {
+    return null;
+  }
+}
+
+export async function getPostSeriesInfo(postSlug: string) {
+  try {
+    return await seriesService.getPostSeriesInfo(postSlug, {
+      next: { revalidate: CACHE_TTL, tags: [`post-series-${postSlug}`] },
+    });
+  } catch {
+    return null;
   }
 }

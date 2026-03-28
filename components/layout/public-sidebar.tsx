@@ -30,27 +30,27 @@ export function PublicSidebar({
           activeCategoryId={activeCategoryId}
         />
 
-        <hr className="border-gray-100" />
+        <hr className="border-border" />
 
         {/* Recommended Articles */}
         <RecommendedArticles articles={recommendedArticles} />
 
-        <hr className="border-gray-100" />
+        <hr className="border-border" />
 
         {/* Trending Tags */}
         {tags.length > 0 && (
           <>
             <SidebarTags tags={tags} activeTagSlug={activeTagSlug} />
-            <hr className="border-gray-100" />
+            <hr className="border-border" />
           </>
         )}
 
         {/* Newsletter / CTA Placeholder */}
-        <div className="rounded-2xl bg-gray-50 p-6">
-          <h4 className="font-serif text-lg font-bold text-gray-900">
+        <div className="rounded-2xl bg-muted p-6">
+          <h4 className="font-serif text-lg font-bold text-foreground">
             Stay updated.
           </h4>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-muted-foreground">
             Join the TechInsight community to get the best stories in your
             inbox.
           </p>
@@ -60,12 +60,12 @@ export function PublicSidebar({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-100 pt-8 text-xs text-gray-400">
+        <div className="border-t border-border pt-8 text-xs text-muted-foreground">
           <div className="flex flex-wrap gap-x-4 gap-y-2">
-            <Link href="/about" className="hover:text-gray-600">
+            <Link href="/about" className="hover:text-foreground">
               About
             </Link>
-            <Link href="/terms" className="hover:text-gray-600">
+            <Link href="/terms" className="hover:text-foreground">
               Terms
             </Link>
           </div>
