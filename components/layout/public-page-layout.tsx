@@ -28,7 +28,6 @@ export function PublicPageLayout({
 }: PublicPageLayoutProps) {
   return (
     <div className="bg-background text-foreground transition-colors duration-300">
-      {/* Mobile/Tablet Topics Strip */}
       {categories.length > 0 && (
         <div className="border-b border-gray-100 lg:hidden">
           <div className="mx-auto flex max-w-[1440px] gap-1 overflow-x-auto px-4 py-3 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -65,26 +64,17 @@ export function PublicPageLayout({
           <aside className="hidden shrink-0 lg:block lg:w-[15%]">
             <div className="sticky top-24">
               <h3 className="mb-6 text-sm font-bold uppercase tracking-widest text-foreground">
-                Topics
+                All Topics
               </h3>
-              <nav className="flex flex-col gap-2">
-                {showBackToHub && (
-                  <Link
-                    href="/"
-                    className="mb-4 flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
-                  >
-                    ← Back to Hub
-                  </Link>
-                )}
-
+              <nav className="flex flex-wrap gap-2">
                 {categories.map((cat) => (
                   <Link
                     key={cat.id}
                     href={`/categories/${cat.slug}`}
-                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                    className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
                       activeCategoryId === cat.id
                         ? "bg-muted text-foreground font-bold"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
                     }`}
                   >
                     {cat.name}
@@ -107,7 +97,9 @@ export function PublicPageLayout({
                   </h1>
                 )}
                 {description && (
-                  <p className="mt-4 text-lg text-muted-foreground">{description}</p>
+                  <p className="mt-4 text-lg text-muted-foreground">
+                    {description}
+                  </p>
                 )}
               </header>
             )}

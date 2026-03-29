@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useTransition, useState, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { cn, formatDate } from "@/lib/utils";
 import { CommentCard } from "./admin-comment-card";
@@ -19,9 +19,15 @@ export function AdminCommentsList({
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const [localFilter, setLocalFilter] = useState(filter);
   const [isPending, startTransition] = useTransition();
 
+  useEffect(() => {
+    setLocalFilter(filter);
+  }, [filter]);
+
   const handleFilterChange = (newFilter: string) => {
+    setLocalFilter(newFilter);
     const params = new URLSearchParams(searchParams.toString());
     if (newFilter === "all") {
       params.delete("filter");
@@ -33,9 +39,7 @@ export function AdminCommentsList({
     const currentSearch = searchParams.toString();
 
     if (newSearch !== currentSearch) {
-      startTransition(() => {
-        router.push(`${pathname}?${newSearch}` as any);
-      });
+      window.history.pushState(null, "", `${pathname}?${newSearch}`);
     }
   };
 
@@ -58,8 +62,8 @@ export function AdminCommentsList({
   const spamCount = allComments.filter((c) => c.status === "spam").length;
 
   const filteredComments = allComments.filter((comment) => {
-    if (filter === "all") return true;
-    return comment.status === filter;
+    if (localFilter === "all") return true;
+    return comment.status === localFilter;
   });
 
   const filters = [
@@ -79,7 +83,7 @@ export function AdminCommentsList({
             onClick={() => handleFilterChange(f.id)}
             className={cn(
               "px-3 py-1.5 text-sm font-medium rounded-sm transition-colors",
-              filter === f.id
+              localFilter === f.id
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
             )}

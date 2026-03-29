@@ -33,16 +33,23 @@ export function AdminArticlesList({
     searchParams.get("search") || "",
   );
 
-  const hasInitialData = !searchQuery && filter === "all" && initialArticles.length > 0;
+  const [localFilter, setLocalFilter] = React.useState(filter);
+
+  // Sync prop changes purely in case of hard navigation updates
+  React.useEffect(() => {
+    setLocalFilter(filter);
+  }, [filter]);
+
+  const hasInitialData = !searchQuery && localFilter === "all" && initialArticles.length > 0;
 
   const articlesQuery = useQuery({
-    queryKey: ["admin-articles", filter, searchQuery],
+    queryKey: ["admin-articles", localFilter, searchQuery],
     queryFn: () =>
       articleService.listAdmin(
         {
           page: 1,
           pageSize: 100,
-          status: filter === "all" ? undefined : (filter as any),
+          status: localFilter === "all" ? undefined : (localFilter as any),
           query: searchQuery || undefined,
         },
         accessToken,
@@ -86,15 +93,15 @@ export function AdminArticlesList({
   }, [searchQuery, router, pathname, searchParams]);
 
   const handleFilterChange = (newFilter: string) => {
+    setLocalFilter(newFilter);
     const params = new URLSearchParams(searchParams.toString());
     if (newFilter === "all") {
       params.delete("filter");
     } else {
       params.set("filter", newFilter);
     }
-    startTransition(() => {
-      router.push(`${pathname}?${params.toString()}` as any);
-    });
+    // Update the URL without triggering a full Next.js SSR roundtrip
+    window.history.pushState(null, "", `${pathname}?${params.toString()}`);
   };
 
   const deleteArticleMutation = useMutation({
@@ -169,7 +176,7 @@ export function AdminArticlesList({
               onClick={() => handleFilterChange(f.id)}
               className={cn(
                 "px-3 py-1.5 text-sm font-medium rounded-sm transition-colors",
-                filter === f.id
+                localFilter === f.id
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
               )}
@@ -182,7 +189,17 @@ export function AdminArticlesList({
 
       {/* Article Cards List */}
       <div className="space-y-4">
-        {allArticles.length === 0 ? (
+        {articlesQuery.isFetching ? (
+          <div className="rounded-xl border p-8 flex justify-center text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <svg className="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Loading articles...</span>
+            </div>
+          </div>
+        ) : allArticles.length === 0 ? (
           <div className="rounded-xl border border-dashed p-8 text-center text-muted-foreground">
             No articles found for the selected filter.
           </div>

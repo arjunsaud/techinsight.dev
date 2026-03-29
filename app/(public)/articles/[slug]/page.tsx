@@ -22,7 +22,10 @@ import { formatDate, injectHeadingIds } from "@/lib/utils";
 import type { Category, Tag } from "@/types/domain";
 
 function stripHtml(html: string) {
-  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 interface ArticleDetailPageProps {
@@ -43,7 +46,9 @@ export async function generateMetadata({
 
   const title = article.seoTitle ?? article.title;
   const description =
-    article.metaDescription ?? article.excerpt ?? stripHtml(article.content).slice(0, 160);
+    article.metaDescription ??
+    article.excerpt ??
+    stripHtml(article.content).slice(0, 160);
   const images = article.featuredImageUrl
     ? [{ url: article.featuredImageUrl, alt: article.title ?? title }]
     : undefined;
@@ -73,13 +78,14 @@ export default async function ArticleDetailPage({
 }: ArticleDetailPageProps) {
   const { slug } = await params;
 
-  const [article, categories, tags, recommendedArticles, seriesInfo] = await Promise.all([
-    getArticleBySlug(slug),
-    getCategories() as Promise<Category[]>,
-    getTags() as Promise<Tag[]>,
-    getRecommendedArticles(),
-    getPostSeriesInfo(slug),
-  ]);
+  const [article, categories, tags, recommendedArticles, seriesInfo] =
+    await Promise.all([
+      getArticleBySlug(slug),
+      getCategories() as Promise<Category[]>,
+      getTags() as Promise<Tag[]>,
+      getRecommendedArticles(),
+      getPostSeriesInfo(slug),
+    ]);
 
   if (!article) {
     notFound();
@@ -119,7 +125,7 @@ export default async function ArticleDetailPage({
             >
               For you
             </Link>
-            {categories.map((cat) => (
+            {categories.slice(0, 6).map((cat) => (
               <Link
                 key={cat.id}
                 href={`/categories/${cat.slug}`}
@@ -138,28 +144,22 @@ export default async function ArticleDetailPage({
           <aside className="hidden shrink-0 lg:block lg:w-[15%]">
             <div className="sticky top-24">
               <h3 className="mb-6 text-sm font-bold uppercase tracking-widest text-foreground">
-                Topics
+                All Topics
               </h3>
-              <nav className="flex flex-col gap-2">
-                <Link
-                  href="/"
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
-                >
-                  Back to Hub
-                </Link>
-                {categories.map((cat) => (
-                  <Link
-                    key={cat.id}
-                    href={`/categories/${cat.slug}`}
-                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-all hover:bg-muted hover:text-foreground ${
-                      article.category?.id === cat.id
-                        ? "bg-muted text-foreground font-bold"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {cat.name}
-                  </Link>
-                ))}
+              <nav className="flex flex-wrap gap-2">
+                  {categories.slice(0, 6).map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/categories/${cat.slug}`}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all hover:bg-muted hover:text-foreground ${
+                        article.category?.id === cat.id
+                          ? "bg-muted text-foreground font-bold"
+                          : "bg-muted/50 text-muted-foreground"
+                      }`}
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
               </nav>
             </div>
           </aside>
@@ -189,7 +189,8 @@ export default async function ArticleDetailPage({
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                          Part {seriesInfo.index} of {seriesInfo.totalInSeries} in Series
+                          Part {seriesInfo.index} of {seriesInfo.totalInSeries}{" "}
+                          in Series
                         </span>
                         <h4 className="font-serif text-base font-bold text-foreground group-hover:text-primary">
                           {seriesInfo.series?.title}
@@ -209,7 +210,9 @@ export default async function ArticleDetailPage({
                   {article.title}
                 </h1>
                 {article.excerpt ? (
-                  <p className="text-lg text-muted-foreground">{article.excerpt}</p>
+                  <p className="text-lg text-muted-foreground">
+                    {article.excerpt}
+                  </p>
                 ) : null}
                 <div className="flex flex-wrap gap-2">
                   {(article.tags ?? []).map((tag) => (
