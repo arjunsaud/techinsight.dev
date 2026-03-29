@@ -171,6 +171,7 @@ export function SeriesPostEditor({
                 url={formData.featuredImageUrl || ""}
                 onChange={(url) => setFormData({ ...formData, featuredImageUrl: url })}
                 accessToken={accessToken}
+                folder="series"
               />
 
               <div className="space-y-6">
@@ -208,6 +209,7 @@ export function SeriesPostEditor({
                 value={formData.content}
                 onChange={(content) => setFormData({ ...formData, content })}
                 accessToken={accessToken}
+                folder="series"
               />
             </div>
           </div>

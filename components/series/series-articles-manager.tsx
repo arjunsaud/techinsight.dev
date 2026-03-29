@@ -57,8 +57,9 @@ export function SeriesArticlesManager({
       await seriesService.reorderPosts(seriesId, postIds, accessToken);
       setIsReordered(false);
       toast.success("Order saved successfully");
-    } catch (error) {
-      toast.error("Failed to save order");
+    } catch (error: any) {
+      console.error("Reorder error:", error);
+      toast.error(error.message || "Failed to save order");
     } finally {
       setSavingOrder(false);
     }

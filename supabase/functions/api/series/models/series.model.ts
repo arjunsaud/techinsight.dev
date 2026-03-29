@@ -152,14 +152,14 @@ export async function reorderSeriesPostsModel(
   seriesId: string,
   postIds: string[],
 ) {
-  const updates = postIds.map((id, index) => ({
-    id,
-    series_id: seriesId,
-    series_order: index,
-  }));
+  const { error } = await supabase.rpc("reorder_series_posts", {
+    p_post_ids: postIds,
+  });
 
-  const { error } = await supabase.from("series_posts").upsert(updates);
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("Database reorder error:", error);
+    throw new Error(`DB Error: ${error.message} (${error.code})`);
+  }
 }
 
 export async function getSeriesPostBySlugModel(

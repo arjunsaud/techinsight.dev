@@ -20,6 +20,7 @@ export default async function AdminAllArticlesPage({
         {
           page: 1,
           pageSize: 100,
+          status: filter === "all" ? undefined : (filter as import("@/types/domain").ArticleStatus),
         },
         accessToken,
       )

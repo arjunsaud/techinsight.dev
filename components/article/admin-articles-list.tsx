@@ -33,7 +33,7 @@ export function AdminArticlesList({
     searchParams.get("search") || "",
   );
 
-  const hasInitialData = !searchQuery && initialArticles.length > 0;
+  const hasInitialData = !searchQuery && filter === "all" && initialArticles.length > 0;
 
   const articlesQuery = useQuery({
     queryKey: ["admin-articles", filter, searchQuery],

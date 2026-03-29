@@ -138,8 +138,13 @@ export async function reorderSeriesPosts(c: Context) {
     return c.json({ error: "postIds must be an array" }, 400);
   }
 
-  await reorderSeriesPostsModel(supabase, seriesId, postIds);
-  return c.json({ success: true });
+  try {
+    await reorderSeriesPostsModel(supabase, seriesId, postIds);
+    return c.json({ success: true });
+  } catch (error: any) {
+    console.error("Reorder controller error:", error);
+    return c.json({ error: error.message }, 500);
+  }
 }
 
 export async function createSeriesPost(c: Context) {

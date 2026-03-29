@@ -88,7 +88,7 @@ export const articleService = {
     });
   },
 
-  getUploadDraft(filename: string, accessToken: string) {
+  getUploadDraft(filename: string, accessToken: string, folder?: string) {
     return apiFetch<{
       signature: string;
       timestamp: number;
@@ -99,7 +99,7 @@ export const articleService = {
       uploadUrl: string;
     }>("article/upload-url", {
       method: "POST",
-      body: { filename },
+      body: { filename, folder },
       accessToken,
     });
   },
