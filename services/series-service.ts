@@ -81,7 +81,7 @@ export const seriesService = {
   async updatePost(seriesId: string, postId: string, data: Partial<SeriesPost>, accessToken: string): Promise<SeriesPost> {
     return apiFetch<SeriesPost>(`series/${seriesId}/posts/${postId}`, {
       method: "PATCH",
-      body: JSON.stringify(data),
+      body: data,
       accessToken,
     });
   },
@@ -89,7 +89,7 @@ export const seriesService = {
   async reorderPosts(seriesId: string, postIds: string[], accessToken: string): Promise<void> {
     await apiFetch(`series/${seriesId}/reorder`, {
       method: "POST",
-      body: JSON.stringify({ postIds }),
+      body: { postIds },
       accessToken,
     });
   },

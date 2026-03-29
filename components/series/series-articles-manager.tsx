@@ -112,16 +112,16 @@ export function SeriesArticlesManager({
                         <button
                           onClick={() => moveItem(index, "up")}
                           disabled={index === 0}
-                          className="text-gray-300 hover:text-blue-600 disabled:opacity-0"
+                          className="group/btn flex h-8 w-8 items-center justify-center rounded-lg text-gray-300 hover:bg-blue-50 hover:text-blue-600 disabled:opacity-0 transition-all active:scale-90"
                         >
-                          <ArrowUp className="h-3 w-3" />
+                          <ArrowUp className="h-5 w-5 stroke-[3px]" />
                         </button>
                         <button
                           onClick={() => moveItem(index, "down")}
                           disabled={index === posts.length - 1}
-                          className="text-gray-300 hover:text-blue-600 disabled:opacity-0"
+                          className="group/btn flex h-8 w-8 items-center justify-center rounded-lg text-gray-300 hover:bg-blue-50 hover:text-blue-600 disabled:opacity-0 transition-all active:scale-90"
                         >
-                          <ArrowDown className="h-3 w-3" />
+                          <ArrowDown className="h-5 w-5 stroke-[3px]" />
                         </button>
                       </div>
                     </div>

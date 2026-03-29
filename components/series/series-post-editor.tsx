@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Save, Eye, Send } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { SeriesPostSettings } from "./series-post-settings";
 
 interface SeriesPostEditorProps {
   seriesId: string;
@@ -35,6 +36,10 @@ export function SeriesPostEditor({
     featuredImageUrl: initialPost?.featuredImageUrl || "",
     status: initialPost?.status || "draft",
     seriesOrder: initialPost?.seriesOrder ?? 0,
+    seoTitle: initialPost?.seoTitle || "",
+    metaDescription: initialPost?.metaDescription || "",
+    keywords: initialPost?.keywords || "",
+    showToc: initialPost?.showToc ?? false,
   });
 
   // Auto-generate slug from title
@@ -101,6 +106,16 @@ export function SeriesPostEditor({
             <Eye className="mr-2 h-4 w-4" />
             {isPreview ? "Edit" : "Preview"}
           </Button>
+          <SeriesPostSettings 
+            initialValues={{
+              slug: formData.slug,
+              seoTitle: formData.seoTitle,
+              metaDescription: formData.metaDescription,
+              keywords: formData.keywords,
+              showToc: formData.showToc
+            }}
+            onChange={(values) => setFormData(prev => ({ ...prev, ...values }))}
+          />
           <Button
             variant="outline"
             disabled={loading}

@@ -71,11 +71,15 @@ export interface SeriesPost {
   seriesId: string;
   title: string;
   slug: string;
+  seoTitle?: string | null;
+  metaDescription?: string | null;
+  keywords?: string | null;
   content: string;
   excerpt?: string | null;
   featuredImageUrl?: string | null;
   seriesOrder: number;
   status: "draft" | "published";
+  showToc: boolean;
   publishedAt?: string | null;
   createdAt: string;
   updatedAt: string;

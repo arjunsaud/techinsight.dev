@@ -12,8 +12,15 @@ interface SeriesCardProps {
 
 export function SeriesCard({ series, onDelete }: SeriesCardProps) {
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:border-blue-100 hover:shadow-md">
-      <div className="flex items-start justify-between">
+    <div className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:border-blue-100 hover:shadow-md hover:-translate-y-1">
+      {/* Invisible Link Overlay for the whole card */}
+      <Link 
+        href={`/admin/series/${series.id}`} 
+        className="absolute inset-0 z-0"
+        aria-label={`View ${series.title}`}
+      />
+      
+      <div className="relative z-10 flex items-start justify-between pointer-events-none">
         <div className="flex gap-4">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-500 transition-colors group-hover:bg-blue-100">
             {series.coverImage ? (
@@ -29,7 +36,7 @@ export function SeriesCard({ series, onDelete }: SeriesCardProps) {
           <div className="space-y-1">
             <Link
               href={`/admin/series/${series.id}`}
-              className="text-lg font-bold text-gray-900 hover:text-blue-600 transition-colors"
+              className="text-lg font-bold text-gray-900 hover:text-blue-600 transition-colors pointer-events-auto"
             >
               {series.title}
             </Link>
@@ -37,17 +44,17 @@ export function SeriesCard({ series, onDelete }: SeriesCardProps) {
           </div>
         </div>
 
-        <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 pointer-events-auto">
           <Link
             href={`/admin/series/edit/${series.id}` as any}
-            className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-900"
+            className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-900 transition-colors"
             title="Edit Series Metadata"
           >
             <Edit2 className="h-4 w-4" />
           </Link>
           <button
             onClick={() => onDelete(series.id)}
-            className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600"
+            className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
             title="Delete Series"
           >
             <Trash2 className="h-4 w-4" />

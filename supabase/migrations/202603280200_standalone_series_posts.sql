@@ -28,12 +28,12 @@ ALTER TABLE series_posts ENABLE ROW LEVEL SECURITY;
 
 -- 4. Public SELECT policies
 CREATE POLICY "Allow public read access for published series_posts" ON series_posts
-  FOR SELECT USING (status = 'published' OR (auth.uid() IN (SELECT id FROM users WHERE role IN ('admin', 'superadmin'))));
+  FOR SELECT USING (status = 'published' OR (public.is_admin()));
 
 -- 5. Admin management policies
 CREATE POLICY "Admins manage series_posts" ON series_posts
-  FOR ALL USING (auth.uid() IN (SELECT id FROM users WHERE role IN ('admin', 'superadmin')))
-  WITH CHECK (auth.uid() IN (SELECT id FROM users WHERE role IN ('admin', 'superadmin')));
+  FOR ALL USING (public.is_admin())
+  WITH CHECK (public.is_admin());
 
 -- 6. Trigger for updated_at
 CREATE TRIGGER update_series_posts_updated_at

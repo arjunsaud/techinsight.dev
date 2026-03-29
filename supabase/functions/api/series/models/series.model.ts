@@ -17,10 +17,14 @@ export interface SeriesPostPayload {
   featuredImageUrl?: string;
   seriesOrder?: number;
   status?: "draft" | "published";
+  seoTitle?: string;
+  metaDescription?: string;
+  keywords?: string;
+  showToc?: boolean;
 }
 
 const SERIES_SELECT = "id, title, slug, description, coverImage:cover_image, status, createdAt:created_at, updatedAt:updated_at";
-const SERIES_POST_SELECT = "id, seriesId:series_id, title, slug, content, excerpt, featuredImageUrl:featured_image_url, seriesOrder:series_order, status, publishedAt:published_at, createdAt:created_at, updatedAt:updated_at";
+const SERIES_POST_SELECT = "id, seriesId:series_id, title, slug, content, excerpt, featuredImageUrl:featured_image_url, seriesOrder:series_order, status, seoTitle:seo_title, metaDescription:meta_description, keywords, showToc:show_toc, publishedAt:published_at, createdAt:created_at, updatedAt:updated_at";
 
 export async function listSeriesModel(
   supabase: SupabaseClient,
@@ -205,6 +209,10 @@ export async function createSeriesPostModel(
       featured_image_url: payload.featuredImageUrl,
       series_order: payload.seriesOrder ?? 0,
       status: payload.status ?? "draft",
+      seo_title: payload.seoTitle,
+      meta_description: payload.metaDescription,
+      keywords: payload.keywords,
+      show_toc: payload.showToc ?? false,
       published_at: payload.status === "published" ? new Date().toISOString() : null,
     })
     .select(SERIES_POST_SELECT)
@@ -226,6 +234,10 @@ export async function updateSeriesPostModel(
   if (payload.excerpt !== undefined) updates.excerpt = payload.excerpt;
   if (payload.featuredImageUrl !== undefined) updates.featured_image_url = payload.featuredImageUrl;
   if (payload.seriesOrder !== undefined) updates.series_order = payload.seriesOrder;
+  if (payload.seoTitle !== undefined) updates.seo_title = payload.seoTitle;
+  if (payload.metaDescription !== undefined) updates.meta_description = payload.metaDescription;
+  if (payload.keywords !== undefined) updates.keywords = payload.keywords;
+  if (payload.showToc !== undefined) updates.show_toc = payload.showToc;
   if (payload.status !== undefined) {
     updates.status = payload.status;
     if (payload.status === "published") {
