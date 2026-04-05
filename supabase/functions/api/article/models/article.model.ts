@@ -80,8 +80,24 @@ export async function listArticlesModel(
     if (isUuid(filters.categoryId)) {
       query = query.eq("category_id", filters.categoryId);
     } else {
-      // If it's a slug, filter via the joined category table
-      query = query.eq("categories.slug", filters.categoryId);
+      // If it's a slug, fetch the category ID first
+      const { data: categoryData } = await supabase
+        .from("categories")
+        .select("id")
+        .eq("slug", filters.categoryId)
+        .maybeSingle();
+
+      if (categoryData) {
+        query = query.eq("category_id", categoryData.id);
+      } else {
+        // Category slug not found, return empty result
+        return {
+          data: [],
+          page: filters.page,
+          pageSize: filters.pageSize,
+          total: 0,
+        };
+      }
     }
   }
 

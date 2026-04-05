@@ -24,7 +24,11 @@ export function SeriesArticlesManager({
   const [savingOrder, setSavingOrder] = useState(false);
 
   const handleDeletePost = async (postId: string) => {
-    if (!confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
+    if (
+      !confirm(
+        "Are you sure you want to delete this post? This action cannot be undone.",
+      )
+    ) {
       return;
     }
 
@@ -45,7 +49,7 @@ export function SeriesArticlesManager({
     const item = newPosts[index];
     newPosts.splice(index, 1);
     newPosts.splice(newIndex, 0, item);
-    
+
     setPosts(newPosts);
     setIsReordered(true);
   };
@@ -68,7 +72,7 @@ export function SeriesArticlesManager({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold text-gray-900">Series Content</h3>
+        <h3 className="text-xl font-bold text-gray-900">Series Lists</h3>
         <div className="flex items-center gap-2">
           {isReordered && (
             <button
@@ -80,10 +84,10 @@ export function SeriesArticlesManager({
               {savingOrder ? "Saving..." : "Save Order"}
             </button>
           )}
-          <Link 
+          <Link
             href={`/admin/series/${seriesId}/posts/new` as any}
             className={cn(
-              "inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-blue-700 hover:shadow-lg active:scale-95"
+              "inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-blue-700 hover:shadow-lg active:scale-95",
             )}
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -146,8 +150,10 @@ export function SeriesArticlesManager({
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-1">
-                      <Link 
-                        href={`/admin/series/${seriesId}/posts/${post.id}` as any}
+                      <Link
+                        href={
+                          `/admin/series/${seriesId}/posts/${post.id}` as any
+                        }
                         className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-blue-600 transition-colors"
                       >
                         <Edit2 className="h-4 w-4" />
@@ -164,8 +170,12 @@ export function SeriesArticlesManager({
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="px-6 py-12 text-center text-gray-400">
-                  No articles in this series. Click "Add Article" to get started.
+                <td
+                  colSpan={4}
+                  className="px-6 py-12 text-center text-gray-400"
+                >
+                  No articles in this series. Click "Add Article" to get
+                  started.
                 </td>
               </tr>
             )}
