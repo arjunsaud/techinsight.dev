@@ -5,6 +5,7 @@ import type {
   Comment,
   DashboardStats,
   Tag,
+  SeriesPost,
 } from "@/types/domain";
 
 export interface PaginatedResponse<T> {
@@ -61,4 +62,26 @@ export interface DashboardResponse {
 export interface TaxonomyResponse {
   categories: Category[];
   tags: Tag[];
+}
+
+// Series Post API types
+export interface CreateSeriesPostInput {
+  title: string;
+  slug?: string;
+  content: string;
+  excerpt?: string;
+  featuredImageUrl?: string | null;
+  categoryId?: string | null;
+  tagIds?: string[];
+  status?: ArticleStatus;
+  isFeatured?: boolean;
+  seoTitle?: string;
+  metaDescription?: string;
+  keywords?: string;
+  showToc?: boolean;
+  seriesOrder?: number;
+}
+
+export interface UpdateSeriesPostInput extends Partial<CreateSeriesPostInput> {
+  id?: string;
 }

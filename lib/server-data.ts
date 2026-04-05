@@ -1,4 +1,11 @@
-import type { Article, Category, Comment, Tag, Series, PostSeriesInfo } from "@/types/domain";
+import type {
+  Article,
+  Category,
+  Comment,
+  Tag,
+  Series,
+  PostSeriesInfo,
+} from "@/types/domain";
 
 import { adminService } from "@/services/admin-service";
 import { articleService } from "@/services/article-service";
@@ -7,7 +14,7 @@ import { seriesService } from "@/services/series-service";
 import { CACHE_TTL } from "./constants/common.constants";
 
 async function getAllPublishedArticles(
-  filters: { category?: string; tag?: string; featured?: boolean } = {},
+  filters: { category?: string; tag?: string; isFeatured?: boolean } = {},
 ) {
   const pageSize = 50;
   let page = 1;
@@ -31,7 +38,7 @@ async function getAllPublishedArticles(
 }
 
 export async function getPublishedArticles(
-  filters: { category?: string; tag?: string; featured?: boolean } = {},
+  filters: { category?: string; tag?: string; isFeatured?: boolean } = {},
 ) {
   try {
     return await getAllPublishedArticles(filters);

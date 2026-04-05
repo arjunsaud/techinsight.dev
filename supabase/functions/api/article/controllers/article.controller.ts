@@ -128,7 +128,9 @@ export async function createUploadDraft(c: Context) {
   const timestamp = Math.round(new Date().getTime() / 1000);
   // Use requested folder, restricted to known safe values
   const allowedFolders = ["articles", "series"];
-  const folder = allowedFolders.includes(payload.folder ?? "") ? payload.folder! : "articles";
+  const folder = allowedFolders.includes(payload.folder ?? "")
+    ? payload.folder!
+    : "articles";
 
   // Parameters to sign
   const params: Record<string, string | number> = {

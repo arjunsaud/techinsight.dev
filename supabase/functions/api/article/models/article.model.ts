@@ -90,8 +90,44 @@ export async function listArticlesModel(
   }
 
   if (filters.tagSlug) {
-    // Correct way to filter by tag slug in Supabase JS with joined tables:
-    query = query.eq("article_tags.tag.slug", filters.tagSlug);
+    // Filter by tag slug using inner join on article_tags and tags
+    // We need to use a subquery approach for many-to-many filtering
+    const { data: tagData, error: tagError } = await supabase
+      .from("tags")
+      .select("id")
+      .eq("slug", filters.tagSlug)
+      .single();
+
+    if (tagData) {
+      // Get article IDs that have this tag
+      const { data: articleTagsData, error: articleTagsError } = await supabase
+        .from("article_tags")
+        .select("article_id")
+        .eq("tag_id", tagData.id);
+
+      if (articleTagsData && articleTagsData.length > 0) {
+        const articleIds = articleTagsData.map(
+          (item: { article_id: string }) => item.article_id,
+        );
+        query = query.in("id", articleIds);
+      } else {
+        // No articles with this tag, return empty result
+        return {
+          data: [],
+          page: filters.page,
+          pageSize: filters.pageSize,
+          total: 0,
+        };
+      }
+    } else {
+      // Tag not found, return empty result
+      return {
+        data: [],
+        page: filters.page,
+        pageSize: filters.pageSize,
+        total: 0,
+      };
+    }
   }
 
   const { data, error, count } = await query;
@@ -297,7 +333,7 @@ export async function getRecommendedArticlesModel(supabase: SupabaseClient) {
     .eq("status", "published")
     .order("is_featured", { ascending: false })
     .order("published_at", { ascending: false, nullsFirst: false })
-    .limit(6);
+    .limit(10);
 
   if (error) throw new Error(error.message);
 

@@ -1,4 +1,5 @@
 import type { Series, PostSeriesInfo, SeriesPost } from "@/types/domain";
+import type { CreateSeriesPostInput, UpdateSeriesPostInput } from "@/types/api";
 import { apiFetch } from "@/services/http";
 
 export const seriesService = {
@@ -70,7 +71,7 @@ export const seriesService = {
     return apiFetch<SeriesPost>(`series/post/slug/${slug}`);
   },
 
-  async createPost(seriesId: string, data: Partial<SeriesPost>, accessToken: string): Promise<SeriesPost> {
+  async createPost(seriesId: string, data: CreateSeriesPostInput, accessToken: string): Promise<SeriesPost> {
     return apiFetch<SeriesPost>(`series/${seriesId}/posts`, {
       method: "POST",
       body: data,
@@ -78,7 +79,7 @@ export const seriesService = {
     });
   },
 
-  async updatePost(seriesId: string, postId: string, data: Partial<SeriesPost>, accessToken: string): Promise<SeriesPost> {
+  async updatePost(seriesId: string, postId: string, data: UpdateSeriesPostInput, accessToken: string): Promise<SeriesPost> {
     return apiFetch<SeriesPost>(`series/${seriesId}/posts/${postId}`, {
       method: "PATCH",
       body: data,

@@ -1,5 +1,9 @@
+import { SeriesPostStudio } from "@/components/series/series-post-studio";
+import { SeriesPostStudioProvider } from "@/components/series/series-post-studio-context";
+import { SeriesPostHeaderControls } from "@/components/series/series-post-header-controls";
+import { SeriesPostSettings } from "@/components/series/series-post-settings";
+import { AdminHeader } from "@/components/layout/admin.header";
 import { requireAdmin } from "@/lib/supabase/guards";
-import { SeriesPostEditor } from "@/components/series/series-post-editor";
 import { seriesService } from "@/services/series-service";
 import { notFound } from "next/navigation";
 
@@ -15,8 +19,12 @@ export default async function EditSeriesPostPage({
   const accessToken = session.access_token;
 
   let post = null;
+  let series = null;
   try {
-    post = await seriesService.getPostById(id, postId, accessToken);
+    [post, series] = await Promise.all([
+      seriesService.getPostById(id, postId, accessToken),
+      seriesService.getById(id, accessToken),
+    ]);
   } catch (error) {
     console.error("Failed to fetch series post:", error);
   }
@@ -26,12 +34,37 @@ export default async function EditSeriesPostPage({
   }
 
   return (
-    <div className="space-y-6">
-      <SeriesPostEditor 
-        seriesId={id} 
-        initialPost={post} 
-        accessToken={accessToken} 
-      />
-    </div>
+    <SeriesPostStudioProvider>
+      <section className="space-y-6">
+        <div className="flex items-center justify-between">
+          <AdminHeader
+            title="Edit Series Article"
+            description={`Editing in ${series?.title || 'series'}`}
+            showBack={true}
+            backUrl={`/admin/series/${id}`}
+          />
+          <div className="flex items-center gap-2">
+            <SeriesPostHeaderControls />
+            <SeriesPostSettings
+              accessToken={accessToken}
+              seriesId={id}
+              postId={postId}
+              initialData={{
+                slug: post.slug,
+                seoTitle: post.seoTitle,
+                metaDescription: post.metaDescription,
+                keywords: post.keywords,
+                showToc: post.showToc,
+              }}
+            />
+          </div>
+        </div>
+        <SeriesPostStudio
+          seriesId={id}
+          accessToken={accessToken}
+          initialPost={post}
+        />
+      </section>
+    </SeriesPostStudioProvider>
   );
 }

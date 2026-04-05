@@ -16,7 +16,10 @@ import { formatDate, injectHeadingIds } from "@/lib/utils";
 import type { Category, Tag } from "@/types/domain";
 
 function stripHtml(html: string) {
-  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 interface SeriesPostDetailPageProps {
@@ -64,13 +67,14 @@ export default async function SeriesPostDetailPage({
 }: SeriesPostDetailPageProps) {
   const { slug, postSlug } = await params;
 
-  const [post, categories, tags, recommendedArticles, seriesInfo] = await Promise.all([
-    getSeriesPostBySlug(postSlug),
-    getCategories() as Promise<Category[]>,
-    getTags() as Promise<Tag[]>,
-    getRecommendedArticles(),
-    getPostSeriesInfo(postSlug),
-  ]);
+  const [post, categories, tags, recommendedArticles, seriesInfo] =
+    await Promise.all([
+      getSeriesPostBySlug(postSlug),
+      getCategories() as Promise<Category[]>,
+      getTags() as Promise<Tag[]>,
+      getRecommendedArticles(),
+      getPostSeriesInfo(postSlug),
+    ]);
 
   if (!post || !seriesInfo) {
     notFound();
@@ -102,12 +106,10 @@ export default async function SeriesPostDetailPage({
             <article className="mx-auto max-w-3xl space-y-8">
               <header className="space-y-4 border-b border-border pb-6">
                 <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                   <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-600">
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-600">
                     Episode {seriesInfo.index} of {seriesInfo.totalInSeries}
                   </div>
-                  <span>
-                    {formatDate(post.publishedAt ?? post.createdAt)}
-                  </span>
+                  <span>{formatDate(post.publishedAt ?? post.createdAt)}</span>
                 </div>
 
                 <h1
@@ -116,7 +118,7 @@ export default async function SeriesPostDetailPage({
                 >
                   {post.title}
                 </h1>
-                
+
                 {post.excerpt ? (
                   <p className="text-xl text-muted-foreground leading-relaxed italic border-l-4 border-blue-500 pl-6 py-1">
                     {post.excerpt}

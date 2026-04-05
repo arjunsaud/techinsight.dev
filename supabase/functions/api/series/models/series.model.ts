@@ -21,10 +21,13 @@ export interface SeriesPostPayload {
   metaDescription?: string;
   keywords?: string;
   showToc?: boolean;
+  categoryId?: string;
+  isFeatured?: boolean;
+  tagIds?: string[];
 }
 
 const SERIES_SELECT = "id, title, slug, description, coverImage:cover_image, status, createdAt:created_at, updatedAt:updated_at";
-const SERIES_POST_SELECT = "id, seriesId:series_id, title, slug, content, excerpt, featuredImageUrl:featured_image_url, seriesOrder:series_order, status, seoTitle:seo_title, metaDescription:meta_description, keywords, showToc:show_toc, publishedAt:published_at, createdAt:created_at, updatedAt:updated_at";
+const SERIES_POST_SELECT = "id, seriesId:series_id, title, slug, content, excerpt, featuredImageUrl:featured_image_url, categoryId:category_id, seriesOrder:series_order, status, seoTitle:seo_title, metaDescription:meta_description, keywords, showToc:show_toc, isFeatured:is_featured, publishedAt:published_at, createdAt:created_at, updatedAt:updated_at, category:categories(id,name,slug,createdAt:created_at), tags:series_post_tags(tag:tags(id,name,slug,createdAt:created_at))";
 
 export async function listSeriesModel(
   supabase: SupabaseClient,
@@ -91,9 +94,17 @@ export async function getSeriesWithPostsModel(
 
   if (error) throw new Error(error.message);
 
+  // Map tags for each post
+  const mappedPosts = (posts ?? []).map((post: any) => ({
+    ...post,
+    tags: ((post.tags as { tag: unknown }[] | null) ?? []).map(
+      (item) => item.tag,
+    ),
+  }));
+
   return {
     ...series,
-    posts: posts ?? [],
+    posts: mappedPosts,
   };
 }
 
@@ -173,7 +184,14 @@ export async function getSeriesPostBySlugModel(
     .single();
 
   if (error) throw new Error(error.message);
-  return data;
+  
+  // Map tags from junction table
+  return {
+    ...data,
+    tags: ((data.tags as { tag: unknown }[] | null) ?? []).map(
+      (item) => item.tag,
+    ),
+  };
 }
 
 // standalone series posts model functions
@@ -188,7 +206,14 @@ export async function getSeriesPostByIdModel(
     .single();
 
   if (error) throw new Error(error.message);
-  return data;
+  
+  // Map tags from junction table
+  return {
+    ...data,
+    tags: ((data.tags as { tag: unknown }[] | null) ?? []).map(
+      (item) => item.tag,
+    ),
+  };
 }
 
 export async function createSeriesPostModel(
@@ -207,19 +232,42 @@ export async function createSeriesPostModel(
       content: payload.content,
       excerpt: payload.excerpt,
       featured_image_url: payload.featuredImageUrl,
+      category_id: payload.categoryId,
       series_order: payload.seriesOrder ?? 0,
       status: payload.status ?? "draft",
       seo_title: payload.seoTitle,
       meta_description: payload.metaDescription,
       keywords: payload.keywords,
       show_toc: payload.showToc ?? false,
+      is_featured: payload.isFeatured ?? false,
       published_at: payload.status === "published" ? new Date().toISOString() : null,
     })
     .select(SERIES_POST_SELECT)
     .single();
 
   if (error) throw new Error(error.message);
-  return data;
+
+  // Handle tags if provided
+  if (payload.tagIds && payload.tagIds.length > 0) {
+    const { error: tagError } = await supabase.from("series_post_tags").insert(
+      payload.tagIds.map((tagId) => ({
+        series_post_id: data.id,
+        tag_id: tagId,
+      })),
+    );
+
+    if (tagError) {
+      throw new Error(tagError.message);
+    }
+  }
+
+  // Fetch the full post with tags
+  const fullPost = await getSeriesPostByIdModel(supabase, data.id);
+  if (!fullPost) {
+    throw new Error("Failed to fetch created series post");
+  }
+
+  return fullPost;
 }
 
 export async function updateSeriesPostModel(
@@ -233,11 +281,13 @@ export async function updateSeriesPostModel(
   if (payload.content !== undefined) updates.content = payload.content;
   if (payload.excerpt !== undefined) updates.excerpt = payload.excerpt;
   if (payload.featuredImageUrl !== undefined) updates.featured_image_url = payload.featuredImageUrl;
+  if (payload.categoryId !== undefined) updates.category_id = payload.categoryId;
   if (payload.seriesOrder !== undefined) updates.series_order = payload.seriesOrder;
   if (payload.seoTitle !== undefined) updates.seo_title = payload.seoTitle;
   if (payload.metaDescription !== undefined) updates.meta_description = payload.metaDescription;
   if (payload.keywords !== undefined) updates.keywords = payload.keywords;
   if (payload.showToc !== undefined) updates.show_toc = payload.showToc;
+  if (payload.isFeatured !== undefined) updates.is_featured = payload.isFeatured;
   if (payload.status !== undefined) {
     updates.status = payload.status;
     if (payload.status === "published") {
@@ -253,7 +303,43 @@ export async function updateSeriesPostModel(
     .maybeSingle();
 
   if (error) throw new Error(error.message);
-  return data;
+
+  if (!data) {
+    return null;
+  }
+
+  // Handle tags if provided
+  if (payload.tagIds) {
+    // Delete existing tags
+    const { error: deleteTagsError } = await supabase
+      .from("series_post_tags")
+      .delete()
+      .eq("series_post_id", postId);
+    
+    if (deleteTagsError) {
+      throw new Error(deleteTagsError.message);
+    }
+
+    // Insert new tags if any
+    if (payload.tagIds.length > 0) {
+      const { error: insertTagsError } = await supabase
+        .from("series_post_tags")
+        .insert(
+          payload.tagIds.map((tagId) => ({
+            series_post_id: postId,
+            tag_id: tagId,
+          })),
+        );
+
+      if (insertTagsError) {
+        throw new Error(insertTagsError.message);
+      }
+    }
+  }
+
+  // Fetch the full post with tags
+  const fullPost = await getSeriesPostByIdModel(supabase, postId);
+  return fullPost;
 }
 
 export async function deleteSeriesPostModel(

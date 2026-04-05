@@ -77,12 +77,16 @@ export interface SeriesPost {
   content: string;
   excerpt?: string | null;
   featuredImageUrl?: string | null;
+  categoryId?: string | null;
   seriesOrder: number;
   status: "draft" | "published";
   showToc: boolean;
+  isFeatured: boolean;
   publishedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+  category?: Category | null;
+  tags?: Tag[];
 }
 
 export interface Series {

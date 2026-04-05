@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default async function FeaturedPage() {
   const [articles, categories, tags, recommendedArticles] = await Promise.all([
-    getPublishedArticles({ featured: true }),
+    getPublishedArticles({ isFeatured: true }),
     getCategories(),
     getTags(),
     getRecommendedArticles(),

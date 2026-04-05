@@ -26,7 +26,7 @@ export default async function ArticlesIndexPage({
   const isFeatured = featured === "true";
 
   const [articles, categories, tags, recommendedArticles] = await Promise.all([
-    getPublishedArticles(isFeatured ? { featured: true } : {}),
+    getPublishedArticles(isFeatured ? { isFeatured: true } : {}),
     getCategories(),
     getTags(),
     getRecommendedArticles(),
