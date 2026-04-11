@@ -10,10 +10,16 @@ export async function forgotPassword(c: Context) {
   }
 
   const publicClient = createPublicClient();
-  
+
+  // Use APP_URL from env — c.req.url resolves to the edge function domain, not the app
+  const appUrl = (Deno.env.get("APP_URL") || "http://localhost:3000").replace(
+    /\/+$/,
+    "",
+  );
+
   // Send password reset email
   const { error } = await publicClient.auth.resetPasswordForEmail(payload.email, {
-    redirectTo: `${new URL(c.req.url).origin}/admin/reset-password`,
+    redirectTo: `${appUrl}/admin/reset-password`,
   });
 
   if (error) {

@@ -2,13 +2,18 @@ import { Hono } from "jsr:@hono/hono";
 import { HTTPException } from "jsr:@hono/hono/http-exception";
 import { cors } from "jsr:@hono/hono/cors";
 
+const APP_URL = (Deno.env.get("APP_URL") || "http://localhost:3000").replace(
+  /\/+$/,
+  "",
+);
+
 export function createFunctionApp() {
   const app = new Hono();
 
   app.use(
     "*",
     cors({
-      origin: "*",
+      origin: APP_URL,
       allowHeaders: [
         "authorization",
         "x-client-info",

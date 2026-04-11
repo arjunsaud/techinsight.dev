@@ -5,8 +5,20 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
+
+  // Use getUser() for auth verification — it contacts the Supabase Auth server
+  // and is tamper-proof, unlike getSession() which only reads cookies.
   const {
-    data: { session }
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Retrieve session only after verifying user identity, to get access_token
+  const {
+    data: { session },
   } = await supabase.auth.getSession();
 
   if (!session) {
