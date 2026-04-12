@@ -25,23 +25,44 @@ export const seriesService = {
   async getBySlug(
     slug: string,
     withPosts = false,
-    options: { next?: NextFetchRequestConfig; cache?: RequestCache } = {},
+    options: {
+      next?: NextFetchRequestConfig;
+      cache?: RequestCache;
+      page?: number;
+      pageSize?: number;
+    } = {},
   ): Promise<Series> {
+    const { page, pageSize, ...fetchOptions } = options;
+    const query: any = {};
+    if (withPosts) query.withPosts = "true";
+    if (page) query.page = page.toString();
+    if (pageSize) query.pageSize = pageSize.toString();
+
     return apiFetch<Series>(`series/${slug}`, {
-      ...options,
-      query: withPosts ? { withPosts: "true" } : undefined,
+      ...fetchOptions,
+      query,
     });
   },
 
   async getById(
     id: string,
     accessToken?: string,
-    options: { next?: NextFetchRequestConfig; cache?: RequestCache } = {},
+    options: {
+      next?: NextFetchRequestConfig;
+      cache?: RequestCache;
+      page?: number;
+      pageSize?: number;
+    } = {},
   ): Promise<Series> {
+    const { page, pageSize, ...fetchOptions } = options;
+    const query: any = { withPosts: "true" };
+    if (page) query.page = page.toString();
+    if (pageSize) query.pageSize = pageSize.toString();
+
     return apiFetch<Series>(`series/${id}`, {
-      ...options,
+      ...fetchOptions,
       accessToken,
-      query: { withPosts: "true" },
+      query,
     });
   },
 

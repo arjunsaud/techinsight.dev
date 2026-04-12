@@ -104,9 +104,22 @@ export async function getSeries(options: { page?: number; pageSize?: number } = 
   }
 }
 
-export async function getSeriesBySlug(slug: string, withPosts = false) {
+export async function getSeriesBySlug(
+  slug: string,
+  withPosts = false,
+  options: {
+    page?: number;
+    pageSize?: number;
+    next?: NextFetchRequestConfig;
+    cache?: RequestCache;
+  } = {},
+) {
   try {
+    const { page, pageSize, ...fetchOptions } = options;
     return await seriesService.getBySlug(slug, withPosts, {
+      ...fetchOptions,
+      page,
+      pageSize,
       next: { revalidate: CACHE_TTL, tags: [`series-${slug}`] },
     });
   } catch {

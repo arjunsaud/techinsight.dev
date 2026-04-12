@@ -95,22 +95,31 @@ export async function getSeriesByIdOrSlugModel(
 export async function getSeriesWithPostsModel(
   supabase: SupabaseClient,
   idOrSlug: string,
+  filters: { page?: number; pageSize?: number } = {},
 ) {
   const series = await getSeriesByIdOrSlugModel(supabase, idOrSlug);
   if (!series) return null;
 
-  const { data: posts, error } = await supabase
+  const page = filters.page || 1;
+  const pageSize = filters.pageSize || 10;
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  const { data: posts, error, count } = await supabase
     .from("series_posts")
-    .select(SERIES_POST_SELECT)
+    .select(SERIES_POST_SELECT, { count: "exact" })
     .eq("series_id", series.id)
-    .order("series_order", { ascending: true });
+    .order("series_order", { ascending: true })
+    .range(from, to);
 
   if (error) throw new Error(error.message);
 
-  // Map tags for each post
   return {
     ...series,
     posts: posts ?? [],
+    postsTotal: count ?? 0,
+    postsPage: page,
+    postsPageSize: pageSize,
   };
 }
 

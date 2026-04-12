@@ -100,6 +100,9 @@ export interface Series {
   updatedAt: string;
   posts?: SeriesPost[];
   postsCount?: number;
+  postsTotal?: number;
+  postsPage?: number;
+  postsPageSize?: number;
 }
 
 export interface PostSeriesInfo {

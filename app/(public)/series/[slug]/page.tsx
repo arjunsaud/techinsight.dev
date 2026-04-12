@@ -9,9 +9,11 @@ import {
   getSeriesBySlug,
   getTags,
 } from "@/lib/server-data";
+import { Pagination } from "@/components/ui/pagination";
 
 interface SeriesPageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
 export async function generateMetadata({
@@ -35,11 +37,17 @@ export async function generateMetadata({
   };
 }
 
-export default async function SeriesDetailPage({ params }: SeriesPageProps) {
+export default async function SeriesDetailPage({
+  params,
+  searchParams,
+}: SeriesPageProps) {
   const { slug } = await params;
+  const { page: pageStr } = await searchParams;
+  const page = parseInt(pageStr || "1", 10);
+  const pageSize = 12;
 
   const [series, categories, tags, recommendedArticles] = await Promise.all([
-    getSeriesBySlug(slug, true),
+    getSeriesBySlug(slug, true, { page, pageSize }),
     getCategories(),
     getTags(),
     getRecommendedArticles(),
@@ -77,13 +85,20 @@ export default async function SeriesDetailPage({ params }: SeriesPageProps) {
               Series Curriculum
             </h2>
             <span className="text-sm font-medium text-muted-foreground">
-              {series.posts?.length || 0} Articles
+              {series.postsTotal || 0} Articles
             </span>
           </div>
 
           <PublicSeriesPostList
             posts={series.posts || []}
             seriesSlug={series.slug}
+          />
+
+          <Pagination
+            total={series.postsTotal || 0}
+            page={page}
+            pageSize={pageSize}
+            className="mt-8 border-t pt-8"
           />
         </div>
       </div>

@@ -49,10 +49,15 @@ export async function getSeries(c: Context) {
 
   // If query param 'withPosts' is true, return series with its posts
   const withPosts = c.req.query("withPosts") === "true";
+  const page = parseInt(c.req.query("page") || "1", 10);
+  const pageSize = parseInt(c.req.query("pageSize") || "10", 10);
 
   let data;
   if (withPosts) {
-    data = await getSeriesWithPostsModel(supabase, idOrSlug);
+    data = await getSeriesWithPostsModel(supabase, idOrSlug, {
+      page,
+      pageSize,
+    });
   } else {
     data = await getSeriesByIdOrSlugModel(supabase, idOrSlug);
   }

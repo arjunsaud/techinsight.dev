@@ -55,6 +55,8 @@ export function SeriesDetailView({
         <SeriesArticlesManager
           seriesId={currentSeries.id}
           initialPosts={currentSeries.posts || []}
+          initialTotal={currentSeries.postsTotal || 0}
+          initialPage={currentSeries.postsPage || 1}
           accessToken={accessToken}
         />
       </div>

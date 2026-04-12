@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   Plus, 
   ArrowUp, 
@@ -16,41 +18,74 @@ import { SeriesPost } from "@/types/domain";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ArticleCard } from "@/components/article/admin-article-card";
+import { Pagination } from "@/components/ui/pagination";
 
 interface SeriesArticlesManagerProps {
   seriesId: string;
   initialPosts: SeriesPost[];
+  initialTotal: number;
+  initialPage: number;
   accessToken: string;
 }
 
 export function SeriesArticlesManager({
   seriesId,
   initialPosts,
+  initialTotal,
+  initialPage,
   accessToken,
 }: SeriesArticlesManagerProps) {
-  const [posts, setPosts] = useState<SeriesPost[]>(initialPosts);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
+  
+  const page = parseInt(searchParams.get("page") || initialPage.toString(), 10);
+  const pageSize = 10;
+
   const [searchQuery, setSearchQuery] = useState("");
+  const [localPosts, setLocalPosts] = useState<SeriesPost[]>(initialPosts);
   const [isReordered, setIsReordered] = useState(false);
   const [savingOrder, setSavingOrder] = useState(false);
 
-  // Filter posts based on search query
+  // Sync local posts when query data changes
+  const postsQuery = useQuery({
+    queryKey: ["series-posts", seriesId, page],
+    queryFn: () => seriesService.getById(seriesId, accessToken, { page, pageSize }),
+    initialData: page === initialPage ? ({ 
+      posts: initialPosts, 
+      postsTotal: initialTotal,
+      postsPage: initialPage,
+      postsPageSize: pageSize
+    } as any) : undefined,
+    enabled: !!accessToken,
+  });
+
+  useEffect(() => {
+    if (postsQuery.data?.posts) {
+      setLocalPosts(postsQuery.data.posts);
+      setIsReordered(false);
+    }
+  }, [postsQuery.data]);
+
+  // Filter posts based on local search query (client-side for now to keep it snappy)
   const filteredPosts = useMemo(() => {
-    if (!searchQuery) return posts;
+    if (!searchQuery) return localPosts;
     const query = searchQuery.toLowerCase();
-    return posts.filter(
+    return localPosts.filter(
       (p) => 
         p.title.toLowerCase().includes(query) || 
         p.slug.toLowerCase().includes(query)
     );
-  }, [posts, searchQuery]);
+  }, [localPosts, searchQuery]);
 
   const handleDeletePost = async (postId: string) => {
     if (!confirm("Remove this article from the series?")) return;
 
     try {
       await seriesService.deletePost(seriesId, postId, accessToken);
-      setPosts(posts.filter((p) => p.id !== postId));
+      setLocalPosts(prev => prev.filter((p) => p.id !== postId));
       toast.success("Article removed from series");
+      queryClient.invalidateQueries({ queryKey: ["series-posts", seriesId] });
     } catch (error) {
       toast.error("Failed to remove article");
     }
@@ -58,30 +93,33 @@ export function SeriesArticlesManager({
 
   const moveItem = (indexInPosts: number, direction: "up" | "down") => {
     const newIndex = direction === "up" ? indexInPosts - 1 : indexInPosts + 1;
-    if (newIndex < 0 || newIndex >= posts.length) return;
+    if (newIndex < 0 || newIndex >= localPosts.length) return;
 
-    const newPosts = [...posts];
+    const newPosts = [...localPosts];
     const item = newPosts[indexInPosts];
     newPosts.splice(indexInPosts, 1);
     newPosts.splice(newIndex, 0, item);
 
-    setPosts(newPosts);
+    setLocalPosts(newPosts);
     setIsReordered(true);
   };
 
   const handleSaveOrder = async () => {
     setSavingOrder(true);
     try {
-      const postIds = posts.map((p) => p.id);
+      const postIds = localPosts.map((p) => p.id);
       await seriesService.reorderPosts(seriesId, postIds, accessToken);
       setIsReordered(false);
       toast.success("Order saved successfully");
+      queryClient.invalidateQueries({ queryKey: ["series-posts", seriesId] });
     } catch (error: any) {
       toast.error(error.message || "Failed to save order");
     } finally {
       setSavingOrder(false);
     }
   };
+
+  const total = postsQuery.data?.postsTotal ?? initialTotal;
 
   return (
     <div className="space-y-6">
@@ -92,7 +130,7 @@ export function SeriesArticlesManager({
             Series Curriculum
           </h3>
           <p className="text-sm text-muted-foreground">
-            {posts.length} articles in this series
+            {total} articles in total
           </p>
         </div>
         
@@ -122,7 +160,7 @@ export function SeriesArticlesManager({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
         <input
           type="text"
-          placeholder="Filter articles in series..."
+          placeholder="Search in current page..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="h-11 w-full rounded-xl border border-border bg-card pl-10 pr-10 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-sm"
@@ -139,74 +177,82 @@ export function SeriesArticlesManager({
 
       {/* Card List */}
       <div className="space-y-4 pb-20">
-        {filteredPosts.length > 0 ? (
-          filteredPosts.map((post, index) => {
-            // Find official index in main posts array for reordering logic
-            const originalIndex = posts.findIndex(p => p.id === post.id);
-            
-            return (
-              <div key={post.id} className="relative flex items-center gap-4">
-                {/* Reorder Controls - Floats to the left of the ArticleCard */}
-                <div className="flex flex-col gap-1 shrink-0 bg-muted/50 rounded-lg p-1 opacity-40 hover:opacity-100 transition-opacity">
-                  <button
-                    onClick={() => moveItem(originalIndex, "up")}
-                    disabled={originalIndex === 0 || searchQuery !== ""}
-                    className="p-1 text-muted-foreground hover:bg-background hover:text-primary rounded-md disabled:opacity-0 transition-all"
-                    title="Move Up"
-                  >
-                    <ArrowUp className="h-4 w-4 stroke-[2.5px]" />
-                  </button>
-                  <div className="flex flex-col items-center justify-center min-w-[20px]">
-                    <span className="text-[10px] font-bold text-muted-foreground/50 tabular-nums">
-                      {originalIndex + 1}
-                    </span>
-                    <GripVertical className="h-3 w-3 text-muted-foreground/20" />
+        {postsQuery.isLoading ? (
+          <div className="py-12 flex justify-center text-muted-foreground">Loading posts...</div>
+        ) : filteredPosts.length > 0 ? (
+          <>
+            {filteredPosts.map((post, index) => {
+              const originalIndex = localPosts.findIndex(p => p.id === post.id);
+              
+              return (
+                <div key={post.id} className="relative flex items-center gap-4">
+                  {/* Reorder Controls */}
+                  <div className="flex flex-col gap-1 shrink-0 bg-muted/50 rounded-lg p-1 opacity-40 hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => moveItem(originalIndex, "up")}
+                      disabled={originalIndex === 0 || searchQuery !== ""}
+                      className="p-1 text-muted-foreground hover:bg-background hover:text-primary rounded-md disabled:opacity-0 transition-all"
+                      title="Move Up"
+                    >
+                      <ArrowUp className="h-4 w-4 stroke-[2.5px]" />
+                    </button>
+                    <div className="flex flex-col items-center justify-center min-w-[20px]">
+                      <span className="text-[10px] font-bold text-muted-foreground/50 tabular-nums">
+                        {(page - 1) * pageSize + originalIndex + 1}
+                      </span>
+                      <GripVertical className="h-3 w-3 text-muted-foreground/20" />
+                    </div>
+                    <button
+                      onClick={() => moveItem(originalIndex, "down")}
+                      disabled={originalIndex === localPosts.length - 1 || searchQuery !== ""}
+                      className="p-1 text-muted-foreground hover:bg-background hover:text-primary rounded-md disabled:opacity-0 transition-all"
+                      title="Move Down"
+                    >
+                      <ArrowDown className="h-4 w-4 stroke-[2.5px]" />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => moveItem(originalIndex, "down")}
-                    disabled={originalIndex === posts.length - 1 || searchQuery !== ""}
-                    className="p-1 text-muted-foreground hover:bg-background hover:text-primary rounded-md disabled:opacity-0 transition-all"
-                    title="Move Down"
-                  >
-                    <ArrowDown className="h-4 w-4 stroke-[2.5px]" />
-                  </button>
-                </div>
 
-                {/* Reuse the global ArticleCard for consistent UI */}
-                <div className="flex-1">
-                  <ArticleCard id={post.id} slug={post.slug}>
-                    <ArticleCard.Image 
-                      src={post.featuredImageUrl || null} 
-                      alt={post.title} 
-                    />
-                    <ArticleCard.Content
-                      title={post.title}
-                      excerpt={post.excerpt || null}
-                      status={post.status}
-                      tags={[]} // Series posts tags not currently loaded in this view
-                      views={0}
-                      likes={0}
-                      comments={0}
-                      readTime="5m"
-                    />
-                    <ArticleCard.Actions
-                      onDelete={() => handleDeletePost(post.id)}
-                    />
-                  </ArticleCard>
+                  <div className="flex-1">
+                    <ArticleCard id={post.id} slug={post.slug}>
+                      <ArticleCard.Image 
+                        src={post.featuredImageUrl || null} 
+                        alt={post.title} 
+                      />
+                      <ArticleCard.Content
+                        title={post.title}
+                        excerpt={post.excerpt || null}
+                        status={post.status}
+                        tags={[]}
+                        views={0}
+                        likes={0}
+                        comments={0}
+                        readTime="5m"
+                      />
+                      <ArticleCard.Actions
+                        onDelete={() => handleDeletePost(post.id)}
+                      />
+                    </ArticleCard>
+                  </div>
                 </div>
-              </div>
-            );
-          })
+              );
+            })}
+            
+            <Pagination 
+              total={total} 
+              page={page} 
+              pageSize={pageSize} 
+              className="mt-8 border-t pt-6"
+            />
+          </>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 rounded-3xl border border-dashed text-muted-foreground bg-muted/20">
-            <p className="text-lg font-medium">No results matched your search.</p>
-            <p className="text-sm">Try using different keywords or clear the filter.</p>
+            <p className="text-lg font-medium">No articles found.</p>
             <Button 
               variant="link" 
               onClick={() => setSearchQuery("")}
               className="text-primary mt-2"
             >
-              Clear filter
+              Clear search
             </Button>
           </div>
         )}
@@ -214,5 +260,6 @@ export function SeriesArticlesManager({
     </div>
   );
 }
+
 
 
