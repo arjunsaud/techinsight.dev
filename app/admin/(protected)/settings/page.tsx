@@ -1,4 +1,4 @@
-import { AdminHeader } from "@/components/layout/admin.header";
+import { AdminHeader } from "@/components/layout/admin-header";
 import { CloudinarySettingsForm } from "@/components/settings/cloudinary-settings-form";
 import { requireAdmin } from "@/lib/supabase/guards";
 import { settingsService } from "@/services/settings-service";

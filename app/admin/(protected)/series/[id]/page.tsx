@@ -1,4 +1,4 @@
-import { AdminHeader } from "@/components/layout/admin.header";
+import { AdminHeader } from "@/components/layout/admin-header";
 import { SeriesForm } from "@/components/series/series-form";
 import { SeriesArticlesManager } from "@/components/series/series-articles-manager";
 import { requireAdmin } from "@/lib/supabase/guards";

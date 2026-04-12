@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { adminService } from "@/services/admin-service";
 import { requireAdmin } from "@/lib/supabase/guards";
-import { AdminHeader } from "@/components/layout/admin.header";
+import { AdminHeader } from "@/components/layout/admin-header";
 import { formatDate } from "@/lib/utils";
 
 export default async function AdminUsersPage() {

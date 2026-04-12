@@ -33,12 +33,14 @@ export function AdminArticlesList({
     searchParams.get("search") || "",
   );
 
+  const [prevFilterProp, setPrevFilterProp] = React.useState(filter);
   const [localFilter, setLocalFilter] = React.useState(filter);
 
-  // Sync prop changes purely in case of hard navigation updates
-  React.useEffect(() => {
+  // Derive state during render (React-recommended approach over useEffect)
+  if (filter !== prevFilterProp) {
+    setPrevFilterProp(filter);
     setLocalFilter(filter);
-  }, [filter]);
+  }
 
   const hasInitialData = !searchQuery && localFilter === "all" && initialArticles.length > 0;
 

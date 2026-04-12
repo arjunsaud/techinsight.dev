@@ -19,12 +19,14 @@ export function AdminCommentsList({
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const [prevFilterProp, setPrevFilterProp] = useState(filter);
   const [localFilter, setLocalFilter] = useState(filter);
   const [isPending, startTransition] = useTransition();
 
-  useEffect(() => {
+  if (filter !== prevFilterProp) {
+    setPrevFilterProp(filter);
     setLocalFilter(filter);
-  }, [filter]);
+  }
 
   const handleFilterChange = (newFilter: string) => {
     setLocalFilter(newFilter);

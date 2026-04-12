@@ -1,5 +1,5 @@
 import { AdminArticlesList } from "@/components/article/admin-articles-list";
-import { AdminHeader } from "@/components/layout/admin.header";
+import { AdminHeader } from "@/components/layout/admin-header";
 import { requireAdmin } from "@/lib/supabase/guards";
 import { articleService } from "@/services/article-service";
 

@@ -2,7 +2,7 @@ import { SeriesPostStudio } from "@/components/series/series-post-studio";
 import { SeriesPostStudioProvider } from "@/components/series/series-post-studio-context";
 import { SeriesPostHeaderControls } from "@/components/series/series-post-header-controls";
 import { SeriesPostSettings } from "@/components/series/series-post-settings";
-import { AdminHeader } from "@/components/layout/admin.header";
+import { AdminHeader } from "@/components/layout/admin-header";
 import { requireAdmin } from "@/lib/supabase/guards";
 import { seriesService } from "@/services/series-service";
 

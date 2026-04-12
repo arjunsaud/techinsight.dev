@@ -1,5 +1,5 @@
 import { AdminTagsManager } from "@/components/article/admin-tags-manager";
-import { AdminHeader } from "@/components/layout/admin.header";
+import { AdminHeader } from "@/components/layout/admin-header";
 import { requireAdmin } from "@/lib/supabase/guards";
 import { adminService } from "@/services/admin-service";
 

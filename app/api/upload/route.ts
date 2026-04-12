@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getPublicEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
+import { apiFetch } from "@/services/http";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -28,21 +29,25 @@ export async function POST(request: Request) {
   const payload = await request.json();
   const env = getPublicEnv();
 
-  const response = await fetch(`${env.supabaseUrl}/functions/v1/api/article/upload-url`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: env.supabaseAnonKey,
-      Authorization: `Bearer ${session.access_token}`
-    },
-    body: JSON.stringify(payload)
-  });
-
-  const body = await response.json();
-
-  if (!response.ok) {
-    return NextResponse.json(body, { status: response.status });
+  try {
+    const body = await apiFetch<any>("article/upload-url", {
+      method: "POST",
+      accessToken: session.access_token,
+      body: payload
+    });
+    return NextResponse.json(body);
+  } catch (error) {
+    if (error instanceof Error) {
+      // apiFetch throws errors on non-ok responses
+      // In this specific handler, we'll try to parse the message as JSON if possible
+      try {
+        const parsed = JSON.parse(error.message);
+        return NextResponse.json(parsed, { status: 400 }); // Assuming bad request if we can parse it
+      } catch {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+    }
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  return NextResponse.json(body);
 }
+

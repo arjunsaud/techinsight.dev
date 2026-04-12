@@ -1,4 +1,4 @@
-import { AdminHeader } from "@/components/layout/admin.header";
+import { AdminHeader } from "@/components/layout/admin-header";
 import { AdminCommentsList } from "@/components/comments/admin-comments-list";
 import { adminService } from "@/services/admin-service";
 import { requireAdmin } from "@/lib/supabase/guards";

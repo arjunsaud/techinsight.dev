@@ -4,7 +4,7 @@ import { AdminStudioProvider } from "@/components/article/admin-studio-context";
 import { ArticleHeaderControls } from "@/components/article/admin-header-controls";
 import { requireAdmin } from "@/lib/supabase/guards";
 import { articleService } from "@/services/article-service";
-import { AdminHeader } from "@/components/layout/admin.header";
+import { AdminHeader } from "@/components/layout/admin-header";
 
 interface AdminArticlesPageProps {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
