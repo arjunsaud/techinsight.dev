@@ -29,7 +29,7 @@ export function PublicPageLayout({
   return (
     <div className="bg-background text-foreground transition-colors duration-300">
       {categories.length > 0 && (
-        <div className="border-b border-gray-100 lg:hidden">
+        <div className="border-b border-border lg:hidden">
           <div className="mx-auto flex max-w-[1440px] gap-1 overflow-x-auto px-4 py-3 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <Link
               href="/articles"

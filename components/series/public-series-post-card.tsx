@@ -27,25 +27,25 @@ export function PublicSeriesPostCard({ post, seriesSlug, index }: PublicSeriesPo
   return (
     <Link
       href={`/series/${seriesSlug}/${post.slug}` as any}
-      className="group mb-4 flex items-start gap-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100 transition-all hover:shadow-md hover:ring-blue-100 sm:gap-6"
+      className="group mb-4 flex items-start gap-4 rounded-2xl bg-card p-5 shadow-sm ring-1 ring-border transition-all hover:shadow-md hover:ring-primary/20 sm:gap-6"
     >
       {/* Index Badge */}
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-sm font-bold text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
         {index + 1}
       </div>
 
       <div className="min-w-0 flex-1">
         <h3
-          className="line-clamp-2 text-lg font-bold leading-tight text-gray-900 transition-colors group-hover:text-blue-600 sm:text-xl"
+          className="line-clamp-2 text-lg font-bold leading-tight text-foreground transition-colors group-hover:text-primary sm:text-xl"
           style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
         >
           {post.title}
         </h3>
-        <p className="mt-2 line-clamp-2 text-sm text-gray-500 leading-relaxed">
+        <p className="mt-2 line-clamp-2 text-sm text-muted-foreground leading-relaxed">
           {excerpt}
         </p>
         
-        <div className="mt-4 flex items-center gap-3 text-xs font-medium text-gray-400">
+        <div className="mt-4 flex items-center gap-3 text-xs font-medium text-muted-foreground/60">
           <span>{date}</span>
           <span aria-hidden>·</span>
           <span>{readTime} min read</span>

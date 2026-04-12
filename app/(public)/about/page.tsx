@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="mx-auto max-w-2xl px-6 py-20">
-      <h1 className="font-serif text-4xl font-bold text-gray-900">About TechInsight</h1>
+      <h1 className="font-serif text-4xl font-bold text-foreground">About TechInsight</h1>
       <p className="mt-6 text-lg leading-relaxed text-gray-600">
         TechInsight is a publication dedicated to thoughtful, in-depth writing
         about technology — the ideas shaping our world, the tools we build, and
