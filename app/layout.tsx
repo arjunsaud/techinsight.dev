@@ -40,6 +40,11 @@ export const metadata: Metadata = {
     title: "TechInsight",
     description: "Admin-managed article platform built with Next.js and Supabase",
   },
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
