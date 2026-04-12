@@ -1,12 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Edit2, Trash2, Plus, ArrowUp, ArrowDown, Save } from "lucide-react";
+import { 
+  Plus, 
+  ArrowUp, 
+  ArrowDown, 
+  Save, 
+  Search, 
+  X,
+  GripVertical
+} from "lucide-react";
 import { seriesService } from "@/services/series-service";
 import { SeriesPost } from "@/types/domain";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ArticleCard } from "@/components/article/admin-article-card";
 
 interface SeriesArticlesManagerProps {
   seriesId: string;
@@ -20,34 +29,40 @@ export function SeriesArticlesManager({
   accessToken,
 }: SeriesArticlesManagerProps) {
   const [posts, setPosts] = useState<SeriesPost[]>(initialPosts);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isReordered, setIsReordered] = useState(false);
   const [savingOrder, setSavingOrder] = useState(false);
 
+  // Filter posts based on search query
+  const filteredPosts = useMemo(() => {
+    if (!searchQuery) return posts;
+    const query = searchQuery.toLowerCase();
+    return posts.filter(
+      (p) => 
+        p.title.toLowerCase().includes(query) || 
+        p.slug.toLowerCase().includes(query)
+    );
+  }, [posts, searchQuery]);
+
   const handleDeletePost = async (postId: string) => {
-    if (
-      !confirm(
-        "Are you sure you want to delete this post? This action cannot be undone.",
-      )
-    ) {
-      return;
-    }
+    if (!confirm("Remove this article from the series?")) return;
 
     try {
       await seriesService.deletePost(seriesId, postId, accessToken);
       setPosts(posts.filter((p) => p.id !== postId));
-      toast.success("Post deleted successfully");
+      toast.success("Article removed from series");
     } catch (error) {
-      toast.error("Failed to delete post");
+      toast.error("Failed to remove article");
     }
   };
 
-  const moveItem = (index: number, direction: "up" | "down") => {
-    const newIndex = direction === "up" ? index - 1 : index + 1;
+  const moveItem = (indexInPosts: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? indexInPosts - 1 : indexInPosts + 1;
     if (newIndex < 0 || newIndex >= posts.length) return;
 
     const newPosts = [...posts];
-    const item = newPosts[index];
-    newPosts.splice(index, 1);
+    const item = newPosts[indexInPosts];
+    newPosts.splice(indexInPosts, 1);
     newPosts.splice(newIndex, 0, item);
 
     setPosts(newPosts);
@@ -62,7 +77,6 @@ export function SeriesArticlesManager({
       setIsReordered(false);
       toast.success("Order saved successfully");
     } catch (error: any) {
-      console.error("Reorder error:", error);
       toast.error(error.message || "Failed to save order");
     } finally {
       setSavingOrder(false);
@@ -71,117 +85,134 @@ export function SeriesArticlesManager({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-xl font-bold text-gray-900">Series Lists</h3>
-        <div className="flex items-center gap-2">
+      {/* Header Actions */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+            Series Curriculum
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {posts.length} articles in this series
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           {isReordered && (
-            <button
+            <Button
               onClick={handleSaveOrder}
               disabled={savingOrder}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-green-700 disabled:opacity-50"
+              className="bg-green-600 hover:bg-green-700 text-white gap-2 h-10 px-4"
+              size="sm"
             >
               <Save className="h-4 w-4" />
-              {savingOrder ? "Saving..." : "Save Order"}
-            </button>
+              {savingOrder ? "Saving..." : "Save Sequence"}
+            </Button>
           )}
-          <Link
-            href={`/admin/series/${seriesId}/posts/new` as any}
-            className={cn(
-              "inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-blue-700 hover:shadow-lg active:scale-95",
-            )}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Article
+          <Link href={`/admin/series/${seriesId}/posts/new` as any} className="flex-1 sm:flex-initial">
+            <Button className="w-full gap-2 h-10 px-4">
+              <Plus className="h-4 w-4" />
+              Add Article
+            </Button>
           </Link>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50 text-xs font-bold uppercase tracking-wider text-gray-400">
-            <tr>
-              <th className="w-12 px-6 py-4">#</th>
-              <th className="px-6 py-4">Title</th>
-              <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {posts.length > 0 ? (
-              posts.map((post, index) => (
-                <tr key={post.id} className="group hover:bg-gray-50/50">
-                  <td className="px-6 py-4 text-gray-400 font-medium whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <div className="w-4">{index + 1}</div>
-                      <div className="flex flex-col">
-                        <button
-                          onClick={() => moveItem(index, "up")}
-                          disabled={index === 0}
-                          className="group/btn flex h-8 w-8 items-center justify-center rounded-lg text-gray-300 hover:bg-blue-50 hover:text-blue-600 disabled:opacity-0 transition-all active:scale-90"
-                        >
-                          <ArrowUp className="h-5 w-5 stroke-[3px]" />
-                        </button>
-                        <button
-                          onClick={() => moveItem(index, "down")}
-                          disabled={index === posts.length - 1}
-                          className="group/btn flex h-8 w-8 items-center justify-center rounded-lg text-gray-300 hover:bg-blue-50 hover:text-blue-600 disabled:opacity-0 transition-all active:scale-90"
-                        >
-                          <ArrowDown className="h-5 w-5 stroke-[3px]" />
-                        </button>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="font-bold text-gray-900">{post.title}</div>
-                    <div className="text-[10px] text-gray-400 uppercase tracking-widest leading-tight mt-0.5">
-                      /{post.slug}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${
-                        post.status === "published"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      {post.status}
+      {/* Search Bar */}
+      <div className="relative group max-w-md">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+        <input
+          type="text"
+          placeholder="Filter articles in series..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="h-11 w-full rounded-xl border border-border bg-card pl-10 pr-10 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-sm"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Card List */}
+      <div className="space-y-4 pb-20">
+        {filteredPosts.length > 0 ? (
+          filteredPosts.map((post, index) => {
+            // Find official index in main posts array for reordering logic
+            const originalIndex = posts.findIndex(p => p.id === post.id);
+            
+            return (
+              <div key={post.id} className="relative flex items-center gap-4">
+                {/* Reorder Controls - Floats to the left of the ArticleCard */}
+                <div className="flex flex-col gap-1 shrink-0 bg-muted/50 rounded-lg p-1 opacity-40 hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => moveItem(originalIndex, "up")}
+                    disabled={originalIndex === 0 || searchQuery !== ""}
+                    className="p-1 text-muted-foreground hover:bg-background hover:text-primary rounded-md disabled:opacity-0 transition-all"
+                    title="Move Up"
+                  >
+                    <ArrowUp className="h-4 w-4 stroke-[2.5px]" />
+                  </button>
+                  <div className="flex flex-col items-center justify-center min-w-[20px]">
+                    <span className="text-[10px] font-bold text-muted-foreground/50 tabular-nums">
+                      {originalIndex + 1}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-1">
-                      <Link
-                        href={
-                          `/admin/series/${seriesId}/posts/${post.id}` as any
-                        }
-                        className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-blue-600 transition-colors"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Link>
-                      <button
-                        onClick={() => handleDeletePost(post.id)}
-                        className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan={4}
-                  className="px-6 py-12 text-center text-gray-400"
-                >
-                  No articles in this series. Click "Add Article" to get
-                  started.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                    <GripVertical className="h-3 w-3 text-muted-foreground/20" />
+                  </div>
+                  <button
+                    onClick={() => moveItem(originalIndex, "down")}
+                    disabled={originalIndex === posts.length - 1 || searchQuery !== ""}
+                    className="p-1 text-muted-foreground hover:bg-background hover:text-primary rounded-md disabled:opacity-0 transition-all"
+                    title="Move Down"
+                  >
+                    <ArrowDown className="h-4 w-4 stroke-[2.5px]" />
+                  </button>
+                </div>
+
+                {/* Reuse the global ArticleCard for consistent UI */}
+                <div className="flex-1">
+                  <ArticleCard id={post.id} slug={post.slug}>
+                    <ArticleCard.Image 
+                      src={post.featuredImageUrl || null} 
+                      alt={post.title} 
+                    />
+                    <ArticleCard.Content
+                      title={post.title}
+                      excerpt={post.excerpt || null}
+                      status={post.status}
+                      tags={[]} // Series posts tags not currently loaded in this view
+                      views={0}
+                      likes={0}
+                      comments={0}
+                      readTime="5m"
+                    />
+                    <ArticleCard.Actions
+                      onDelete={() => handleDeletePost(post.id)}
+                    />
+                  </ArticleCard>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="flex flex-col items-center justify-center py-20 rounded-3xl border border-dashed text-muted-foreground bg-muted/20">
+            <p className="text-lg font-medium">No results matched your search.</p>
+            <p className="text-sm">Try using different keywords or clear the filter.</p>
+            <Button 
+              variant="link" 
+              onClick={() => setSearchQuery("")}
+              className="text-primary mt-2"
+            >
+              Clear filter
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
 }
+
+

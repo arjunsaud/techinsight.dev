@@ -13,7 +13,11 @@ interface SeriesFormProps {
   onSuccess?: (series: Series) => void;
 }
 
-export function SeriesForm({ initialSeries, accessToken, onSuccess }: SeriesFormProps) {
+export function SeriesForm({
+  initialSeries,
+  accessToken,
+  onSuccess,
+}: SeriesFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -30,7 +34,11 @@ export function SeriesForm({ initialSeries, accessToken, onSuccess }: SeriesForm
 
     try {
       if (initialSeries) {
-        const updated = await seriesService.update(initialSeries.id, formData, accessToken);
+        const updated = await seriesService.update(
+          initialSeries.id,
+          formData,
+          accessToken,
+        );
         toast.success("Series updated");
         onSuccess?.(updated as any);
       } else {
@@ -55,10 +63,10 @@ export function SeriesForm({ initialSeries, accessToken, onSuccess }: SeriesForm
       {/* Cover Image Section */}
       <div className="space-y-4 rounded-xl border bg-muted/30 p-4">
         <h3 className="text-sm font-semibold text-foreground">Cover Image</h3>
-        <CoverImageUploader 
-          url={formData.coverImage || ""} 
-          onChange={(url) => setFormData({ ...formData, coverImage: url })} 
-          accessToken={accessToken} 
+        <CoverImageUploader
+          url={formData.coverImage || ""}
+          onChange={(url) => setFormData({ ...formData, coverImage: url })}
+          accessToken={accessToken}
         />
       </div>
 
@@ -72,7 +80,9 @@ export function SeriesForm({ initialSeries, accessToken, onSuccess }: SeriesForm
               type="text"
               required
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
               className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-none"
               placeholder="e.g. Mastering Next.js"
             />
@@ -82,7 +92,9 @@ export function SeriesForm({ initialSeries, accessToken, onSuccess }: SeriesForm
             <input
               type="text"
               value={formData.slug}
-              onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, slug: e.target.value })
+              }
               className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-none"
               placeholder="e.g. mastering-next-js"
             />
@@ -91,7 +103,9 @@ export function SeriesForm({ initialSeries, accessToken, onSuccess }: SeriesForm
             <label className="text-sm font-medium">Description</label>
             <textarea
               value={formData.description || ""}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               className="h-32 w-full rounded-lg border border-border bg-background px-4 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all shadow-none resize-none"
               placeholder="Briefly describe what this series covers..."
             />
@@ -101,15 +115,21 @@ export function SeriesForm({ initialSeries, accessToken, onSuccess }: SeriesForm
 
       {/* Status & Visibility Section */}
       <div className="space-y-4 rounded-xl border bg-muted/30 p-4">
-        <h3 className="text-sm font-semibold text-foreground">Status & Visibility</h3>
+        <h3 className="text-sm font-semibold text-foreground">
+          Status & Visibility
+        </h3>
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <label className="text-sm font-medium">Current Status</label>
-            <p className="text-xs text-muted-foreground">Set the publication state</p>
+            <p className="text-xs text-muted-foreground">
+              Set the publication state
+            </p>
           </div>
           <select
             value={formData.status}
-            onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+            onChange={(e) =>
+              setFormData({ ...formData, status: e.target.value as any })
+            }
             className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-semibold outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="draft">Draft</option>
@@ -124,7 +144,11 @@ export function SeriesForm({ initialSeries, accessToken, onSuccess }: SeriesForm
           disabled={loading}
           className="w-full rounded-xl bg-blue-600 px-8 py-3 font-bold text-white transition-all hover:bg-blue-700 hover:shadow-lg active:scale-[0.98] disabled:opacity-50"
         >
-          {loading ? "Saving..." : initialSeries ? "Update Metadata" : "Create Series"}
+          {loading
+            ? "Saving..."
+            : initialSeries
+              ? "Update Metadata"
+              : "Create Series"}
         </button>
       </div>
     </form>
