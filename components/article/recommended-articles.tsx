@@ -16,7 +16,7 @@ export function RecommendedArticles({
 
   return (
     <div className="space-y-6">
-      <h3 className="text-sm font-bold tracking-widest text-gray-900">
+      <h3 className="text-sm font-bold tracking-widest text-foreground">
         {title}
       </h3>
       <div className="flex flex-col gap-6">
@@ -37,7 +37,7 @@ export function RecommendedArticles({
                   {formatDate(article.publishedAt ?? article.createdAt)}
                 </span>
               </div>
-              <h4 className="line-clamp-2 text-sm font-bold text-gray-900 transition-colors group-hover:text-gray-600 font-serif">
+              <h4 className="line-clamp-2 text-sm font-bold text-foreground transition-colors group-hover:text-muted-foreground font-serif">
                 {article.title}
               </h4>
             </div>

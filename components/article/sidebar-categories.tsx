@@ -16,7 +16,7 @@ export function SidebarCategories({
 
   return (
     <div>
-      <h3 className="mb-4 text-sm font-bold tracking-widest text-gray-900">
+      <h3 className="mb-4 text-sm font-bold tracking-widest text-foreground">
         {title}
       </h3>
       <div className="flex flex-wrap gap-2">
@@ -27,7 +27,7 @@ export function SidebarCategories({
             className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
               activeCategoryId === cat.id
                 ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                : "bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-foreground"
+                : "bg-secondary text-secondary-foreground hover:bg-muted font-medium"
             }`}
           >
             {cat.name}

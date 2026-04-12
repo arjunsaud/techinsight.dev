@@ -13,7 +13,7 @@ export function SidebarTags({ tags, activeTagSlug }: SidebarTagsProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">
+      <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">
         Trending Tags
       </h3>
       <div className="flex flex-wrap gap-2">
@@ -23,8 +23,8 @@ export function SidebarTags({ tags, activeTagSlug }: SidebarTagsProps) {
               variant={activeTagSlug === tag.slug ? "default" : "secondary"}
               className={`cursor-pointer transition-all hover:scale-105 ${
                 activeTagSlug === tag.slug
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-secondary text-secondary-foreground hover:bg-muted"
               }`}
             >
               #{tag.name}

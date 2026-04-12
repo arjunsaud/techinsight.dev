@@ -13,8 +13,8 @@ export function SeriesPostNavigation({
   seriesSlug,
 }: SeriesPostNavigationProps) {
   return (
-    <div className="my-8 overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm ring-1 ring-gray-100">
-      <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
+    <div className="my-8 overflow-hidden rounded-3xl border border-border bg-card shadow-sm ring-1 ring-border">
+      <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-border">
         {/* Previous */}
         <div className="flex-1 p-4">
           {info.prevPost ? (
@@ -26,7 +26,7 @@ export function SeriesPostNavigation({
                 <ChevronLeft className="h-4 w-4" />
                 Previous Episode
               </div>
-              <div className="font-bold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors">
+              <div className="font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
                 {info.prevPost.title}
               </div>
             </Link>
@@ -36,25 +36,25 @@ export function SeriesPostNavigation({
                 <ChevronLeft className="h-4 w-4" />
                 Previous Episode
               </div>
-              <div className="font-bold text-gray-900">No previous episode</div>
+              <div className="font-bold text-foreground">No previous episode</div>
             </div>
           )}
         </div>
 
         {/* Series Info / Index */}
-        <div className="flex shrink-0 flex-col items-center justify-center p-4 bg-gray-50/50">
+        <div className="flex shrink-0 flex-col items-center justify-center p-4 bg-muted/30">
           <Link
             href={`/series/${seriesSlug}` as any}
             className="group flex flex-col items-center gap-1.5"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-gray-100 group-hover:bg-blue-600 group-hover:text-white transition-all">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-background shadow-sm ring-1 ring-border group-hover:bg-primary group-hover:text-primary-foreground transition-all">
               <List className="h-4 w-4" />
             </div>
             <div className="text-center">
               <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
                 Episode {info.index} of {info.totalInSeries}
               </div>
-              <div className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+              <div className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
                 View Series
               </div>
             </div>
@@ -72,7 +72,7 @@ export function SeriesPostNavigation({
                 Next Episode
                 <ChevronRight className="h-4 w-4" />
               </div>
-              <div className="font-bold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors">
+              <div className="font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
                 {info.nextPost.title}
               </div>
             </Link>
@@ -82,7 +82,7 @@ export function SeriesPostNavigation({
                 Next Episode
                 <ChevronRight className="h-4 w-4" />
               </div>
-              <div className="font-bold text-gray-900">End of Series</div>
+              <div className="font-bold text-foreground">End of Series</div>
             </div>
           )}
         </div>

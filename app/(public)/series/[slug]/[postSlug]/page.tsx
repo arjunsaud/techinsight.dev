@@ -93,7 +93,7 @@ export default async function SeriesPostDetailPage({
               <nav className="flex flex-col gap-2">
                 <Link
                   href={`/series/${slug}`}
-                  className="rounded-lg px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 transition-all hover:bg-blue-100"
+                  className="rounded-lg px-4 py-2 text-sm font-bold text-foreground bg-muted transition-all hover:bg-muted/80"
                 >
                   ← Back to Series
                 </Link>
@@ -106,7 +106,7 @@ export default async function SeriesPostDetailPage({
             <article className="mx-auto max-w-3xl space-y-8">
               <header className="space-y-4 border-b border-border pb-6">
                 <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                  <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-600">
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
                     Episode {seriesInfo.index} of {seriesInfo.totalInSeries}
                   </div>
                   <span>{formatDate(post.publishedAt ?? post.createdAt)}</span>
