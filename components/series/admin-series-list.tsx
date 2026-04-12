@@ -12,14 +12,22 @@ import { Modal } from "@/components/ui/modal";
 import { SeriesForm } from "./series-form";
 import { useRouter } from "next/navigation";
 
+import { Pagination } from "@/components/ui/pagination";
+
 interface AdminSeriesListProps {
   initialSeries: Series[];
   accessToken: string;
+  page: number;
+  pageSize: number;
+  total: number;
 }
 
 export function AdminSeriesList({
   initialSeries,
   accessToken,
+  page,
+  pageSize,
+  total,
 }: AdminSeriesListProps) {
   const router = useRouter();
   const [seriesList, setSeriesList] = useState<Series[]>(initialSeries);
@@ -81,15 +89,18 @@ export function AdminSeriesList({
       </Modal>
 
       {filteredSeries.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {filteredSeries.map((series) => (
-            <SeriesCard
-              key={series.id}
-              series={series}
-              onDelete={handleDelete}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {filteredSeries.map((series) => (
+              <SeriesCard
+                key={series.id}
+                series={series}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+          <Pagination total={total} page={page} pageSize={pageSize} />
+        </>
       ) : (
         <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-gray-100 py-24 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-50 text-gray-400">

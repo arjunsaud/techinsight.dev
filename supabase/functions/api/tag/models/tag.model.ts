@@ -2,15 +2,30 @@ import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
 
 import { slugify } from "../../../shared/utils.ts";
 
-export async function listTagsModel(supabase: SupabaseClient) {
-  const { data, error } = await supabase
+export async function listTagsModel(
+  supabase: SupabaseClient,
+  page = 1,
+  pageSize = 100,
+) {
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  const { data, error, count } = await supabase
     .from("tags")
-    .select("id,name,slug,createdAt:created_at")
-    .order("name");
+    .select("id,name,slug,createdAt:created_at", { count: "exact" })
+    .order("name")
+    .range(from, to);
+
   if (error) {
     throw new Error(error.message);
   }
-  return data ?? [];
+
+  return {
+    data: data ?? [],
+    page,
+    pageSize,
+    total: count ?? 0,
+  };
 }
 
 export async function createTagModel(

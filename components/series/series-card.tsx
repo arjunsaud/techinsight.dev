@@ -46,7 +46,7 @@ export function SeriesCard({ series, onDelete }: SeriesCardProps) {
 
         <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 pointer-events-auto">
           <Link
-            href={`/admin/series/edit/${series.id}` as any}
+            href={`/admin/series/${series.id}`}
             className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-900 transition-colors"
             title="Edit Series Metadata"
           >

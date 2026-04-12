@@ -67,32 +67,57 @@ export async function getDashboardModel(supabase: SupabaseClient) {
   };
 }
 
-export async function listUsersModel(supabase: SupabaseClient) {
-  const { data, error } = await supabase
+export async function listUsersModel(
+  supabase: SupabaseClient,
+  page = 1,
+  pageSize = 50,
+) {
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  const { data, error, count } = await supabase
     .from("superadmins")
-    .select("id,email,username,role,createdAt:created_at")
+    .select("id,email,username,role,createdAt:created_at", { count: "exact" })
     .order("created_at", { ascending: false })
-    .limit(200);
+    .range(from, to);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return data ?? [];
+  return {
+    data: data ?? [],
+    page,
+    pageSize,
+    total: count ?? 0,
+  };
 }
 
-export async function listCommentsModel(supabase: SupabaseClient) {
-  const { data, error } = await supabase
+export async function listCommentsModel(
+  supabase: SupabaseClient,
+  page = 1,
+  pageSize = 50,
+) {
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  const { data, error, count } = await supabase
     .from("comments")
     .select(
       "id,content,createdAt:created_at,user:superadmins(username),article:articles(title)",
+      { count: "exact" },
     )
     .order("created_at", { ascending: false })
-    .limit(200);
+    .range(from, to);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return data ?? [];
+  return {
+    data: data ?? [],
+    page,
+    pageSize,
+    total: count ?? 0,
+  };
 }

@@ -1,5 +1,5 @@
 import type { AdminComment, AppUser, Category, Tag } from "@/types/domain";
-import type { DashboardResponse } from "@/types/api";
+import type { DashboardResponse, PaginatedResponse } from "@/types/api";
 
 import { apiFetch } from "@/services/http";
 
@@ -16,25 +16,29 @@ export const adminService = {
     });
   },
 
-  listUsers(accessToken: string) {
-    return apiFetch<AppUser[]>("admin/users", {
+  listUsers(accessToken: string, page = 1, pageSize = 50) {
+    return apiFetch<PaginatedResponse<AppUser>>("admin/users", {
       accessToken,
+      query: { page: page.toString(), pageSize: pageSize.toString() },
     });
   },
 
-  listComments(accessToken: string) {
-    return apiFetch<AdminComment[]>("admin/comments", {
+  listComments(accessToken: string, page = 1, pageSize = 50) {
+    return apiFetch<PaginatedResponse<AdminComment>>("admin/comments", {
       accessToken,
+      query: { page: page.toString(), pageSize: pageSize.toString() },
     });
   },
 
   listCategories(
     accessToken?: string,
-    options: { next?: NextFetchRequestConfig; cache?: RequestCache } = {},
+    options: { next?: NextFetchRequestConfig; cache?: RequestCache; page?: number; pageSize?: number } = {},
   ) {
-    return apiFetch<Category[]>("category", {
+    const { page = 1, pageSize = 1000, ...fetchOptions } = options;
+    return apiFetch<PaginatedResponse<Category>>("category", {
       accessToken,
-      ...options,
+      query: { page: page.toString(), pageSize: pageSize.toString() },
+      ...fetchOptions,
     });
   },
 
@@ -76,11 +80,13 @@ export const adminService = {
 
   listTags(
     accessToken?: string,
-    options: { next?: NextFetchRequestConfig; cache?: RequestCache } = {},
+    options: { next?: NextFetchRequestConfig; cache?: RequestCache; page?: number; pageSize?: number } = {},
   ) {
-    return apiFetch<Tag[]>("tag", {
+    const { page = 1, pageSize = 1000, ...fetchOptions } = options;
+    return apiFetch<PaginatedResponse<Tag>>("tag", {
       accessToken,
-      ...options,
+      query: { page: page.toString(), pageSize: pageSize.toString() },
+      ...fetchOptions,
     });
   },
 

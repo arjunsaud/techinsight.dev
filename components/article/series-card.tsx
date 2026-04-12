@@ -21,23 +21,25 @@ export function SeriesCard({ series }: SeriesCardProps) {
           <Layers className="h-3 w-3" />
           <span>Article Series</span>
         </div>
-        
+
         <h3
           className="line-clamp-2 text-xl font-bold leading-tight text-foreground transition-colors group-hover:text-primary sm:text-2xl"
           style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
         >
           {series.title}
         </h3>
-        
+
         {series.description && (
           <p className="mt-3 line-clamp-2 text-sm text-muted-foreground sm:text-base">
             {series.description}
           </p>
         )}
-        
+
         <div className="mt-6 flex items-center gap-2 text-sm font-bold text-primary">
-          Explore Series 
-          <span className="transition-transform group-hover:translate-x-1">→</span>
+          Explore Series
+          <span className="transition-transform group-hover:translate-x-1">
+            →
+          </span>
         </div>
       </div>
 

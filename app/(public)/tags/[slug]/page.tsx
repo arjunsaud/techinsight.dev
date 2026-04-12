@@ -60,7 +60,7 @@ export default async function TagPage({ params }: TagPageProps) {
     notFound();
   }
 
-  const articles = await getPublishedArticles({ tag: tag.slug });
+  const articlesResponse = await getPublishedArticles({ tag: tag.slug });
 
   return (
     <PublicPageLayout
@@ -72,7 +72,7 @@ export default async function TagPage({ params }: TagPageProps) {
       description={`Articles and insights tagged with ${tag.name}.`}
       showBackToHub={true}
     >
-      <ArticleList articles={articles} />
+      <ArticleList articles={articlesResponse.data} />
     </PublicPageLayout>
   );
 }

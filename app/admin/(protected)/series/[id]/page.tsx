@@ -13,6 +13,7 @@ export default async function AdminSeriesEditPage({
   params,
 }: AdminSeriesEditPageProps) {
   const { id } = await params;
+  console.log("id", id);
   const session = await requireAdmin();
   const accessToken = session.access_token;
 
@@ -38,10 +39,10 @@ export default async function AdminSeriesEditPage({
 
       <div className="grid gap-8 lg:grid-cols-12">
         <div className="lg:col-span-8">
-          <SeriesArticlesManager 
-            seriesId={series.id} 
-            initialPosts={series.posts || []} 
-            accessToken={accessToken} 
+          <SeriesArticlesManager
+            seriesId={series.id}
+            initialPosts={series.posts || []}
+            accessToken={accessToken}
           />
         </div>
         <aside className="lg:col-span-4">

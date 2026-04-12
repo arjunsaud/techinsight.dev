@@ -48,11 +48,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let tags: Tag[] = [];
 
   try {
-    [articles, categories, tags] = await Promise.all([
-      getPublishedArticles(),
+    const [articlesResponse, cat, t] = await Promise.all([
+      getPublishedArticles({ pageSize: 1000 }),
       getCategories(),
       getTags(),
     ]);
+    articles = articlesResponse.data;
+    categories = cat;
+    tags = t;
   } catch {
     // If env vars are missing (e.g., local build without Supabase configured),
     // still serve a valid sitemap with static URLs.

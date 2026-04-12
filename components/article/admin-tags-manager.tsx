@@ -14,14 +14,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TagCard } from "@/components/article/admin-tag-card";
 
+import { Pagination } from "@/components/ui/pagination";
+
 interface AdminTagsManagerProps {
   accessToken: string;
   initialTags: Tag[];
+  page: number;
+  pageSize: number;
+  total: number;
 }
 
 export function AdminTagsManager({
   accessToken,
   initialTags,
+  page,
+  pageSize,
+  total,
 }: AdminTagsManagerProps) {
   const queryClient = useQueryClient();
 
@@ -36,8 +44,11 @@ export function AdminTagsManager({
   });
 
   const tagsQuery = useQuery({
-    queryKey: ["admin-tags"],
-    queryFn: () => adminService.listTags(accessToken),
+    queryKey: ["admin-tags", page, pageSize],
+    queryFn: async () => {
+      const response = await adminService.listTags(accessToken, { page, pageSize });
+      return Array.isArray(response) ? response : response.data || [];
+    },
     initialData: initialTags,
   });
 
@@ -157,6 +168,7 @@ export function AdminTagsManager({
           ))
         )}
       </div>
+      <Pagination total={total} page={page} pageSize={pageSize} />
     </div>
   );
 }

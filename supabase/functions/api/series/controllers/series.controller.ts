@@ -26,9 +26,14 @@ export async function listSeries(c: Context) {
     ? createAuthClient(maybeUser.accessToken)
     : createPublicClient();
 
+  const page = parseInt(c.req.query("page") || "1", 10);
+  const pageSize = parseInt(c.req.query("pageSize") || "50", 10);
+
   const data = await listSeriesModel(supabase, {
     status: c.req.query("status") ?? undefined,
     isAdmin,
+    page,
+    pageSize,
   });
 
   return c.json(data);
@@ -36,7 +41,11 @@ export async function listSeries(c: Context) {
 
 export async function getSeries(c: Context) {
   const idOrSlug = c.req.param("idOrSlug") || c.req.param("slug");
-  const supabase = createPublicClient();
+  
+  const maybeUser = await getOptionalAuth(c.req.raw);
+  const supabase = maybeUser
+    ? createAuthClient(maybeUser.accessToken)
+    : createPublicClient();
 
   // If query param 'withPosts' is true, return series with its posts
   const withPosts = c.req.query("withPosts") === "true";

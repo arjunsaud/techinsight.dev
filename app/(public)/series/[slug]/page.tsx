@@ -81,9 +81,9 @@ export default async function SeriesDetailPage({ params }: SeriesPageProps) {
             </span>
           </div>
 
-          <PublicSeriesPostList 
-            posts={series.posts || []} 
-            seriesSlug={series.slug} 
+          <PublicSeriesPostList
+            posts={series.posts || []}
+            seriesSlug={series.slug}
           />
         </div>
       </div>

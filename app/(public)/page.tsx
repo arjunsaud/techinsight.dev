@@ -18,14 +18,18 @@ interface ArticleIndexPageProps {
   searchParams: Promise<{ featured?: string }>;
 }
 
+import { Pagination } from "@/components/ui/pagination";
+
 export default async function ArticleIndexPage({
   searchParams,
 }: ArticleIndexPageProps) {
-  const { featured } = await searchParams;
-  const isFeatured = featured === "true";
+  const resolvedParams = await searchParams;
+  const isFeatured = resolvedParams?.featured === "true";
+  const page = parseInt(resolvedParams?.page || "1", 10);
+  const pageSize = 12;
 
-  const [articles, categories, tags, recommendedArticles] = await Promise.all([
-    getPublishedArticles(isFeatured ? { isFeatured: true } : {}),
+  const [articlesResponse, categories, tags, recommendedArticles] = await Promise.all([
+    getPublishedArticles({ isFeatured: isFeatured ? true : undefined, page, pageSize }),
     getCategories(),
     getTags(),
     getRecommendedArticles(),
@@ -43,7 +47,13 @@ export default async function ArticleIndexPage({
           : "Discover the latest insights, tutorials, and news from the world of tech."
       }
     >
-      <ArticleList articles={articles} />
+      <ArticleList articles={articlesResponse.data} />
+      <Pagination 
+        page={page} 
+        pageSize={pageSize} 
+        total={articlesResponse.total} 
+        className="mt-12 justify-center border-t pt-8" 
+      />
     </PublicPageLayout>
   );
 }

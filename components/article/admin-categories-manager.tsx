@@ -16,14 +16,22 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
+import { Pagination } from "@/components/ui/pagination";
+
 interface AdminCategoriesManagerProps {
   accessToken: string;
   initialCategories: Category[];
+  page: number;
+  pageSize: number;
+  total: number;
 }
 
 export function AdminCategoriesManager({
   accessToken,
   initialCategories,
+  page,
+  pageSize,
+  total,
 }: AdminCategoriesManagerProps) {
   const queryClient = useQueryClient();
 
@@ -39,8 +47,11 @@ export function AdminCategoriesManager({
   });
 
   const categoriesQuery = useQuery({
-    queryKey: ["admin-categories"],
-    queryFn: () => adminService.listCategories(accessToken),
+    queryKey: ["admin-categories", page, pageSize],
+    queryFn: async () => {
+      const response = await adminService.listCategories(accessToken, { page, pageSize });
+      return Array.isArray(response) ? response : response.data || [];
+    },
     initialData: initialCategories,
   });
 
@@ -240,6 +251,7 @@ export function AdminCategoriesManager({
           ))
         )}
       </div>
+      <Pagination total={total} page={page} pageSize={pageSize} />
     </div>
   );
 }

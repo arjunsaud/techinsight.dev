@@ -27,19 +27,25 @@ export interface SeriesPostPayload {
 }
 
 const SERIES_SELECT = "id, title, slug, description, coverImage:cover_image, status, createdAt:created_at, updatedAt:updated_at";
-const SERIES_POST_SELECT = "id, seriesId:series_id, title, slug, content, excerpt, featuredImageUrl:featured_image_url, categoryId:category_id, seriesOrder:series_order, status, seoTitle:seo_title, metaDescription:meta_description, keywords, showToc:show_toc, isFeatured:is_featured, publishedAt:published_at, createdAt:created_at, updatedAt:updated_at, category:categories(id,name,slug,createdAt:created_at), tags:series_post_tags(tag:tags(id,name,slug,createdAt:created_at))";
+const SERIES_POST_SELECT = "id, seriesId:series_id, title, slug, content, excerpt, featuredImageUrl:featured_image_url, seriesOrder:series_order, status, seoTitle:seo_title, metaDescription:meta_description, keywords, showToc:show_toc, publishedAt:published_at, createdAt:created_at, updatedAt:updated_at";
 
 export async function listSeriesModel(
   supabase: SupabaseClient,
-  filters: { status?: string; isAdmin?: boolean } = {},
+  filters: { status?: string; isAdmin?: boolean; page?: number; pageSize?: number } = {},
 ) {
+  const page = filters.page || 1;
+  const pageSize = filters.pageSize || 50;
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
   let query = supabase
     .from("series")
     .select(`
       ${SERIES_SELECT},
       posts:series_posts(count)
-    `)
-    .order("created_at", { ascending: false });
+    `, { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
 
   if (!filters.isAdmin) {
     query = query.eq("status", "published");
@@ -47,14 +53,21 @@ export async function listSeriesModel(
     query = query.eq("status", filters.status);
   }
 
-  const { data, error } = await query;
+  const { data, error, count } = await query;
   if (error) throw new Error(error.message);
 
-  return (data ?? []).map((s: any) => ({
+  const mappedData = (data ?? []).map((s: any) => ({
     ...s,
     postsCount: s.posts?.[0]?.count ?? 0,
     posts: undefined, // Clear the count object to keep clean
   }));
+
+  return {
+    data: mappedData,
+    page,
+    pageSize,
+    total: count ?? 0,
+  };
 }
 
 export async function getSeriesByIdOrSlugModel(
@@ -95,16 +108,9 @@ export async function getSeriesWithPostsModel(
   if (error) throw new Error(error.message);
 
   // Map tags for each post
-  const mappedPosts = (posts ?? []).map((post: any) => ({
-    ...post,
-    tags: ((post.tags as { tag: unknown }[] | null) ?? []).map(
-      (item) => item.tag,
-    ),
-  }));
-
   return {
     ...series,
-    posts: mappedPosts,
+    posts: posts ?? [],
   };
 }
 
@@ -185,13 +191,7 @@ export async function getSeriesPostBySlugModel(
 
   if (error) throw new Error(error.message);
   
-  // Map tags from junction table
-  return {
-    ...data,
-    tags: ((data.tags as { tag: unknown }[] | null) ?? []).map(
-      (item) => item.tag,
-    ),
-  };
+  return data;
 }
 
 // standalone series posts model functions
@@ -207,13 +207,7 @@ export async function getSeriesPostByIdModel(
 
   if (error) throw new Error(error.message);
   
-  // Map tags from junction table
-  return {
-    ...data,
-    tags: ((data.tags as { tag: unknown }[] | null) ?? []).map(
-      (item) => item.tag,
-    ),
-  };
+  return data;
 }
 
 export async function createSeriesPostModel(
@@ -239,7 +233,6 @@ export async function createSeriesPostModel(
       meta_description: payload.metaDescription,
       keywords: payload.keywords,
       show_toc: payload.showToc ?? false,
-      is_featured: payload.isFeatured ?? false,
       published_at: payload.status === "published" ? new Date().toISOString() : null,
     })
     .select(SERIES_POST_SELECT)
@@ -287,7 +280,6 @@ export async function updateSeriesPostModel(
   if (payload.metaDescription !== undefined) updates.meta_description = payload.metaDescription;
   if (payload.keywords !== undefined) updates.keywords = payload.keywords;
   if (payload.showToc !== undefined) updates.show_toc = payload.showToc;
-  if (payload.isFeatured !== undefined) updates.is_featured = payload.isFeatured;
   if (payload.status !== undefined) {
     updates.status = payload.status;
     if (payload.status === "published") {

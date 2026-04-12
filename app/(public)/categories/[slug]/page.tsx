@@ -63,7 +63,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
 
-  const articles = await getPublishedArticles({ category: category.slug });
+  const articlesResponse = await getPublishedArticles({ category: category.slug });
 
   return (
     <PublicPageLayout
@@ -75,7 +75,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       description={category.description ?? undefined}
       showBackToHub={true}
     >
-      <ArticleList articles={articles} />
+      <ArticleList articles={articlesResponse.data} />
     </PublicPageLayout>
   );
 }

@@ -9,11 +9,14 @@ export default async function AdminCommentsPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const session = await requireAdmin();
-  const comments = await adminService.listComments(session.access_token);
-
   const resolvedParams = searchParams ? await searchParams : {};
   const filter =
     typeof resolvedParams.filter === "string" ? resolvedParams.filter : "all";
+    
+  const page = parseInt(typeof resolvedParams.page === "string" ? resolvedParams.page : "1", 10);
+  const pageSize = 10;
+  
+  const comments = await adminService.listComments(session.access_token, page, pageSize);
 
   return (
     <section className="space-y-6">
@@ -24,9 +27,12 @@ export default async function AdminCommentsPage({
         </p>
       </header>
       <AdminCommentsList
-        initialComments={comments}
+        initialComments={Array.isArray(comments) ? comments : comments.data || []}
         filter={filter}
         accessToken={session?.access_token || ""}
+        page={comments.page || 1}
+        pageSize={comments.pageSize || 10}
+        total={comments.total || (Array.isArray(comments) ? comments.length : 0)}
       />
     </section>
   );

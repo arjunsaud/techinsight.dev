@@ -5,16 +5,24 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { cn, formatDate } from "@/lib/utils";
 import { CommentCard } from "./admin-comment-card";
 
+import { Pagination } from "@/components/ui/pagination";
+
 interface AdminCommentsListProps {
   initialComments: any[]; // Ideally import Comment type
   filter?: string;
   accessToken: string;
+  page: number;
+  pageSize: number;
+  total: number;
 }
 
 export function AdminCommentsList({
   initialComments,
   filter = "all",
   accessToken,
+  page,
+  pageSize,
+  total,
 }: AdminCommentsListProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -129,6 +137,7 @@ export function AdminCommentsList({
             );
           })
         )}
+        <Pagination total={total} page={page} pageSize={pageSize} />
       </div>
     </div>
   );
