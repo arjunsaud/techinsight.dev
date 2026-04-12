@@ -17,7 +17,7 @@ export function SidebarTags({ tags, activeTagSlug }: SidebarTagsProps) {
         Trending Tags
       </h3>
       <div className="flex flex-wrap gap-2">
-        {tags.map((tag) => (
+        {tags.slice(0, 6).map((tag) => (
           <Link key={tag.id} href={`/tags/${tag.slug}`}>
             <Badge
               variant={activeTagSlug === tag.slug ? "default" : "secondary"}

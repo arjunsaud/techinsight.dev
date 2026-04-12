@@ -12,15 +12,23 @@ import { articleService } from "@/services/article-service";
 import { ArticleCard } from "@/components/article/admin-article-card";
 import { cn } from "@/lib/utils";
 
+import { Pagination } from "@/components/ui/pagination";
+
 interface AdminArticlesListProps {
   accessToken: string;
   initialArticles: Article[];
+  initialTotal: number;
+  initialPage: number;
+  pageSize: number;
   filter?: string;
 }
 
 export function AdminArticlesList({
   accessToken,
   initialArticles,
+  initialTotal,
+  initialPage,
+  pageSize,
   filter = "all",
 }: AdminArticlesListProps) {
   const router = useRouter();
@@ -33,16 +41,27 @@ export function AdminArticlesList({
     searchParams.get("search") || "",
   );
 
-  const hasInitialData = !searchQuery && initialArticles.length > 0;
+  const [prevFilterProp, setPrevFilterProp] = React.useState(filter);
+  const [localFilter, setLocalFilter] = React.useState(filter);
+  
+  const page = parseInt(searchParams.get("page") || initialPage.toString(), 10);
+
+  // Derive state during render 
+  if (filter !== prevFilterProp) {
+    setPrevFilterProp(filter);
+    setLocalFilter(filter);
+  }
+
+  const hasInitialData = !searchQuery && localFilter === "all" && initialArticles.length > 0 && page === initialPage;
 
   const articlesQuery = useQuery({
-    queryKey: ["admin-articles", filter, searchQuery],
+    queryKey: ["admin-articles", localFilter, searchQuery, page],
     queryFn: () =>
       articleService.listAdmin(
         {
-          page: 1,
-          pageSize: 100,
-          status: filter === "all" ? undefined : (filter as any),
+          page,
+          pageSize,
+          status: localFilter === "all" ? undefined : (localFilter as any),
           query: searchQuery || undefined,
         },
         accessToken,
@@ -50,19 +69,20 @@ export function AdminArticlesList({
     initialData: hasInitialData
       ? {
           data: initialArticles,
-          page: 1,
-          pageSize: 100,
-          total: initialArticles.length,
+          page,
+          pageSize,
+          total: initialTotal,
         }
       : undefined,
     enabled: Boolean(accessToken),
-    staleTime: 60_000, // avoid refetching on every focus in admin view
+    staleTime: 60_000,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    refetchOnMount: hasInitialData ? false : true,
+    refetchOnMount: false,
   });
 
   const allArticles = articlesQuery.data?.data ?? [];
+  const currentTotal = articlesQuery.data?.total ?? initialTotal;
 
   // Debounce search update to URL
   React.useEffect(() => {
@@ -70,6 +90,7 @@ export function AdminArticlesList({
       const params = new URLSearchParams(searchParams.toString());
       if (searchQuery) {
         params.set("search", searchQuery);
+        params.delete("page"); // reset page on search
       } else {
         params.delete("search");
       }
@@ -86,15 +107,15 @@ export function AdminArticlesList({
   }, [searchQuery, router, pathname, searchParams]);
 
   const handleFilterChange = (newFilter: string) => {
+    setLocalFilter(newFilter);
     const params = new URLSearchParams(searchParams.toString());
     if (newFilter === "all") {
       params.delete("filter");
     } else {
       params.set("filter", newFilter);
     }
-    startTransition(() => {
-      router.push(`${pathname}?${params.toString()}` as any);
-    });
+    params.delete("page"); // reset page on filter change
+    window.history.pushState(null, "", `${pathname}?${params.toString()}`);
   };
 
   const deleteArticleMutation = useMutation({
@@ -113,17 +134,12 @@ export function AdminArticlesList({
     },
   });
 
-  // Derived counts for tabs - we keep these based on the full initial fetch if possible
-  // or just use the current query's total if we want to be accurate to the search.
-  // For now, let's keep it simple.
-  const publishedCount = allArticles.filter(
-    (a) => a.status === "published",
-  ).length;
+  const publishedCount = allArticles.filter((a) => a.status === "published").length;
   const draftCount = allArticles.filter((a) => a.status === "draft").length;
   const scheduledCount = 0;
 
   const filters = [
-    { id: "all", label: "All", count: articlesQuery.data?.total ?? 0 },
+    { id: "all", label: "All", count: currentTotal },
     { id: "published", label: "Published", count: publishedCount },
     { id: "draft", label: "Drafts", count: draftCount },
     { id: "scheduled", label: "Scheduled", count: scheduledCount },
@@ -150,7 +166,7 @@ export function AdminArticlesList({
             placeholder="Search articles..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-10 w-full rounded-md border border-input bg-background pl-10 pr-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-10 w-full rounded-md border border-input bg-background pl-10 pr-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           />
           {searchQuery && (
             <button
@@ -169,12 +185,12 @@ export function AdminArticlesList({
               onClick={() => handleFilterChange(f.id)}
               className={cn(
                 "px-3 py-1.5 text-sm font-medium rounded-sm transition-colors",
-                filter === f.id
+                localFilter === f.id
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
               )}
             >
-              {f.label} ({f.count})
+              {f.label} {localFilter === f.id ? `(${currentTotal})` : ""}
             </button>
           ))}
         </div>
@@ -182,36 +198,49 @@ export function AdminArticlesList({
 
       {/* Article Cards List */}
       <div className="space-y-4">
-        {allArticles.length === 0 ? (
+        {articlesQuery.isFetching ? (
+          <div className="rounded-xl border p-8 flex justify-center text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <svg className="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Loading articles...</span>
+            </div>
+          </div>
+        ) : allArticles.length === 0 ? (
           <div className="rounded-xl border border-dashed p-8 text-center text-muted-foreground">
             No articles found for the selected filter.
           </div>
         ) : (
-          allArticles.map((article: Article) => (
-            <ArticleCard key={article.id} id={article.id} slug={article.slug}>
-              <ArticleCard.Image
-                src={article.featuredImageUrl}
-                alt={article.title}
-              />
-              <ArticleCard.Content
-                title={article.title}
-                excerpt={article.excerpt}
-                status={article.status}
-                tags={article.tags?.map((t: any) => t.name) || []}
-                views={article.id.length * 42} // Placeholder for real stats
-                likes={article.id.length * 3} // Placeholder code
-                comments={0}
-                readTime="5m"
-              />
-              <ArticleCard.Actions
-                onDelete={() => {
-                  const ok = globalThis.confirm("Delete this article?");
-                  if (!ok) return;
-                  deleteArticleMutation.mutate(article.id);
-                }}
-              />
-            </ArticleCard>
-          ))
+          <>
+            {allArticles.map((article: Article) => (
+              <ArticleCard key={article.id} id={article.id} slug={article.slug}>
+                <ArticleCard.Image
+                  src={article.featuredImageUrl}
+                  alt={article.title}
+                />
+                <ArticleCard.Content
+                  title={article.title}
+                  excerpt={article.excerpt}
+                  status={article.status}
+                  tags={article.tags?.map((t: any) => t.name) || []}
+                  views={article.id.length * 42} 
+                  likes={article.id.length * 3} 
+                  comments={0}
+                  readTime="5m"
+                />
+                <ArticleCard.Actions
+                  onDelete={() => {
+                    const ok = globalThis.confirm("Delete this article?");
+                    if (!ok) return;
+                    deleteArticleMutation.mutate(article.id);
+                  }}
+                />
+              </ArticleCard>
+            ))}
+            <Pagination total={currentTotal} page={page} pageSize={pageSize} />
+          </>
         )}
       </div>
     </div>

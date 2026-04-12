@@ -69,7 +69,10 @@ export async function listUsers(c: Context) {
   const admin = await requireAdmin(c.req.raw);
   const supabase = createAuthClient(admin.accessToken);
 
-  const data = await listUsersModel(supabase);
+  const page = parseInt(c.req.query("page") || "1", 10);
+  const pageSize = parseInt(c.req.query("pageSize") || "50", 10);
+
+  const data = await listUsersModel(supabase, page, pageSize);
   return c.json(data);
 }
 
@@ -77,6 +80,9 @@ export async function listComments(c: Context) {
   const admin = await requireAdmin(c.req.raw);
   const supabase = createAuthClient(admin.accessToken);
 
-  const data = await listCommentsModel(supabase);
+  const page = parseInt(c.req.query("page") || "1", 10);
+  const pageSize = parseInt(c.req.query("pageSize") || "50", 10);
+
+  const data = await listCommentsModel(supabase, page, pageSize);
   return c.json(data);
 }

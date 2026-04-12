@@ -8,12 +8,14 @@ import {
   MessageSquare,
   Users,
   Settings2,
+  Layers,
 } from "lucide-react";
 
 const adminLinks = [
   { href: "/admin/dashboard", label: "Dashboard", Icon: LayoutDashboard },
   { href: "/admin/articles", label: "Write Articles", Icon: FileEdit },
   { href: "/admin/articles/all", label: "All Articles", Icon: Files },
+  { href: "/admin/series", label: "Series", Icon: Layers },
   { href: "/admin/categories", label: "Categories", Icon: FolderTree },
   { href: "/admin/tags", label: "Tags", Icon: Tags },
   { href: "/admin/comments", label: "Comments", Icon: MessageSquare },

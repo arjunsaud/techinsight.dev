@@ -5,6 +5,7 @@ import { registerAdminRoutes } from "./admin/routes/admin.routes.ts";
 import { registerTagRoutes } from "./tag/routes/tag.routes.ts";
 import { registerCategoryRoutes } from "./category/routes/category.routes.ts";
 import { registerSettingsRoutes } from "./settings/routes/settings.routes.ts";
+import { registerSeriesRoutes } from "./series/routes/series.routes.ts";
 
 const app = createFunctionApp();
 
@@ -17,5 +18,6 @@ registerCommentRoutes(app);
 registerAdminRoutes(app);
 registerTagRoutes(app);
 registerCategoryRoutes(app);
+registerSeriesRoutes(app);
 
 export default app;

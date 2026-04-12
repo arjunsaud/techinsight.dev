@@ -26,31 +26,31 @@ export function ArticleCard({ article }: ArticleCardProps) {
   return (
     <Link
       href={`/articles/${article.slug}`}
-      className="group mb-3 flex items-start gap-4 rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100 transition-shadow hover:shadow-md sm:gap-6 sm:p-5"
+      className="group mb-3 flex items-start gap-4 rounded-xl bg-card p-4 shadow-sm ring-1 ring-border transition-shadow hover:shadow-md sm:gap-6 sm:p-5"
     >
       {/* Text */}
       <div className="min-w-0 flex-1">
         {/* Category */}
         {article.category ? (
-          <span className="mb-1 block text-xs font-bold uppercase tracking-widest text-green-700">
+          <span className="mb-1 block text-xs font-bold uppercase tracking-widest text-primary">
             {article.category.name}
           </span>
         ) : (
-          <span className="mb-1 block text-xs font-bold uppercase tracking-widest text-gray-400">
+          <span className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
             Uncategorized
           </span>
         )}
         <h3
-          className="line-clamp-2 text-base font-bold leading-snug text-gray-900 transition-colors group-hover:text-gray-600 sm:text-lg"
+          className="line-clamp-2 text-base font-bold leading-snug text-foreground transition-colors group-hover:text-muted-foreground sm:text-lg"
           style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
         >
           {article.title}
         </h3>
-        <p className="mt-1 line-clamp-2 text-xs text-gray-500 sm:text-sm">
+        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground sm:text-sm">
           {excerpt}
         </p>
         <div className="mt-4 flex items-center justify-between">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-400">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
             <span>{date}</span>
             <span aria-hidden>·</span>
             <span>{readTime} min read</span>
@@ -61,7 +61,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
                   {article.tags?.map((tag) => (
                     <span
                       key={tag.id}
-                      className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-600"
+                      className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
                     >
                       #{tag.name}
                     </span>
@@ -71,7 +71,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
             ) : (
               <>
                 <span aria-hidden>·</span>
-                <span className="text-[10px] italic text-gray-300">
+                <span className="text-[10px] italic text-muted-foreground/50">
                   no tags
                 </span>
               </>

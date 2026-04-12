@@ -6,6 +6,7 @@ interface ArticleEditorProps {
   value: string;
   onChange: (value: string) => void;
   accessToken: string;
+  folder?: string;
 }
 
 const BlockNoteEditor = dynamic(() => import("./blocknote-editor"), {

@@ -14,7 +14,9 @@ import {
 
 export async function listTags(c: Context) {
   const supabase = createPublicClient();
-  const data = await listTagsModel(supabase);
+  const page = parseInt(c.req.query("page") || "1", 10);
+  const pageSize = parseInt(c.req.query("pageSize") || "100", 10);
+  const data = await listTagsModel(supabase, page, pageSize);
   return c.json(data);
 }
 

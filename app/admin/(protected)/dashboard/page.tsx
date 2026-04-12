@@ -1,7 +1,7 @@
 import { requireAdmin } from "@/lib/supabase/guards";
 import { adminService } from "@/services/admin-service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AdminHeader } from "@/components/layout/admin.header";
+import { AdminHeader } from "@/components/layout/admin-header";
 
 export default async function AdminDashboardPage() {
   const session = await requireAdmin();

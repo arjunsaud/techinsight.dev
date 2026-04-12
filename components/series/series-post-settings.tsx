@@ -1,0 +1,431 @@
+"use client";
+
+import { useMemo, useState, useEffect } from "react";
+import { Settings } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, Controller } from "react-hook-form";
+import { z } from "zod";
+import { toast } from "sonner";
+
+import type { SeriesPost } from "@/types/domain";
+import type { UpdateSeriesPostInput } from "@/types/api";
+import { apiFetch } from "@/services/http";
+import { adminService } from "@/services/admin-service";
+import { seriesService } from "@/services/series-service";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Sheet,
+  SheetBody,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { SearchableSelect } from "@/components/ui/searchable-select";
+import { SearchableMultiSelect } from "@/components/ui/searchable-multi-select";
+
+interface Props {
+  accessToken?: string;
+  seriesId?: string;
+  postId?: string | null;
+  initialData?: {
+    slug: string;
+    seoTitle?: string | null;
+    metaDescription?: string | null;
+    keywords?: string | null;
+    showToc: boolean;
+    isFeatured?: boolean;
+    categoryId?: string | null;
+    tagIds?: string[];
+  };
+  onChange?: (values: Partial<FormValues>) => void;
+}
+
+const schema = z.object({
+  slug: z
+    .string()
+    .optional()
+    .transform((v) =>
+      (v ?? "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "")
+        .slice(0, 120),
+    ),
+  seoTitle: z.string().optional(),
+  metaDescription: z.string().optional(),
+  keywords: z.string().optional(),
+  categoryId: z.string().optional(),
+  tagIds: z.array(z.string()).default([]),
+  showToc: z.boolean().default(false),
+  isFeatured: z.boolean().default(false),
+});
+
+type FormValues = z.infer<typeof schema>;
+
+export function SeriesPostSettings({ 
+  accessToken, 
+  seriesId, 
+  postId, 
+  initialData,
+  onChange 
+}: Props) {
+  const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      slug: initialData?.slug || "",
+      seoTitle: initialData?.seoTitle || "",
+      metaDescription: initialData?.metaDescription || "",
+      keywords: initialData?.keywords || "",
+      categoryId: initialData?.categoryId || "",
+      tagIds: initialData?.tagIds || [],
+      showToc: initialData?.showToc || false,
+      isFeatured: initialData?.isFeatured || false,
+    },
+  });
+
+  // Fetch post data if editing
+  const postQuery = useQuery({
+    queryKey: ["series-post", postId],
+    queryFn: () => {
+      if (!postId || !seriesId || !accessToken) return null;
+      return seriesService.getPostById(seriesId, postId, accessToken);
+    },
+    enabled: Boolean(open && postId && seriesId && accessToken),
+  });
+
+  const categoriesQuery = useQuery({
+    queryKey: ["admin-categories"],
+    queryFn: () => adminService.listCategories(accessToken),
+    enabled: Boolean(open && accessToken),
+  });
+
+  const tagsQuery = useQuery({
+    queryKey: ["admin-tags"],
+    queryFn: () => adminService.listTags(accessToken),
+    enabled: Boolean(open && accessToken),
+  });
+
+  // Keep form in sync with post data when editing
+  useEffect(() => {
+    if (postQuery.data && open) {
+      form.reset({
+        slug: postQuery.data.slug ?? "",
+        seoTitle: postQuery.data.seoTitle ?? "",
+        metaDescription: postQuery.data.metaDescription ?? "",
+        keywords: postQuery.data.keywords ?? "",
+        categoryId: postQuery.data.categoryId ?? "",
+        tagIds: postQuery.data.tags?.map((t) => t.id) ?? [],
+        showToc: postQuery.data.showToc ?? false,
+        isFeatured: postQuery.data.isFeatured ?? false,
+      });
+    } else if (initialData && open) {
+      form.reset({
+        slug: initialData.slug || "",
+        seoTitle: initialData.seoTitle || "",
+        metaDescription: initialData.metaDescription || "",
+        keywords: initialData.keywords || "",
+        categoryId: initialData.categoryId || "",
+        tagIds: initialData.tagIds || [],
+        showToc: initialData.showToc || false,
+        isFeatured: initialData.isFeatured || false,
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [postQuery.data, initialData, open]);
+
+  const mutation = useMutation({
+    mutationFn: async (values: FormValues) => {
+      if (postId && seriesId && accessToken) {
+        const payload: UpdateSeriesPostInput = {
+          slug: values.slug,
+          seoTitle: values.seoTitle || undefined,
+          metaDescription: values.metaDescription || undefined,
+          keywords: values.keywords || undefined,
+          categoryId: values.categoryId || undefined,
+          tagIds: values.tagIds,
+          showToc: values.showToc,
+          isFeatured: values.isFeatured,
+        };
+        return seriesService.updatePost(seriesId, postId, payload, accessToken);
+      }
+      return null;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["series", seriesId] });
+      if (postId) {
+        queryClient.invalidateQueries({ queryKey: ["series-post", postId] });
+      }
+      toast.success("Settings saved");
+      setOpen(false);
+    },
+    onError: () => toast.error("Failed to save settings"),
+  });
+
+  const analysis = useMemo(() => {
+    const values = form.getValues();
+    const titleLen = (values.seoTitle ?? "").trim().length;
+    const metaLen = (values.metaDescription ?? "").trim().length;
+    const kwCount = (values.keywords ?? "")
+      .split(",")
+      .map((k) => k.trim())
+      .filter(Boolean).length;
+    const titleOk = titleLen >= 30 && titleLen <= 60;
+    const metaOk = metaLen >= 70 && metaLen <= 160;
+    const kwOk = kwCount > 0;
+    const score = [titleOk, metaOk, kwOk].filter(Boolean).length;
+    return { titleLen, metaLen, kwCount, titleOk, metaOk, kwOk, score };
+  }, [form.watch()]);
+
+  const onSubmit = form.handleSubmit((values) => {
+    // If there's an onChange callback (for local state updates), call it
+    if (onChange) {
+      onChange(values);
+      setOpen(false);
+      return;
+    }
+    // Otherwise, save directly via API
+    if (!postId || !seriesId || !accessToken) {
+      toast.success("Settings updated");
+      setOpen(false);
+      return;
+    }
+    mutation.mutate(values);
+  });
+
+  const categories = categoriesQuery.data?.data ?? [];
+  const tags = tagsQuery.data?.data ?? [];
+
+  return (
+    <div className="flex items-center gap-3">
+      <Button
+        variant="outline"
+        size="sm"
+        aria-label="Open Settings"
+        onClick={() => setOpen(true)}
+      >
+        <Settings className="h-4 w-4" />
+      </Button>
+
+      <Sheet open={open} onClose={() => setOpen(false)} side="right">
+        <SheetHeader>
+          <SheetTitle>Post Settings</SheetTitle>
+          <button
+            className="rounded p-2 text-gray-500 hover:bg-gray-100 transition-colors"
+            onClick={() => setOpen(false)}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </SheetHeader>
+        <form
+          onSubmit={onSubmit}
+          className="flex flex-1 flex-col overflow-hidden"
+        >
+          <SheetBody className="space-y-6 pb-8">
+            {postQuery.isLoading ? (
+              <div className="flex animate-pulse flex-col gap-4">
+                <div className="h-10 w-full rounded bg-muted" />
+                <div className="h-10 w-full rounded bg-muted" />
+                <div className="h-32 w-full rounded bg-muted" />
+              </div>
+            ) : (
+              <>
+                <div className="space-y-4 rounded-xl border bg-muted/30 p-4">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Organization
+                  </h3>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Category</label>
+                    <Controller
+                      control={form.control}
+                      name="categoryId"
+                      render={({ field }) => (
+                        <SearchableSelect
+                          options={categories.map((c) => ({
+                            id: c.id,
+                            name: c.name,
+                          }))}
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Select category..."
+                        />
+                      )}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Tags</label>
+                    <Controller
+                      control={form.control}
+                      name="tagIds"
+                      render={({ field }) => (
+                        <SearchableMultiSelect
+                          options={tags.map((t) => ({
+                            id: t.id,
+                            name: t.name,
+                          }))}
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Add tags..."
+                        />
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4 rounded-xl border bg-muted/30 p-4">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Features
+                  </h3>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <label className="text-sm font-medium">
+                        Table of Contents
+                      </label>
+                      <p className="text-xs text-muted-foreground">
+                        Show TOC on post page
+                      </p>
+                    </div>
+                    <Controller
+                      control={form.control}
+                      name="showToc"
+                      render={({ field }) => (
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          checked={field.value}
+                          onChange={(e) => field.onChange(e.target.checked)}
+                        />
+                      )}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <label className="text-sm font-medium">
+                        Featured Post
+                      </label>
+                      <p className="text-xs text-muted-foreground">
+                        Highlight on home page
+                      </p>
+                    </div>
+                    <Controller
+                      control={form.control}
+                      name="isFeatured"
+                      render={({ field }) => (
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          checked={field.value}
+                          onChange={(e) => field.onChange(e.target.checked)}
+                        />
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4 rounded-xl border bg-muted/30 p-4">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    SEO & Meta
+                  </h3>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Slug</label>
+                    <Input
+                      {...form.register("slug")}
+                      onChange={(e) =>
+                        form.setValue(
+                          "slug",
+                          schema.shape.slug.parse(e.target.value),
+                        )
+                      }
+                      placeholder="post-slug"
+                      className="h-11 shadow-none"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">SEO Title</label>
+                    <Input
+                      {...form.register("seoTitle")}
+                      placeholder="30–60 characters"
+                      className="h-11 shadow-none"
+                    />
+                    <div
+                      className={
+                        analysis.titleOk
+                          ? "text-xs text-green-600 font-medium"
+                          : "text-xs text-amber-600"
+                      }
+                    >
+                      {analysis.titleLen}/60
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Meta Description
+                    </label>
+                    <Textarea
+                      {...form.register("metaDescription")}
+                      placeholder="70–160 characters"
+                      className="min-h-[100px] shadow-none"
+                    />
+                    <div
+                      className={
+                        analysis.metaOk
+                          ? "text-xs text-green-600 font-medium"
+                          : "text-xs text-amber-600"
+                      }
+                    >
+                      {analysis.metaLen}/160
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Keywords</label>
+                    <Input
+                      {...form.register("keywords")}
+                      placeholder="comma,separated,keywords"
+                      className="h-11 shadow-none"
+                    />
+                    <div
+                      className={
+                        analysis.kwOk
+                          ? "text-xs text-green-600 font-medium"
+                          : "text-xs text-amber-600"
+                      }
+                    >
+                      {analysis.kwCount} keywords
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </SheetBody>
+          <SheetFooter className="border-t bg-background/80 backdrop-blur-md">
+            <Button
+              variant="outline"
+              size="sm"
+              type="button"
+              onClick={() => setOpen(false)}
+              disabled={mutation.isPending}
+              className="h-10 px-6"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              type="submit"
+              disabled={mutation.isPending}
+              className="h-10 px-8 bg-blue-600 hover:bg-blue-700"
+            >
+              {mutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          </SheetFooter>
+        </form>
+      </Sheet>
+    </div>
+  );
+}

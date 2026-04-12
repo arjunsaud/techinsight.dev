@@ -10,12 +10,14 @@ interface CoverImageUploaderProps {
   url: string;
   onChange: (url: string) => void;
   accessToken: string;
+  folder?: string;
 }
 
 export function CoverImageUploader({
   url,
   onChange,
   accessToken,
+  folder = "articles",
 }: CoverImageUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -26,7 +28,7 @@ export function CoverImageUploader({
 
     try {
       setIsUploading(true);
-      const draft = await articleService.getUploadDraft(file.name, accessToken);
+      const draft = await articleService.getUploadDraft(file.name, accessToken, folder);
 
       const formData = new FormData();
       formData.append("file", file);

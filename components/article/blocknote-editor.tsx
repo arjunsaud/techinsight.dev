@@ -12,12 +12,14 @@ interface BlockNoteEditorProps {
   value: string;
   onChange: (value: string) => void;
   accessToken: string;
+  folder?: string;
 }
 
 export default function BlockNoteEditor({
   value,
   onChange,
   accessToken,
+  folder = "articles",
 }: BlockNoteEditorProps) {
   const isInitialRendering = useRef(true);
   const [fontSize, setFontSize] = useState(1.04);
@@ -26,7 +28,7 @@ export default function BlockNoteEditor({
   const decreaseFontSize = () => setFontSize((s) => Math.max(s - 0.1, 0.8));
 
   const uploadFile = async (file: File) => {
-    const draft = await articleService.getUploadDraft(file.name, accessToken);
+    const draft = await articleService.getUploadDraft(file.name, accessToken, folder);
     const formData = new FormData();
     formData.append("file", file);
     formData.append("api_key", draft.apiKey);

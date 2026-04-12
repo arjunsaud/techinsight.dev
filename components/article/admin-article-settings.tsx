@@ -163,8 +163,8 @@ export function ArticleSettings({ accessToken, articleId }: Props) {
     mutation.mutate(values);
   });
 
-  const categories = categoriesQuery.data ?? [];
-  const tags = tagsQuery.data ?? [];
+  const categories = categoriesQuery.data?.data ?? [];
+  const tags = tagsQuery.data?.data ?? [];
 
   return (
     <div className="flex items-center gap-3">

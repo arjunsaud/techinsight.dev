@@ -100,10 +100,8 @@ ArticleCard.Content = function ArticleCardContent({
   return (
     <div className="flex flex-1 flex-col justify-between overflow-hidden">
       <div>
-        <h3 className="truncate text-base font-semibold text-foreground">
-          {title}
-        </h3>
-        <p className="mt-1 truncate text-sm text-muted-foreground">
+        <h3 className="text-base font-semibold text-foreground">{title}</h3>
+        <p className="mt-1 text-sm text-muted-foreground">
           {excerpt || "No description provided."}
         </p>
       </div>

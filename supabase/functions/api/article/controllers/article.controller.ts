@@ -120,12 +120,17 @@ export async function createUploadDraft(c: Context) {
   const payload = (await c.req.json()) as {
     filename?: string;
     contentType?: string;
+    folder?: string;
   };
 
   const settings = await getCloudinarySettingsModel(supabase);
 
   const timestamp = Math.round(new Date().getTime() / 1000);
-  const folder = "articles";
+  // Use requested folder, restricted to known safe values
+  const allowedFolders = ["articles", "series"];
+  const folder = allowedFolders.includes(payload.folder ?? "")
+    ? payload.folder!
+    : "articles";
 
   // Parameters to sign
   const params: Record<string, string | number> = {

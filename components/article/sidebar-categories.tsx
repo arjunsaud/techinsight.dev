@@ -20,7 +20,7 @@ export function SidebarCategories({
         {title}
       </h3>
       <div className="flex flex-wrap gap-2">
-        {categories.map((cat) => (
+        {categories.slice(0, 6).map((cat) => (
           <Link
             key={cat.id}
             href={`/categories/${cat.slug}`}

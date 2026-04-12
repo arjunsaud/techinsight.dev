@@ -20,7 +20,7 @@ export function RecommendedArticles({
         {title}
       </h3>
       <div className="flex flex-col gap-6">
-        {articles.map((article) => (
+        {articles.slice(0, 6).map((article) => (
           <Link
             key={article.id}
             href={`/articles/${article.slug}`}
