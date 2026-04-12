@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 interface ArticlesIndexPageProps {
-  searchParams: Promise<{ featured?: string }>;
+  searchParams: Promise<{ featured?: string; page?: string }>;
 }
 
 import { Pagination } from "@/components/ui/pagination";

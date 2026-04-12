@@ -110,7 +110,7 @@ techinsight.dev/
 │   ├── config.toml                   # Supabase local config
 │   ├── functions/api/                # Deno Edge Function (single "api" function routing all endpoints)
 │   └── migrations/                   # SQL migrations (schema, RLS policies, RPCs)
-├── middleware.ts                     # Edge middleware (session refresh, admin route protection)
+├── proxy.ts                          # Edge proxy (session refresh, admin route protection)
 ├── next.config.mjs                   # Next.js configuration
 ├── tailwind.config.ts                # Tailwind theme tokens
 ├── tsconfig.json                     # TypeScript config
@@ -155,7 +155,7 @@ techinsight.dev/
 ### 4. Authentication & Authorization
 
 - **Supabase Auth**: Email/password authentication via `@supabase/ssr` (cookie-based sessions).
-- **Middleware**: `middleware.ts` runs at the edge — refreshes sessions and redirects unauthenticated users from `/admin/*` to `/admin/login`.
+- **Proxy**: `proxy.ts` runs at the edge — refreshes sessions and redirects unauthenticated users from `/admin/*` to `/admin/login`.
 - **Auth Guards** (`lib/supabase/guards.ts`):
   - `requireSession()` — ensures any authenticated user
   - `requireAdmin()` — ensures `admin` or `superadmin` role (checks `superadmins` table)
@@ -207,9 +207,9 @@ techinsight.dev/
 | **Server Actions**     | `lib/actions.ts`           | Server-side revalidation after mutations                                        | Call `revalidatePath()` / `revalidateTag()` — never throw to client                                  |
 | **Auth Guards**        | `lib/supabase/guards.ts`   | Auth enforcement for admin pages                                                | `requireAdmin()` returns a `session` — use `session.access_token` for service calls                  |
 | **Supabase Clients**   | `lib/supabase/client.ts`   | Browser-side Supabase client                                                    | Use for client-side auth operations only                                                             |
-| **Supabase Clients**   | `lib/supabase/server.ts`   | Server-side Supabase client (cookie-based)                                      | Used in guards and middleware                                                                        |
+| **Supabase Clients**   | `lib/supabase/server.ts`   | Server-side Supabase client (cookie-based)                                      | Used in guards and proxy function                                                                    |
 | **Edge Function**      | `supabase/functions/api/`  | Single Deno function handling all API endpoints                                 | All backend logic lives here — routing, RLS, business rules                                          |
-| **Middleware**          | `middleware.ts`            | Session refresh, admin route protection                                         | Runs at the edge on every request matching the pattern                                               |
+| **Proxy function**      | `proxy.ts`                 | Session refresh, admin route protection                                         | Runs at the edge on every request matching the pattern                                               |
 | **Pages**              | `app/**/page.tsx`          | Thin route entry points                                                         | Extract params, call auth guards, delegate rendering to components                                   |
 
 ### How Each Layer Connects (Example: "Articles" feature)
@@ -374,7 +374,7 @@ See `.env.example` for the required variables:
 
 | File                         | Responsibility                                                  |
 | ---------------------------- | --------------------------------------------------------------- |
-| `middleware.ts`              | Edge middleware — session refresh, admin route protection        |
+| `proxy.ts`                   | Edge proxy — session refresh, admin route protection             |
 | `app/providers.tsx`          | Client providers (React Query, Theme, Toaster)                  |
 | `app/layout.tsx`             | Root layout — fonts (Geist), metadata, providers wrapper        |
 | `lib/supabase/guards.ts`    | Auth guard functions (`requireAdmin`, `requireSuperAdmin`)      |

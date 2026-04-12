@@ -38,7 +38,7 @@ export function Pagination({
       } else {
         params.set("page", newPage.toString());
       }
-      router.push(`${pathname}?${params.toString()}`);
+      router.push(`${pathname}?${params.toString()}` as any);
     }
   };
 

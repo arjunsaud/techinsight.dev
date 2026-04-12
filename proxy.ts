@@ -4,7 +4,7 @@ import { createServerClient, type CookieMethodsServer } from "@supabase/ssr";
 
 import { getPublicEnv } from "@/lib/env";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const env = getPublicEnv();
   let supabaseResponse = NextResponse.next({ request });
 
