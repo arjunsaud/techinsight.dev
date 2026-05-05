@@ -2,10 +2,7 @@ import { Hono } from "jsr:@hono/hono";
 import { HTTPException } from "jsr:@hono/hono/http-exception";
 import { cors } from "jsr:@hono/hono/cors";
 
-const APP_URL = (Deno.env.get("APP_URL") || "http://localhost:3000").replace(
-  /\/+$/,
-  "",
-);
+const APP_URL = Deno.env.get("APP_URL")?.replace(/\/+$/, "");
 
 export function createFunctionApp() {
   const app = new Hono();
@@ -13,7 +10,31 @@ export function createFunctionApp() {
   app.use(
     "*",
     cors({
-      origin: APP_URL,
+      origin: (origin) => {
+        const allowedOrigins = [
+          "http://localhost:3000",
+          "https://www.techinsight.dev",
+          "https://techinsight.dev",
+        ];
+
+        if (APP_URL) {
+          allowedOrigins.push(APP_URL);
+        }
+
+        if (allowedOrigins.includes(origin) || !origin) {
+          return origin;
+        }
+
+        // Fallback for local development if origin is not provided or different port
+        if (
+          origin.startsWith("http://localhost:") ||
+          origin.startsWith("http://127.0.0.1:")
+        ) {
+          return origin;
+        }
+
+        return null;
+      },
       allowHeaders: [
         "authorization",
         "x-client-info",
@@ -21,6 +42,7 @@ export function createFunctionApp() {
         "content-type",
       ],
       allowMethods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+      credentials: true,
     }),
   );
 
