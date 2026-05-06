@@ -16,6 +16,8 @@ export interface Category {
   description?: string | null;
   color?: string | null;
   createdAt: string;
+  articles?: { count: number }[];
+  series_posts?: { count: number }[];
 }
 
 export interface Tag {
@@ -23,6 +25,8 @@ export interface Tag {
   name: string;
   slug: string;
   createdAt: string;
+  article_tags?: { count: number }[];
+  series_post_tags?: { count: number }[];
 }
 
 export interface Article {
@@ -45,6 +49,9 @@ export interface Article {
   updatedAt: string;
   category?: Category | null;
   tags?: Tag[];
+  viewsCount?: number;
+  likesCount?: number;
+  comments?: { count: number }[];
 }
 
 export interface Comment {
@@ -87,6 +94,9 @@ export interface SeriesPost {
   updatedAt: string;
   category?: Category | null;
   tags?: Tag[];
+  viewsCount?: number;
+  likesCount?: number;
+  comments?: { count: number }[];
 }
 
 export interface Series {

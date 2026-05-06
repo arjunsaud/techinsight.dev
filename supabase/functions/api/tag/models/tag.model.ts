@@ -12,7 +12,7 @@ export async function listTagsModel(
 
   const { data, error, count } = await supabase
     .from("tags")
-    .select("id,name,slug,createdAt:created_at", { count: "exact" })
+    .select("id,name,slug,createdAt:created_at, article_tags(count), series_post_tags(count)", { count: "exact" })
     .order("name")
     .range(from, to);
 
@@ -20,8 +20,15 @@ export async function listTagsModel(
     throw new Error(error.message);
   }
 
+  const mappedData = (data ?? []).map((tag: any) => ({
+    ...tag,
+    articleCount: (tag.article_tags?.[0]?.count ?? 0) + (tag.series_post_tags?.[0]?.count ?? 0),
+    article_tags: undefined,
+    series_post_tags: undefined,
+  }));
+
   return {
-    data: data ?? [],
+    data: mappedData,
     page,
     pageSize,
     total: count ?? 0,
@@ -82,6 +89,30 @@ export async function updateTagModel(
 }
 
 export async function deleteTagModel(supabase: SupabaseClient, tagId: string) {
+  // Check if used in articles
+  const { count: articleCount, error: articleCountError } = await supabase
+    .from("article_tags")
+    .select("*", { count: "exact", head: true })
+    .eq("tag_id", tagId);
+
+  if (articleCountError) throw new Error(articleCountError.message);
+  if (articleCount && articleCount > 0) {
+    throw new Error("Cannot delete tag as it is currently used in articles.");
+  }
+
+  // Check if used in series posts
+  const { count: seriesCount, error: seriesCountError } = await supabase
+    .from("series_post_tags")
+    .select("*", { count: "exact", head: true })
+    .eq("tag_id", tagId);
+
+  if (seriesCountError) throw new Error(seriesCountError.message);
+  if (seriesCount && seriesCount > 0) {
+    throw new Error(
+      "Cannot delete tag as it is currently used in series articles.",
+    );
+  }
+
   const { error } = await supabase.from("tags").delete().eq("id", tagId);
   if (error) {
     throw new Error(error.message);

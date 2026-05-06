@@ -13,6 +13,8 @@ import { adminService } from "@/services/admin-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TagCard } from "@/components/article/admin-tag-card";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { Modal } from "@/components/ui/modal";
 
 import { Pagination } from "@/components/ui/pagination";
 
@@ -24,6 +26,11 @@ interface AdminTagsManagerProps {
   total: number;
 }
 
+const schema = z.object({
+  name: z.string().min(1, "Tag name is required").max(80),
+});
+type FormValues = z.infer<typeof schema>;
+
 export function AdminTagsManager({
   accessToken,
   initialTags,
@@ -32,15 +39,17 @@ export function AdminTagsManager({
   total,
 }: AdminTagsManagerProps) {
   const queryClient = useQueryClient();
-
-  const schema = z.object({
-    name: z.string().min(1, "Tag name is required").max(80),
-  });
-  type FormValues = z.infer<typeof schema>;
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [editingTag, setEditingTag] = React.useState<Tag | null>(null);
+  const [tagToDelete, setTagToDelete] = React.useState<Tag | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { name: "" },
+  });
+
+  const editForm = useForm<FormValues>({
+    resolver: zodResolver(schema),
   });
 
   const tagsQuery = useQuery({
@@ -53,8 +62,6 @@ export function AdminTagsManager({
   });
 
   const tags = tagsQuery.data ?? [];
-
-  const [searchTerm, setSearchTerm] = React.useState("");
 
   const filteredTags = React.useMemo(() => {
     return tags.filter((t) =>
@@ -73,9 +80,22 @@ export function AdminTagsManager({
       toast.success("Tag created");
     },
     onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to create tag",
-      );
+      toast.error(error instanceof Error ? error.message : "Failed to create tag");
+    },
+  });
+
+  const updateTagMutation = useMutation({
+    mutationFn: async ({ tagId, name }: { tagId: string; name: string }) => {
+      if (!accessToken) throw new Error("Missing admin session token.");
+      return adminService.updateTag(tagId, { name }, accessToken);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-tags"] });
+      setEditingTag(null);
+      toast.success("Tag updated");
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Failed to update tag");
     },
   });
 
@@ -86,12 +106,11 @@ export function AdminTagsManager({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-tags"] });
+      setTagToDelete(null);
       toast.success("Tag deleted");
     },
     onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to delete tag",
-      );
+      toast.error(error instanceof Error ? error.message : "Failed to delete tag");
     },
   });
 
@@ -99,10 +118,22 @@ export function AdminTagsManager({
     createTagMutation.mutate(values);
   });
 
+  const onEditSubmit = editForm.handleSubmit((values) => {
+    if (editingTag) {
+      updateTagMutation.mutate({ tagId: editingTag.id, name: values.name });
+    }
+  });
+
+  React.useEffect(() => {
+    if (editingTag) {
+      editForm.reset({ name: editingTag.name });
+    }
+  }, [editingTag, editForm]);
+
   return (
     <div className="space-y-6">
       {/* Add New Tag Card */}
-      <div className="rounded-xl w-1/2 border bg-card p-6 shadow-sm">
+      <div className="rounded-xl w-full max-w-md border bg-card p-6 shadow-sm">
         <form className="flex gap-4" onSubmit={onSubmit}>
           <div className="flex-1">
             <Input
@@ -129,7 +160,7 @@ export function AdminTagsManager({
           placeholder="Search tags..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 h-10 shadow-none bg-background"
+          className="pl-10 h-11 shadow-none bg-background"
         />
         {searchTerm && (
           <button
@@ -150,25 +181,62 @@ export function AdminTagsManager({
               : "No tags found. Create one above!"}
           </div>
         ) : (
-          filteredTags.map((tag) => (
-            <TagCard key={tag.id}>
-              <TagCard.Icon />
-              <TagCard.Header
-                name={tag.name}
-                articleCount={tag.id.length * 2} // Mocked count, wait, let's just make it look good for now until API provides it
-              />
-              <TagCard.Delete
-                onDelete={() => {
-                  const ok = globalThis.confirm("Delete this tag?");
-                  if (!ok) return;
-                  deleteTagMutation.mutate(tag.id);
-                }}
-              />
-            </TagCard>
-          ))
+            filteredTags.map((tag) => {
+              const articleCount = (tag.article_tags?.[0]?.count ?? 0) + (tag.series_post_tags?.[0]?.count ?? 0);
+              return (
+                <TagCard key={tag.id}>
+                  <TagCard.Icon />
+                  <TagCard.Header
+                    name={tag.name}
+                    articleCount={articleCount} 
+                  />
+                  <TagCard.Actions
+                    onEdit={() => setEditingTag(tag)}
+                    onDelete={() => setTagToDelete(tag)}
+                  />
+                </TagCard>
+              );
+            })
         )}
       </div>
+
       <Pagination total={total} page={page} pageSize={pageSize} />
+
+      {/* Edit Modal */}
+      <Modal 
+        isOpen={!!editingTag} 
+        onClose={() => setEditingTag(null)}
+        title="Edit Tag"
+      >
+        <form onSubmit={onEditSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Tag Name</label>
+            <Input {...editForm.register("name")} className="h-11" />
+          </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button variant="ghost" onClick={() => setEditingTag(null)} type="button">
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={updateTagMutation.isPending}
+            >
+              {updateTagMutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Confirm Delete */}
+      <ConfirmModal 
+        isOpen={!!tagToDelete}
+        onClose={() => setTagToDelete(null)}
+        onConfirm={() => tagToDelete && deleteTagMutation.mutate(tagToDelete.id)}
+        title="Delete Tag"
+        description={`Are you sure you want to delete the tag "${tagToDelete?.name}"? This action cannot be undone.`}
+        isLoading={deleteTagMutation.isPending}
+      />
     </div>
   );
 }

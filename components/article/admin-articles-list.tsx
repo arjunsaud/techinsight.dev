@@ -13,6 +13,7 @@ import { ArticleCard } from "@/components/article/admin-article-card";
 import { cn } from "@/lib/utils";
 
 import { Pagination } from "@/components/ui/pagination";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 
 interface AdminArticlesListProps {
   accessToken: string;
@@ -145,6 +146,8 @@ export function AdminArticlesList({
     { id: "scheduled", label: "Scheduled", count: scheduledCount },
   ];
 
+  const [articleToDelete, setArticleToDelete] = React.useState<Article | null>(null);
+
   return (
     <div className="space-y-6">
       {/* Search and Filters Strip */}
@@ -225,17 +228,13 @@ export function AdminArticlesList({
                   excerpt={article.excerpt}
                   status={article.status}
                   tags={article.tags?.map((t: any) => t.name) || []}
-                  views={article.id.length * 42} 
-                  likes={article.id.length * 3} 
-                  comments={0}
+                  views={article.viewsCount || 0} 
+                  likes={article.likesCount || 0} 
+                  comments={article.comments?.[0]?.count || 0}
                   readTime="5m"
                 />
                 <ArticleCard.Actions
-                  onDelete={() => {
-                    const ok = globalThis.confirm("Delete this article?");
-                    if (!ok) return;
-                    deleteArticleMutation.mutate(article.id);
-                  }}
+                  onDelete={() => setArticleToDelete(article)}
                 />
               </ArticleCard>
             ))}
@@ -243,6 +242,15 @@ export function AdminArticlesList({
           </>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={!!articleToDelete}
+        onClose={() => setArticleToDelete(null)}
+        onConfirm={() => articleToDelete && deleteArticleMutation.mutate(articleToDelete.id)}
+        title="Delete Article"
+        description={`Are you sure you want to delete "${articleToDelete?.title}"? This action cannot be undone.`}
+        isLoading={deleteArticleMutation.isPending}
+      />
     </div>
   );
 }

@@ -12,7 +12,7 @@ export async function listCategoriesModel(
 
   const { data, error, count } = await supabase
     .from("categories")
-    .select("id,name,slug,createdAt:created_at", { count: "exact" })
+    .select("id,name,slug,description,color,createdAt:created_at, articles(count), series_posts(count)", { count: "exact" })
     .order("name")
     .range(from, to);
 
@@ -20,8 +20,15 @@ export async function listCategoriesModel(
     throw new Error(error.message);
   }
 
+  const mappedData = (data ?? []).map((cat: any) => ({
+    ...cat,
+    articleCount: (cat.articles?.[0]?.count ?? 0) + (cat.series_posts?.[0]?.count ?? 0),
+    articles: undefined,
+    series_posts: undefined,
+  }));
+
   return {
-    data: data ?? [],
+    data: mappedData,
     page,
     pageSize,
     total: count ?? 0,
@@ -85,6 +92,32 @@ export async function deleteCategoryModel(
   supabase: SupabaseClient,
   categoryId: string,
 ) {
+  // Check if used in articles
+  const { count: articleCount, error: articleCountError } = await supabase
+    .from("articles")
+    .select("*", { count: "exact", head: true })
+    .eq("category_id", categoryId);
+
+  if (articleCountError) throw new Error(articleCountError.message);
+  if (articleCount && articleCount > 0) {
+    throw new Error(
+      "Cannot delete category as it is currently used in articles.",
+    );
+  }
+
+  // Check if used in series posts
+  const { count: seriesCount, error: seriesCountError } = await supabase
+    .from("series_posts")
+    .select("*", { count: "exact", head: true })
+    .eq("category_id", categoryId);
+
+  if (seriesCountError) throw new Error(seriesCountError.message);
+  if (seriesCount && seriesCount > 0) {
+    throw new Error(
+      "Cannot delete category as it is currently used in series articles.",
+    );
+  }
+
   const { error } = await supabase
     .from("categories")
     .delete()

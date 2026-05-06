@@ -100,11 +100,17 @@ export function AdminArticleStudio({
     enabled: Boolean(accessToken),
   });
 
+  const articleQuery = useQuery({
+    queryKey: ["admin-article", editingArticleId],
+    queryFn: () => articleService.getById(editingArticleId!, accessToken),
+    enabled: Boolean(accessToken && editingArticleId),
+  });
+
   const articles = articlesQuery.data?.data ?? [];
-  const editingArticle = useMemo(
-    () => articles.find((article) => article.id === editingArticleId) ?? null,
-    [articles, editingArticleId],
-  );
+  const editingArticle =
+    articleQuery.data ||
+    articles.find((article) => article.id === editingArticleId) ||
+    null;
 
   const form = useForm<ArticleFormValues>({
     resolver: zodResolver(articleSchema),
@@ -133,22 +139,20 @@ export function AdminArticleStudio({
   const currentMetaDescription = watch("metaDescription");
 
   useEffect(() => {
-    if (!initialEditArticleId) return;
-    const article = articles.find((item) => item.id === initialEditArticleId);
-    if (!article) return;
-    setEditingArticleId(article.id);
+    if (!editingArticle) return;
     isSlugManual.current = true;
     reset({
-      title: article.title || "",
-      slug: article.slug || "",
-      excerpt: article.excerpt || "",
-      content: article.content || "<p></p>",
-      featuredImageUrl: article.featuredImageUrl || "",
-      seoTitle: article.seoTitle || "",
-      metaDescription: article.metaDescription || article.excerpt || "",
-      keywords: article.keywords || "",
+      title: editingArticle.title || "",
+      slug: editingArticle.slug || "",
+      excerpt: editingArticle.excerpt || "",
+      content: editingArticle.content || "<p></p>",
+      featuredImageUrl: editingArticle.featuredImageUrl || "",
+      seoTitle: editingArticle.seoTitle || "",
+      metaDescription:
+        editingArticle.metaDescription || editingArticle.excerpt || "",
+      keywords: editingArticle.keywords || "",
     });
-  }, [articles, initialEditArticleId, reset]);
+  }, [editingArticle, reset]);
 
   useEffect(() => {
     if (!isSlugManual.current && currentTitle) {

@@ -27,7 +27,7 @@ export interface SeriesPostPayload {
 }
 
 const SERIES_SELECT = "id, title, slug, description, coverImage:cover_image, status, createdAt:created_at, updatedAt:updated_at";
-const SERIES_POST_SELECT = "id, seriesId:series_id, title, slug, content, excerpt, featuredImageUrl:featured_image_url, seriesOrder:series_order, status, seoTitle:seo_title, metaDescription:meta_description, keywords, showToc:show_toc, publishedAt:published_at, createdAt:created_at, updatedAt:updated_at";
+const SERIES_POST_SELECT = "id, seriesId:series_id, title, slug, content, excerpt, featuredImageUrl:featured_image_url, seriesOrder:series_order, status, seoTitle:seo_title, metaDescription:meta_description, keywords, showToc:show_toc, publishedAt:published_at, createdAt:created_at, updatedAt:updated_at, viewsCount:views_count, likesCount:likes_count, comments:comments(count)";
 
 export async function listSeriesModel(
   supabase: SupabaseClient,

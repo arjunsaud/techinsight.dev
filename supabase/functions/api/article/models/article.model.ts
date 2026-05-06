@@ -15,7 +15,7 @@ const CLOUDINARY_SETTING_KEYS = [
 ] as const;
 
 const ARTICLE_SELECT =
-  "id,title,slug,content,excerpt,categoryId:category_id,featuredImageUrl:featured_image_url,status,authorId:author_id,publishedAt:published_at,createdAt:created_at,updatedAt:updated_at,seoTitle:seo_title,metaDescription:meta_description,keywords,isFeatured:is_featured,showToc:show_toc,category:categories(id,name,slug,createdAt:created_at),tags:article_tags(tag:tags(id,name,slug,createdAt:created_at))";
+  "id,title,slug,content,excerpt,categoryId:category_id,featuredImageUrl:featured_image_url,status,authorId:author_id,publishedAt:published_at,createdAt:created_at,updatedAt:updated_at,seoTitle:seo_title,metaDescription:meta_description,keywords,isFeatured:is_featured,showToc:show_toc,viewsCount:views_count,likesCount:likes_count,category:categories(id,name,slug,createdAt:created_at),tags:article_tags(tag:tags(id,name,slug,createdAt:created_at)),comments(count)";
 
 export async function getCloudinarySettingsModel(
   supabase: SupabaseClient,

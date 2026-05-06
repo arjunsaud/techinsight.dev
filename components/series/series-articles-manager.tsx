@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ArticleCard } from "@/components/article/admin-article-card";
 import { Pagination } from "@/components/ui/pagination";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 
 interface SeriesArticlesManagerProps {
   seriesId: string;
@@ -78,16 +79,23 @@ export function SeriesArticlesManager({
     );
   }, [localPosts, searchQuery]);
 
-  const handleDeletePost = async (postId: string) => {
-    if (!confirm("Remove this article from the series?")) return;
+  const [postToRemove, setPostToRemove] = useState<SeriesPost | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeletePost = async () => {
+    if (!postToRemove) return;
+    setIsDeleting(true);
 
     try {
-      await seriesService.deletePost(seriesId, postId, accessToken);
-      setLocalPosts(prev => prev.filter((p) => p.id !== postId));
+      await seriesService.deletePost(seriesId, postToRemove.id, accessToken);
+      setLocalPosts(prev => prev.filter((p) => p.id !== postToRemove.id));
       toast.success("Article removed from series");
       queryClient.invalidateQueries({ queryKey: ["series-posts", seriesId] });
+      setPostToRemove(null);
     } catch (error) {
       toast.error("Failed to remove article");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -223,13 +231,14 @@ export function SeriesArticlesManager({
                         excerpt={post.excerpt || null}
                         status={post.status}
                         tags={[]}
-                        views={0}
-                        likes={0}
-                        comments={0}
+                        views={post.viewsCount || 0}
+                        likes={post.likesCount || 0}
+                        comments={post.comments?.[0]?.count || 0}
                         readTime="5m"
                       />
                       <ArticleCard.Actions
-                        onDelete={() => handleDeletePost(post.id)}
+                        onEdit={() => router.push(`/admin/series/${seriesId}/posts/${post.id}`)}
+                        onDelete={() => setPostToRemove(post)}
                       />
                     </ArticleCard>
                   </div>
@@ -257,6 +266,15 @@ export function SeriesArticlesManager({
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={!!postToRemove}
+        onClose={() => setPostToRemove(null)}
+        onConfirm={handleDeletePost}
+        title="Remove Article"
+        description={`Are you sure you want to remove "${postToRemove?.title}" from this series?`}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

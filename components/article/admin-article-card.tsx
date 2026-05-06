@@ -197,8 +197,10 @@ ArticleCard.Content = function ArticleCardContent({
 
 ArticleCard.Actions = function ArticleCardActions({
   onDelete,
+  onEdit,
 }: {
   onDelete: () => void;
+  onEdit?: () => void;
 }) {
   const { id, slug } = useArticleCardContext();
 
@@ -212,13 +214,23 @@ ArticleCard.Actions = function ArticleCardActions({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-40">
           <DropdownMenuItem asChild>
-            <Link
-              href={`/admin/articles?edit=${id}`}
-              className="cursor-pointer"
-            >
-              <Edit className="mr-2 h-4 w-4" />
-              <span>Edit</span>
-            </Link>
+            {onEdit ? (
+              <button
+                onClick={onEdit}
+                className="flex w-full cursor-pointer items-center px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                <span>Edit</span>
+              </button>
+            ) : (
+              <Link
+                href={`/admin/articles?edit=${id}`}
+                className="cursor-pointer"
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                <span>Edit</span>
+              </Link>
+            )}
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link

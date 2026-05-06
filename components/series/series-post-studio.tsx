@@ -82,6 +82,26 @@ export function SeriesPostStudio({
 
   const { register, control, handleSubmit, watch, setValue, reset } = form;
 
+  // Sync form with initial data when it arrives
+  useEffect(() => {
+    if (initialPost) {
+      reset({
+        title: initialPost.title || "",
+        slug: initialPost.slug || "",
+        excerpt: initialPost.excerpt || "",
+        content: initialPost.content || "<p></p>",
+        featuredImageUrl: initialPost.featuredImageUrl || "",
+        seoTitle: initialPost.seoTitle || "",
+        metaDescription: initialPost.metaDescription || "",
+        keywords: initialPost.keywords || "",
+        showToc: initialPost.showToc || false,
+        isFeatured: initialPost.isFeatured || false,
+        categoryId: initialPost.categoryId || "",
+        tagIds: initialPost.tags?.map((t) => t.id) || [],
+      });
+    }
+  }, [initialPost, reset]);
+
   const currentTitle = watch("title");
   const previewTitle = currentTitle;
   const previewExcerpt = watch("excerpt");
