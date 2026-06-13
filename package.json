@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "supabase:migrations:deploy": "supabase db push",
     "supabase:functions:deploy": "supabase functions deploy api",
-    "supabase:deploy": "npm run supabase:migrations:deploy && npm run supabase:functions:deploy"
+    "supabase:deploy": "npm run supabase:migrations:deploy && npm run supabase:functions:deploy",
+    "db:seed:prod": "node scripts/seed-prod.js"
   },
   "dependencies": {
     "@blocknote/core": "^0.47.0",

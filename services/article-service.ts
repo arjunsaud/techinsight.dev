@@ -65,6 +65,12 @@ export const articleService = {
     return apiFetch<Article>(`article/${slug}`, options);
   },
 
+  getById(id: string, accessToken?: string) {
+    return apiFetch<Article>(`article/${id}`, {
+      accessToken,
+    });
+  },
+
   create(input: CreateArticleInput, accessToken: string) {
     return apiFetch<Article>("article", {
       method: "POST",
