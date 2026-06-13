@@ -1,9 +1,12 @@
 import type { MetadataRoute } from "next";
 
+import { getPublicEnv } from "@/lib/env";
+
 export const dynamic = "force-dynamic";
 
 function getSiteUrl() {
-  const raw = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const env = getPublicEnv();
+  const raw = env.appUrl ?? "http://localhost:3000";
   return raw.replace(/\/+$/, "");
 }
 

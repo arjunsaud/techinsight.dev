@@ -30,20 +30,12 @@ cp .env.example .env.local
 
 3. Run SQL migrations in Supabase SQL editor:
 
-- `supabase/migrations/202602201300_initial_schema.sql`
-- `supabase/migrations/202602201510_r2_settings_table.sql`
-- `supabase/migrations/202602201620_admin_login_username_rpc.sql`
-- `supabase/migrations/202602201730_superadmin_role.sql`
-- `supabase/migrations/202602202359_superadmin_seed.sql`
-- `supabase/migrations/202602210110_backfill_public_users.sql`
-- `supabase/migrations/202602210220_users_to_superadmins.sql`
-- `supabase/migrations/202602210235_backfill_superadmin_profile.sql`
-- `supabase/migrations/202602210240_fix_handle_auth_user_created_email_fallback.sql`
+- `supabase/migrations/202603301200_initial_schema.sql`
 
 Or with CLI:
 
 ```bash
-supabase db push
+npx supabase db push
 ```
 
 4. Deploy edge functions:
@@ -71,17 +63,52 @@ pnpm dev
   - Modular MVC under `api/`: `article/`, `comment/`, `admin/`
 - `docs/`: architecture + requirement mapping
 
-## Default Bootstrap Account
+## Default Bootstrap Account & Seeding
 
-Seeded by migration `202602202359_superadmin_seed.sql`:
+You can seed your local or production database using the provided npm script. Pass your preferred email, password, and username as arguments:
 
-- username: `superadmin`
-- email: `superadmin@vitafy.local`
-- password: `SuperAdmin@12345`
+```bash
+npm run db:seed:prod <email> <password> <username>
+```
 
-Login uses `email + password`.
+Example:
 
-Change these values before any non-local environment.
+```bash
+npm run db:seed:prod superadmin@vitafy.local SuperAdmin@12345 superadmin
+```
+
+## Production Deployment
+
+To deploy the backend to production:
+
+1. **Link your Supabase project:**
+
+   ```bash
+   npx supabase link --project-ref <your-project-ref>
+   ```
+
+2. **Push migrations to the remote database:**
+
+   ```bash
+   npx supabase db push
+   ```
+
+3. **Deploy Edge Functions:**
+
+   ```bash
+   npx supabase functions deploy api
+   ```
+
+4. **Run the Seed Script (if setting up for the first time):**
+
+   ```bash
+   npm run db:seed:prod <email> <password> <username>
+   ```
+
+5. **Deploy Next.js to Vercel:**
+   ```bash
+   npx vercel --prod
+   ```
 
 ## Notes
 

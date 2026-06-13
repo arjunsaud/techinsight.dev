@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { getPublicEnv } from "@/lib/env";
 
 import { getCategories, getPublishedArticles, getTags } from "@/lib/server-data";
 import type { Article, Category, Tag } from "@/types/domain";
@@ -13,7 +14,8 @@ function toValidDate(input: string | null | undefined): Date | undefined {
 }
 
 function getSiteUrl() {
-  const raw = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const env = getPublicEnv();
+  const raw = env.appUrl ?? "http://localhost:3000";
   return raw.replace(/\/+$/, "");
 }
 

@@ -6,9 +6,11 @@ import Script from "next/script";
 import "@/app/globals.css";
 import { Providers } from "@/app/providers";
 
+import { getPublicEnv } from "@/lib/env";
+
 function getAppUrl() {
-  const raw = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  return raw.replace(/\/+$/, "");
+  const env = getPublicEnv();
+  return env.appUrl;
 }
 
 const sans = Geist({
@@ -50,13 +52,27 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const env = getPublicEnv();
+  
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.__ENV__ = ${JSON.stringify({
+              APP_URL: env.appUrl,
+              SUPABASE_URL: env.supabaseUrl,
+              SUPABASE_ANON_KEY: env.supabaseAnonKey,
+              GA_ID: env.gaId,
+            })};`,
+          }}
+        />
+      </head>
       <body className={`${sans.variable} ${mono.variable} antialiased`}>
-        {process.env.NEXT_PUBLIC_GA_ID && (
+        {env.gaId && (
           <>
             <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+              src={`https://www.googletagmanager.com/gtag/js?id=${env.gaId}`}
               strategy="afterInteractive"
             />
             <Script id="google-analytics" strategy="afterInteractive">
@@ -64,7 +80,7 @@ export default function RootLayout({
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
+                gtag('config', '${env.gaId}');
               `}
             </Script>
           </>
