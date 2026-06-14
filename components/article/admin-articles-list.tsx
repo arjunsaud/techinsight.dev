@@ -126,6 +126,7 @@ export function AdminArticlesList({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
+      setArticleToDelete(null);
       toast.success("Article deleted");
     },
     onError: (error) => {
