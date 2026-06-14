@@ -3,52 +3,11 @@ import type { SupabaseClient } from "npm:@supabase/supabase-js@2";
 import type {
   ArticleListFilters,
   ArticlePayload,
-  CloudinarySettings,
 } from "../types.ts";
 import { isUuid, slugify } from "../../../shared/utils.ts";
 
-const CLOUDINARY_SETTING_KEYS = [
-  "CLOUDINARY_CLOUD_NAME",
-  "CLOUDINARY_API_KEY",
-  "CLOUDINARY_API_SECRET",
-  "CLOUDINARY_UPLOAD_PRESET",
-] as const;
-
 const ARTICLE_SELECT =
   "id,title,slug,content,excerpt,categoryId:category_id,featuredImageUrl:featured_image_url,status,authorId:author_id,publishedAt:published_at,createdAt:created_at,updatedAt:updated_at,seoTitle:seo_title,metaDescription:meta_description,keywords,isFeatured:is_featured,showToc:show_toc,viewsCount:views_count,likesCount:likes_count,category:categories(id,name,slug,createdAt:created_at),tags:article_tags(tag:tags(id,name,slug,createdAt:created_at)),comments(count)";
-
-export async function getCloudinarySettingsModel(
-  supabase: SupabaseClient,
-): Promise<CloudinarySettings> {
-  const { data, error } = await supabase
-    .from("app_settings")
-    .select("key,value")
-    .in("key", [...CLOUDINARY_SETTING_KEYS]);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  const settings = Object.fromEntries(
-    (data ?? []).map((row: { key: string; value: string }) => [
-      row.key,
-      row.value,
-    ]),
-  ) as Partial<CloudinarySettings>;
-
-  const missing = CLOUDINARY_SETTING_KEYS.filter(
-    (key) =>
-      key !== "CLOUDINARY_UPLOAD_PRESET" &&
-      (!settings[key] || settings[key]?.trim() === ""),
-  );
-  if (missing.length > 0) {
-    throw new Error(
-      `Missing Cloudinary settings in app_settings: ${missing.join(", ")}`,
-    );
-  }
-
-  return settings as CloudinarySettings;
-}
 
 export async function listArticlesModel(
   supabase: SupabaseClient,

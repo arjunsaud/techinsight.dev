@@ -10,11 +10,11 @@ import {
   createArticleModel,
   deleteArticleModel,
   getArticleByIdOrSlugModel,
-  getCloudinarySettingsModel,
   getRecommendedArticlesModel,
   listArticlesModel,
   updateArticleModel,
 } from "../models/article.model.ts";
+import { getCloudinarySettingsModel } from "../../settings/models/settings.model.ts";
 
 function toPositiveInt(
   value: string | undefined,
