@@ -52,11 +52,22 @@ export function CloudinarySettingsForm({
     e.preventDefault();
     setStatus("idle");
 
+    const preset = form.CLOUDINARY_UPLOAD_PRESET.trim();
+
+    // Cloudinary preset names cannot contain slashes
+    if (preset && preset.includes("/")) {
+      setStatus("error");
+      setErrorMsg(
+        'Upload Preset name cannot contain a slash ("/"). Use underscores instead, e.g. "techinsight_prod".',
+      );
+      return;
+    }
+
     const payload: Partial<CloudinarySettings> = {
       CLOUDINARY_CLOUD_NAME: form.CLOUDINARY_CLOUD_NAME.trim(),
       CLOUDINARY_API_KEY: form.CLOUDINARY_API_KEY.trim(),
-      CLOUDINARY_UPLOAD_PRESET:
-        form.CLOUDINARY_UPLOAD_PRESET.trim() || undefined,
+      // Always send the preset (even empty string) so clearing it actually saves
+      CLOUDINARY_UPLOAD_PRESET: preset,
     };
     // Only send secret if user typed a new one
     if (form.CLOUDINARY_API_SECRET.trim()) {
@@ -106,8 +117,8 @@ export function CloudinarySettingsForm({
       key: "CLOUDINARY_UPLOAD_PRESET" as const,
       label: "Upload Preset",
       icon: Upload,
-      placeholder: "my_preset (optional)",
-      hint: "Optional signed upload preset name (must be 'Signed' type in Cloudinary)",
+      placeholder: "my_preset (optional, no slashes)",
+      hint: 'Optional signed upload preset. Must use underscores not slashes — e.g. "techinsight_prod", not "techinsight/prod".',
     },
   ] as const;
 

@@ -42,7 +42,7 @@ export async function upsertCloudinarySettingsModel(
 ) {
   const rows = Object.entries(payload)
     .filter(([, v]) => v !== undefined && v !== null)
-    .map(([key, value]) => ({ key, value: value as string }));
+    .map(([key, value]) => ({ key, value: (value as string) ?? "" }));
 
   if (rows.length === 0) return;
 
