@@ -73,6 +73,7 @@ export function AdminCategoriesManager({
 
   const createCategoryMutation = useMutation({
     mutationFn: async (values: FormValues) => {
+      console.log(values)
       if (!accessToken) throw new Error("Missing admin session token.");
       return adminService.createCategory(
         values.name,
@@ -92,6 +93,7 @@ export function AdminCategoriesManager({
 
   const updateCategoryMutation = useMutation({
     mutationFn: async ({ categoryId, values }: { categoryId: string; values: FormValues }) => {
+      console.log(values)
       if (!accessToken) throw new Error("Missing admin session token.");
       return adminService.updateCategory(categoryId, values, accessToken);
     },
@@ -206,13 +208,13 @@ export function AdminCategoriesManager({
             return (
               <CategoryCard key={category.id}>
                 <CategoryCard.Icon color={category.color} />
-                <CategoryCard.Header 
-                  name={category.name} 
+                <CategoryCard.Header
+                  name={category.name}
                   description={category.description}
                   slug={category.slug}
                   articleCount={articleCount}
                 />
-                <CategoryCard.Actions 
+                <CategoryCard.Actions
                   onEdit={() => setEditingCategory(category)}
                   onDelete={() => setCategoryToDelete(category)}
                 />
@@ -221,12 +223,12 @@ export function AdminCategoriesManager({
           })
         )}
       </div>
-      
+
       <Pagination total={total} page={page} pageSize={pageSize} />
 
       {/* Edit Modal */}
-      <Modal 
-        isOpen={!!editingCategory} 
+      <Modal
+        isOpen={!!editingCategory}
         onClose={() => setEditingCategory(null)}
         title="Edit Category"
       >
@@ -243,8 +245,8 @@ export function AdminCategoriesManager({
             <Button variant="ghost" onClick={() => setEditingCategory(null)} type="button">
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               className="bg-blue-600 hover:bg-blue-700 text-white"
               disabled={updateCategoryMutation.isPending}
             >
@@ -255,7 +257,7 @@ export function AdminCategoriesManager({
       </Modal>
 
       {/* Confirm Delete */}
-      <ConfirmModal 
+      <ConfirmModal
         isOpen={!!categoryToDelete}
         onClose={() => setCategoryToDelete(null)}
         onConfirm={() => categoryToDelete && deleteCategoryMutation.mutate(categoryToDelete.id)}

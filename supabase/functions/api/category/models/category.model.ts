@@ -37,7 +37,7 @@ export async function listCategoriesModel(
 
 export async function createCategoryModel(
   supabase: SupabaseClient,
-  payload: { name?: string; slug?: string },
+  payload: { name?: string; slug?: string; description?: string | null },
 ) {
   if (!payload.name) {
     throw new Error("name is required");
@@ -48,8 +48,9 @@ export async function createCategoryModel(
     .insert({
       name: payload.name,
       slug: payload.slug ? slugify(payload.slug) : slugify(payload.name),
+      description: payload.description ?? null,
     })
-    .select("id,name,slug,createdAt:created_at")
+    .select("id,name,slug,description,createdAt:created_at")
     .single();
 
   if (error) {
@@ -62,7 +63,7 @@ export async function createCategoryModel(
 export async function updateCategoryModel(
   supabase: SupabaseClient,
   categoryId: string,
-  payload: { name?: string; slug?: string },
+  payload: { name?: string; slug?: string; description?: string | null },
 ) {
   const updates: Record<string, unknown> = {};
   if (payload.name !== undefined) {
@@ -73,12 +74,15 @@ export async function updateCategoryModel(
   } else if (payload.name !== undefined) {
     updates.slug = slugify(payload.name);
   }
+  if (payload.description !== undefined) {
+    updates.description = payload.description;
+  }
 
   const { data, error } = await supabase
     .from("categories")
     .update(updates)
     .eq("id", categoryId)
-    .select("id,name,slug,createdAt:created_at")
+    .select("id,name,slug,description,createdAt:created_at")
     .maybeSingle();
 
   if (error) {

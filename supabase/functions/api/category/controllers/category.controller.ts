@@ -23,7 +23,7 @@ export async function listCategories(c: Context) {
 export async function createCategory(c: Context) {
   const admin = await requireAdmin(c.req.raw);
   const supabase = createAuthClient(admin.accessToken);
-  const payload = (await c.req.json()) as { name?: string; slug?: string };
+  const payload = (await c.req.json()) as { name?: string; slug?: string; description?: string | null };
 
   if (!payload.name) {
     return c.json({ error: "name is required" }, 422);
@@ -36,10 +36,10 @@ export async function createCategory(c: Context) {
 export async function updateCategory(c: Context) {
   const admin = await requireAdmin(c.req.raw);
   const supabase = createAuthClient(admin.accessToken);
-  const payload = (await c.req.json()) as { name?: string; slug?: string };
+  const payload = (await c.req.json()) as { name?: string; slug?: string; description?: string | null };
 
-  if (!payload.name && !payload.slug) {
-    return c.json({ error: "name or slug is required" }, 422);
+  if (!payload.name && !payload.slug && payload.description === undefined) {
+    return c.json({ error: "at least one field (name, slug, description) is required" }, 422);
   }
 
   const data = await updateCategoryModel(
