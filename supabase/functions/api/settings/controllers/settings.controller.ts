@@ -25,6 +25,17 @@ export async function updateCloudinarySettings(c: Context) {
   const supabase = createAuthClient(admin.accessToken);
   const payload = (await c.req.json()) as Partial<CloudinarySettings>;
 
+  // Cloudinary preset names cannot contain slashes
+  if (payload.CLOUDINARY_UPLOAD_PRESET?.includes("/")) {
+    return c.json(
+      {
+        error:
+          'Upload Preset name cannot contain a slash ("/"). Use underscores instead, e.g. "techinsight_prod".',
+      },
+      422,
+    );
+  }
+
   await upsertCloudinarySettingsModel(supabase, payload);
   return c.json({ success: true });
 }
