@@ -128,9 +128,14 @@ export async function createUploadDraft(c: Context) {
   const timestamp = Math.round(new Date().getTime() / 1000);
   // Use requested folder, restricted to known safe values
   const allowedFolders = ["articles", "series"];
-  const folder = allowedFolders.includes(payload.folder ?? "")
+  let folder = allowedFolders.includes(payload.folder ?? "")
     ? payload.folder!
     : "articles";
+
+  // Prefix with root folder if configured
+  if (settings.CLOUDINARY_ROOT_FOLDER) {
+    folder = `${settings.CLOUDINARY_ROOT_FOLDER}/${folder}`;
+  }
 
   // Parameters to sign
   const params: Record<string, string | number> = {

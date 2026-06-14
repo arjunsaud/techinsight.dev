@@ -5,6 +5,7 @@ import {
   Cloud,
   Key,
   Lock,
+  FolderOpen,
   Upload,
   Save,
   CheckCircle2,
@@ -30,6 +31,7 @@ export function CloudinarySettingsForm({
     CLOUDINARY_CLOUD_NAME: initialSettings.CLOUDINARY_CLOUD_NAME ?? "",
     CLOUDINARY_API_KEY: initialSettings.CLOUDINARY_API_KEY ?? "",
     CLOUDINARY_API_SECRET: "",
+    CLOUDINARY_ROOT_FOLDER: initialSettings.CLOUDINARY_ROOT_FOLDER ?? "",
     CLOUDINARY_UPLOAD_PRESET: initialSettings.CLOUDINARY_UPLOAD_PRESET ?? "",
   });
   const [visibleFields, setVisibleFields] = useState<Record<string, boolean>>(
@@ -52,7 +54,10 @@ export function CloudinarySettingsForm({
     e.preventDefault();
     setStatus("idle");
 
-    const preset = form.CLOUDINARY_UPLOAD_PRESET.trim();
+    // Strip leading/trailing slashes from root folder
+    const rootFolder = form.CLOUDINARY_ROOT_FOLDER.trim().replace(/^\/+|\/+$/g, "");
+
+    const preset = form.CLOUDINARY_UPLOAD_PRESET?.trim() ?? "";
 
     // Cloudinary preset names cannot contain slashes
     if (preset && preset.includes("/")) {
@@ -66,7 +71,8 @@ export function CloudinarySettingsForm({
     const payload: Partial<CloudinarySettings> = {
       CLOUDINARY_CLOUD_NAME: form.CLOUDINARY_CLOUD_NAME.trim(),
       CLOUDINARY_API_KEY: form.CLOUDINARY_API_KEY.trim(),
-      // Always send the preset (even empty string) so clearing it actually saves
+      // Always send the root folder (even empty string) so clearing it actually saves
+      CLOUDINARY_ROOT_FOLDER: rootFolder,
       CLOUDINARY_UPLOAD_PRESET: preset,
     };
     // Only send secret if user typed a new one
@@ -112,6 +118,13 @@ export function CloudinarySettingsForm({
         ? "Leave blank to keep existing secret"
         : "Enter API secret",
       hint: "Leave blank to keep the current secret",
+    },
+    {
+      key: "CLOUDINARY_ROOT_FOLDER" as const,
+      label: "Root Folder",
+      icon: FolderOpen,
+      placeholder: "techinsight_prod (optional)",
+      hint: "Optional root folder for uploads. Files will be stored under this folder, e.g. techinsight_prod/articles/.",
     },
     {
       key: "CLOUDINARY_UPLOAD_PRESET" as const,

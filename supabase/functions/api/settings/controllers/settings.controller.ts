@@ -25,6 +25,14 @@ export async function updateCloudinarySettings(c: Context) {
   const supabase = createAuthClient(admin.accessToken);
   const payload = (await c.req.json()) as Partial<CloudinarySettings>;
 
+  // Strip leading/trailing slashes from root folder path
+  if (payload.CLOUDINARY_ROOT_FOLDER !== undefined) {
+    payload.CLOUDINARY_ROOT_FOLDER = payload.CLOUDINARY_ROOT_FOLDER.replace(
+      /^\/+|\/+$/g,
+      "",
+    );
+  }
+
   // Cloudinary preset names cannot contain slashes
   if (payload.CLOUDINARY_UPLOAD_PRESET?.includes("/")) {
     return c.json(
